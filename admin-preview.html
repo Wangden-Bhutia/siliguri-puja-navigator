@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data validator &amp; preview – Siliguri Puja Navigator</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="theme-color" content="#5a0f1e">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="stylesheet" href="styles.css">
+<style>textarea{width:100%;min-height:260px;font:14px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:10px;border:2px solid #7d6a58;border-radius:10px;background:#fff;color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--ivory-2)}
+.tablewrap{overflow-x:auto}.ok{color:#173f2b;font-weight:700}.bad{color:#5c0f13;font-weight:700}</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<header class="masthead"><div class="wrap">
+  <p class="eyebrow">For maintainers</p>
+  <h1>Data validator &amp; preview</h1>
+  <p class="tagline">Check puja-data.json before you publish it.</p>
+</div></header>
+<main id="main" tabindex="-1"><div class="wrap">
+  <p class="banner banner-warn" role="note"><strong>Nothing here publishes anything.</strong> This page only checks and previews JSON inside your browser; nothing is saved or uploaded. To publish, edit <code>data/puja-data.json</code> in the GitHub repository and commit it – GitHub Pages then redeploys (see <code>docs/ADMIN-GUIDE.md</code> in the repository).</p>
+  <section class="panel" aria-labelledby="in-h">
+    <h2 id="in-h">1. Paste or load JSON</h2>
+    <div class="row">
+      <label class="btn btn-ghost" for="file">Choose a .json file</label><input id="file" type="file" accept=".json,application/json" class="sr-only">
+      <button type="button" id="load-pub" class="btn btn-ghost">Load the currently published data</button>
+    </div>
+    <p class="field"><label for="json">JSON text</label></p>
+    <textarea id="json" spellcheck="false" aria-describedby="json-help"></textarea>
+    <p id="json-help" class="muted small">Same rules as the app and as <code>node tools/validate-data.js</code>.</p>
+    <div class="field"><label for="at">Preview restriction statuses at (India time, IST)</label><input id="at" type="datetime-local" step="60"></div>
+    <div class="row"><button type="button" id="go" class="btn btn-primary">Validate &amp; preview</button><button type="button" id="now" class="btn btn-ghost">Use current time</button></div>
+  </section>
+  <section class="panel" aria-labelledby="out-h" aria-live="polite">
+    <h2 id="out-h">2. Result</h2>
+    <div id="out"><p class="muted">Nothing checked yet.</p></div>
+  </section>
+</div></main>
+<script src="logic.js"></script>
+<script src="admin-preview.js"></script>
+</body>
+</html>
