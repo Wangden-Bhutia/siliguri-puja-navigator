@@ -356,11 +356,11 @@ body.has-chrome:has(#view-home:not([hidden])) #view-home{
 body.has-chrome:has(#view-home:not([hidden])) .footlinks{
   position:absolute;left:0;right:0;z-index:2;margin:0;padding:0 16px;
   /* Sit in scene cream just above tabbar (higher = more overlap into short scene) */
-  bottom:calc(var(--tabbar-h) + 48px + env(safe-area-inset-bottom));
+  bottom:calc(var(--tabbar-h) + var(--sos-size) + 12px + env(safe-area-inset-bottom));
 }
 body.has-chrome:has(#view-home:not([hidden])) .foot{
   position:absolute;left:0;right:0;z-index:2;margin:0;padding:0;
-  bottom:calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom));
+  bottom:calc(var(--tabbar-h) + var(--sos-size) - 8px + env(safe-area-inset-bottom));
 }
 
 .footlinks a{color:var(--muted);min-height:36px;display:inline-flex;align-items:center;text-decoration:none}
