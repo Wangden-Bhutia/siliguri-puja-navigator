@@ -74,7 +74,11 @@
     var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     var next = cur === 'dark' ? 'light' : 'dark';
     try { localStorage.setItem(LS_THEME, next); } catch (e) {}
+    // Freeze transitions for the swap frame so nothing can interpolate through an intermediate/light colour.
+    var root = document.documentElement;
+    root.classList.add('theme-switching');
     initTheme();
+    requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.remove('theme-switching'); }); });
   }
 
   /* ---------- status badges ---------- */

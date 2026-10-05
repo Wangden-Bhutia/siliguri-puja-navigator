@@ -31,7 +31,7 @@ html[data-theme="dark"]{
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%;scroll-padding-top:12px}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:12px;background:var(--bg)}
 body{
   margin:0;font:16px/1.45 var(--sans);color:var(--ink);background:var(--bg);
   min-height:100dvh;overflow-x:hidden;
@@ -240,6 +240,7 @@ a.nhood-item{cursor:pointer}
   background:transparent;color:var(--ink);
 }
 .sheet::backdrop{background:rgba(20,8,10,.45)}
+html[data-theme="dark"] .sheet::backdrop{background:rgba(0,0,0,.6)}
 .sheet[open]{display:flex;align-items:flex-end;justify-content:center;position:fixed;inset:0;z-index:1200;height:100%;max-height:none;width:100%;max-width:none}
 .sheet-inner{
   width:100%;max-width:520px;margin:0 auto;
@@ -284,6 +285,51 @@ a.nhood-item{cursor:pointer}
   .mapbox{height:280px}
   .bigrow{gap:14px}
 }
+/* ===== Tap / press states (fix: white flash on mobile taps) =====
+   Android Chrome paints a default translucent tap-highlight box over any tapped element; on burgundy/dark
+   buttons it reads as a white flash. Remove it everywhere and give every interactive element explicit
+   themed backgrounds for hover / focus / active so the UA never supplies a light colour. */
+html,body,a,button,input,select,textarea,label,summary,[role="button"],[role="tab"],.leaflet-container,.leaflet-container a{-webkit-tap-highlight-color:transparent}
+button,input[type="search"],input[type="date"],input[type="time"]{-webkit-appearance:none;appearance:none}
+button{font:inherit;color:inherit;margin:0}
+.theme-switching,.theme-switching *,.theme-switching *::before,.theme-switching *::after{transition:none!important;animation:none!important}
+.sheet{color-scheme:inherit}
+dialog.sheet:not([open]){display:none}
+/* theme toggle (on burgundy mast) */
+.theme-btn,.theme-btn:hover,.theme-btn:focus{background:rgba(0,0,0,.18);color:var(--head-ink)}
+.theme-btn:active{background:rgba(0,0,0,.32);color:var(--head-ink)}
+/* SOS FAB */
+.sos-fab,.sos-fab:hover,.sos-fab:focus{background:var(--accent);color:var(--on-accent)}
+.sos-fab:active{background:var(--accent-2);color:var(--on-accent)}
+/* sheet close × */
+.sheet-close,.sheet-close:hover,.sheet-close:focus{background:var(--surface-2);color:var(--ink)}
+.sheet-close:active{background:var(--line);color:var(--ink)}
+/* generic buttons */
+.btn,.btn:hover,.btn:focus{background:var(--surface);color:var(--ink)}
+.btn:active{background:var(--surface-2);color:var(--ink)}
+.btn-ghost,.btn-ghost:hover,.btn-ghost:focus{background:transparent}
+.btn-ghost:active{background:var(--surface-2)}
+.btn-primary,.btn-primary:hover,.btn-primary:focus,.btn-call,.btn-call:hover,.btn-call:focus{background:var(--accent);color:var(--on-accent)}
+.btn-primary:active,.btn-call:active{background:var(--accent-2);color:var(--on-accent)}
+/* subtabs */
+.subtab:hover,.subtab:focus{background:transparent;color:var(--muted)}
+.subtab:active{background:var(--surface);color:var(--accent)}
+.subtab[aria-selected="true"],.subtab[aria-selected="true"]:hover,.subtab[aria-selected="true"]:focus,.subtab[aria-selected="true"]:active{background:var(--card);color:var(--accent)}
+/* big home actions */
+.bigbtn:hover,.bigbtn:focus{background:var(--card);color:var(--ink)}
+.bigbtn:active{background:var(--surface-2);color:var(--ink)}
+.bigbtn-primary:hover,.bigbtn-primary:focus{background:var(--accent);color:var(--on-accent)}
+.bigbtn-primary:active{background:var(--accent-2);color:var(--on-accent)}
+/* tab bar, list rows, text links */
+.tabbar a:hover,.tabbar a:focus{background:transparent}
+.tabbar a:active{background:var(--surface-2)}
+a.nhood-item:hover,a.nhood-item:focus{background:var(--card)}
+a.nhood-item:active{background:var(--surface-2)}
+.back:active,.footlinks a:active,.brand:active{background:transparent;opacity:.75}
+/* focus ring stays visible for keyboard users */
+.btn:focus-visible,.bigbtn:focus-visible,.subtab:focus-visible,.sheet-close:focus-visible,.tabbar a:focus-visible,a.nhood-item:focus-visible,.back:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.theme-btn:focus-visible,.sos-fab:focus-visible{outline:3px solid var(--gold-l);outline-offset:2px}
+
 @media(prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;transition:none!important}
 }
