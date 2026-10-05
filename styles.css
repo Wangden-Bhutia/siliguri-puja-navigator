@@ -113,6 +113,9 @@ main.wrap{padding-top:16px;padding-bottom:24px}
 .bigbtn-primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent-2);min-height:64px;font-size:1.12rem}
 .bigrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .bigbtn .bi{width:20px;height:20px;opacity:.85}
+/* secondary pair: icon above label so "Parking & Walking" fits one line on phones */
+.bigrow .bigbtn{flex-direction:column;gap:4px;padding:12px 8px;text-align:center;line-height:1.25}
+@media(max-width:374px){.bigrow .bigbtn{font-size:.95rem}}
 .freshness{margin:4px 0 14px;font-size:.9rem;color:var(--muted)}
 .freshness[data-level="stale"],.freshness[data-level="old"],.freshness[data-level="none"]{color:var(--warn-ink);font-weight:600}
 .warn-card{
@@ -128,6 +131,7 @@ main.wrap{padding-top:16px;padding-bottom:24px}
   border:2px solid var(--input-bd);background:var(--input-bg);color:var(--ink);font:inherit;margin-bottom:10px;
 }
 .filter-sum{margin:0 0 10px;font-size:.88rem;color:var(--muted)}
+.filter-sum:empty{display:none}
 .nhood-list,.result-list,.card-list,.sos-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .nhood-list{gap:0;border-top:1px solid var(--line)}
 .pandal-card,.info-card{display:block;padding:12px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:inherit}

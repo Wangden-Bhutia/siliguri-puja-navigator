@@ -264,7 +264,7 @@
     }
     nhoodList.hidden = false; searchList.hidden = true;
     var nhoods = S.data.neighbourhoods || [];
-    sum.textContent = nhoods.length + ' neighbourhoods · ' + S.data.pandals.length + ' pandals';
+    sum.textContent = '';
     nhoods.forEach(function (n) {
       var a = attrs(el('a', 'nhood-item'), { href: '#/n/' + encodeURIComponent(n.id) });
       add(a, el('span', 'nh-name', n.name), el('span', 'nh-count', n.count + (n.count === 1 ? ' pandal' : ' pandals')), svgIcon('chev'));

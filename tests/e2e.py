@@ -57,6 +57,7 @@ with sync_playwright() as p:
     ok('home: 3 actions only, primary Find a Pandal', pg.locator('#view-home a.bigbtn').count()==3 and 'Find a Pandal' in pg.inner_text('#view-home a.bigbtn-primary'))
     ok('home: no stats/counts', not __import__('re').search(r'\b\d+ (pandals|neighbourhoods)\b', pg.inner_text('#view-home')))
     ok('icons are monochrome SVG (no "P"/emoji text icons)', pg.locator('#tabbar svg.ic').count()==3 and pg.locator('#view-home .bigbtn svg.ic').count()==3 and pg.locator('#sos-fab svg.ic').count()==1 and not pg.evaluate("[...document.querySelectorAll('.bi,.ti')].some(e=>e.tagName!=='svg')"))
+    ok('parking icon is a car line icon, not a letter P', pg.locator('#tabbar a[data-tab="parking"] use[href="#i-car"]').count()==1 and pg.locator('#view-home a[data-go="parking"] use[href="#i-car"]').count()==1 and pg.locator('use[href="#i-park"]').count()==0 and pg.locator('#i-park').count()==0 and pg.locator('#i-car text').count()==0 and pg.locator('#i-car circle').count()==2)
     ok('icons use currentColor stroke', pg.evaluate("getComputedStyle(document.querySelector('#tabbar svg.ic')).stroke")==pg.evaluate("getComputedStyle(document.querySelector('#tabbar a')).color"))
     ok('theme button icon-only on small screens with accessible name', pg.is_hidden('#theme-btn .theme-lbl') and pg.get_attribute('#theme-btn','aria-label')=='Night mode' and pg.get_attribute('#theme-btn','aria-pressed') in ('true','false'))
     ok('footer says Demo version', 'Demo version' in pg.inner_text('#foot-line'))
@@ -66,6 +67,7 @@ with sync_playwright() as p:
     pg.click('#view-home a.bigbtn-primary'); pg.wait_for_timeout(400)
     ok('J1 Home→Find Pandal: pandals view', visible_view(pg)=='pandals')
     n_items=pg.locator('#nhood-list li').count()
+    ok('no page-level neighbourhood/pandal count line', pg.is_hidden('#filter-summary') and pg.text_content('#filter-summary')=='')
     ok('Pandals default = neighbourhood list (28)', n_items==28 and pg.is_hidden('#pandal-search-list'), n_items)
     first=pg.inner_text('#nhood-list li:first-child')
     ok('neighbourhood item shows count', 'pandal' in first, first)
@@ -232,6 +234,26 @@ with sync_playwright() as p:
         go(pg,'')
         small=pg.evaluate("""[...document.querySelectorAll('#tabbar a, #sos-fab, .bigbtn, #theme-btn')].filter(e=>e.offsetParent||e.id==='sos-fab').map(e=>{const r=e.getBoundingClientRect();return [e.id||e.className,r.width,r.height]}).filter(x=>x[1]<44||x[2]<44)""")
         ok(f'{theme} {w}px touch targets ≥44px', not small, small)
+        # Home secondary labels on one line
+        go(pg,'',300)
+        wraps=pg.evaluate("()=>[...document.querySelectorAll('.bigrow .bt')].map(e=>[e.textContent,e.getClientRects().length,Math.round(e.getBoundingClientRect().height)<=Math.round(parseFloat(getComputedStyle(e).lineHeight))+1,parseFloat(getComputedStyle(e).fontSize)])")
+        ok(f'{theme} {w}px "Parking & Walking" fits one line, font >=15px', all(x[2] and x[3]>=15 for x in wraps), wraps)
+        # End of content clears the SOS FAB and tab bar when scrolled to bottom
+        def last_card_clear(route,setup=None):
+            go(pg,route,450)
+            if setup: setup()
+            pg.evaluate("window.scrollTo(0,document.documentElement.scrollHeight)"); pg.wait_for_timeout(200)
+            return pg.evaluate("""()=>{const v=document.querySelector('.view:not([hidden])');const cards=[...v.querySelectorAll('.info-card,.pandal-card')].filter(c=>c.offsetParent);
+              if(!cards.length) return 'nocard';const c=cards[cards.length-1];const fab=document.querySelector('#sos-fab').getBoundingClientRect(),bar=document.querySelector('#tabbar').getBoundingClientRect();
+              const ov=(a,b)=>!(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top);
+              const parts=[...c.querySelectorAll('button,a,p,h3,span')].filter(e=>e.offsetParent);
+              const hit=parts.filter(e=>{const r=e.getBoundingClientRect();return ov(r,fab)||ov(r,bar)}).map(e=>e.textContent.trim().slice(0,30));
+              return hit.length?hit:null}""")
+        def tset():
+            pg.fill('#t-date','2026-10-17'); pg.dispatch_event('#t-date','change'); pg.fill('#t-time','19:30'); pg.dispatch_event('#t-time','change'); pg.wait_for_timeout(200)
+        for route,setup in [('parking/traffic',tset),('parking',None),('n/siliguri-town',None),('p/SG26-001',None),('facilities/pab',None)]:
+            res=last_card_clear(route,setup)
+            ok(f'{theme} {w}px #{route} last card text/buttons clear of SOS FAB + tab bar at bottom', res is None, res)
         # SOS sheet fully inside the viewport
         go(pg,''); pg.click('#sos-fab'); pg.wait_for_timeout(300)
         sb=pg.locator('#sos-sheet .sheet-inner').bounding_box()
