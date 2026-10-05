@@ -39,7 +39,7 @@
       var node = $('#brand-name');
       // Keep thin gold underline under "Puja" when the standard brand name is used.
       if (/^Siliguri Puja Guide$/.test(name)) {
-        node.innerHTML = 'Siliguri <span class="brand-puja">Puja</span> Guide';
+        node.innerHTML = 'Siliguri<br><span class="brand-puja">Puja</span> Guide';
       } else {
         node.textContent = name;
       }
