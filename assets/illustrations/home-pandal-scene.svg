@@ -1,118 +1,66 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 260" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 160" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
   <defs>
-    <linearGradient id="horizon" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#fbf5e6" stop-opacity="0"/>
-      <stop offset="25%" stop-color="#f5e0c4" stop-opacity=".55"/>
-      <stop offset="60%" stop-color="#e8b87a" stop-opacity=".75"/>
-      <stop offset="100%" stop-color="#d4924e" stop-opacity=".9"/>
+      <stop offset="35%" stop-color="#f5e4c8" stop-opacity=".45"/>
+      <stop offset="100%" stop-color="#e0b07a" stop-opacity=".88"/>
     </linearGradient>
-    <radialGradient id="archGlow" cx="50%" cy="40%" r="55%">
-      <stop offset="0%" stop-color="#ffe09a" stop-opacity=".85"/>
-      <stop offset="40%" stop-color="#e3a040" stop-opacity=".55"/>
-      <stop offset="100%" stop-color="#a03a18" stop-opacity=".2"/>
+    <radialGradient id="glow" cx="50%" cy="45%" r="50%">
+      <stop offset="0%" stop-color="#ffe09a" stop-opacity=".8"/>
+      <stop offset="55%" stop-color="#e09040" stop-opacity=".4"/>
+      <stop offset="100%" stop-color="#a03a18" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="archBody" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#e8a050"/>
-      <stop offset="100%" stop-color="#8c2e14"/>
-    </linearGradient>
   </defs>
-  <rect width="390" height="260" fill="url(#horizon)"/>
-  <!-- far skyline row (many small temples) -->
-  <g fill="#c9885c" opacity=".4">
-    <path d="M2 175h28l-3 35H5z"/><path d="M8 175l8-16 8 16"/>
-    <path d="M32 180h22l-2 30H34z"/><path d="M36 180l7-12 7 12"/>
-    <path d="M56 178h26l-3 32H59z"/><path d="M62 178l9-18 9 18"/>
-    <path d="M84 182h18l-2 28H86z"/><path d="M88 182l5-10 5 10"/>
-    <path d="M288 180h24l-2 30h-20z"/><path d="M294 180l6-14 6 14"/>
-    <path d="M314 176h28l-3 34h-22z"/><path d="M320 176l8-16 8 16"/>
-    <path d="M344 182h22l-2 28h-18z"/><path d="M348 182l7-12 7 12"/>
-    <path d="M368 178h22v32h-22z"/><path d="M372 178l7-14 7 14"/>
+  <rect width="390" height="160" fill="url(#fade)"/>
+  <!-- far row -->
+  <g fill="#c9885c" opacity=".42">
+    <path d="M4 105h26l-2 28H6z"/><path d="M10 105l7-12 7 12"/>
+    <path d="M34 108h22l-2 25H36z"/><path d="M38 108l7-11 7 11"/>
+    <path d="M58 106h24l-2 27H60z"/><path d="M64 106l8-14 8 14"/>
+    <path d="M286 106h24l-2 27h-20z"/><path d="M292 106l8-14 8 14"/>
+    <path d="M312 108h24l-2 25h-20z"/><path d="M318 108l7-11 7 11"/>
+    <path d="M338 105h28l-2 28h-24z"/><path d="M346 105l7-12 7 12"/>
+    <path d="M368 108h20v25h-20z"/><path d="M372 108l6-10 6 10"/>
   </g>
-  <!-- mid-back denser row -->
-  <g fill="#b86a3e" opacity=".55">
-    <path d="M0 185h40l-5 40H5z"/><path d="M10 185l10-22 10 22"/><rect x="16" y="198" width="8" height="12" fill="#f5e6d0" opacity=".25"/>
-    <path d="M42 190h36l-4 35H46z"/><path d="M50 190l12-24 12 24"/><rect x="56" y="202" width="10" height="14" fill="#f5e6d0" opacity=".25"/>
-    <path d="M80 188h32l-3 37H83z"/><path d="M88 188l10-20 10 20"/>
-    <path d="M278 188h36l-4 37h-28z"/><path d="M288 188l12-22 12 22"/><rect x="294" y="200" width="10" height="14" fill="#f5e6d0" opacity=".25"/>
-    <path d="M316 186h40l-5 39h-30z"/><path d="M326 186l12-24 12 24"/><rect x="332" y="200" width="10" height="14" fill="#f5e6d0" opacity=".25"/>
-    <path d="M358 190h32l-3 35h-26z"/><path d="M366 190l8-16 8 16"/>
+  <!-- mid row -->
+  <g fill="#b86a3e" opacity=".62">
+    <path d="M10 112h48l-4 32H14z"/><path d="M20 112l14-22 14 22"/>
+    <rect x="28" y="122" width="10" height="12" fill="#fbf5e6" opacity=".28"/>
+    <path d="M60 115h40l-3 29H63z"/><path d="M70 115l12-18 12 18"/>
+    <path d="M290 115h40l-3 29h-34z"/><path d="M300 115l12-18 12 18"/>
+    <path d="M332 112h48l-4 32h-40z"/><path d="M344 112l14-22 14 22"/>
+    <rect x="352" y="122" width="10" height="12" fill="#fbf5e6" opacity=".28"/>
   </g>
-  <!-- mid-front larger pandals flanking center -->
-  <g fill="#9a4528" opacity=".78">
-    <path d="M8 195h70l-8 48H16z"/>
-    <path d="M22 195l18-34 18 34"/>
-    <path d="M28 195l12-22 12 22" fill="#b85a32"/>
-    <rect x="34" y="210" width="16" height="22" rx="1" fill="#fbf5e6" opacity=".3"/>
-    <path d="M70 200h48l-5 43H75z"/>
-    <path d="M82 200l14-26 14 26"/>
-    <rect x="90" y="214" width="12" height="16" rx="1" fill="#fbf5e6" opacity=".28"/>
-    <!-- right flank -->
-    <path d="M272 200h48l-5 43h-38z"/>
-    <path d="M284 200l14-26 14 26"/>
-    <rect x="292" y="214" width="12" height="16" rx="1" fill="#fbf5e6" opacity=".28"/>
-    <path d="M312 195h70l-8 48h-54z"/>
-    <path d="M328 195l18-34 18 34"/>
-    <path d="M334 195l12-22 12 22" fill="#b85a32"/>
-    <rect x="340" y="210" width="16" height="22" rx="1" fill="#fbf5e6" opacity=".3"/>
+  <!-- trees -->
+  <g fill="#6e2a18" opacity=".5">
+    <ellipse cx="105" cy="138" rx="11" ry="14"/><rect x="102" y="140" width="5" height="12"/>
+    <ellipse cx="285" cy="138" rx="11" ry="14"/><rect x="282" y="140" width="5" height="12"/>
   </g>
-  <!-- trees / foliage silhouettes -->
-  <g fill="#6e2a18" opacity=".55">
-    <ellipse cx="108" cy="228" rx="14" ry="18"/>
-    <rect x="105" y="230" width="6" height="16"/>
-    <ellipse cx="282" cy="228" rx="14" ry="18"/>
-    <rect x="279" y="230" width="6" height="16"/>
-    <ellipse cx="48" cy="235" rx="10" ry="12"/>
-    <ellipse cx="342" cy="235" rx="10" ry="12"/>
-  </g>
-  <!-- CENTRAL glowing arch + Durga -->
-  <g transform="translate(138,72)">
-    <ellipse cx="57" cy="120" rx="78" ry="36" fill="url(#archGlow)"/>
-    <!-- outer glow rings -->
-    <ellipse cx="57" cy="70" rx="52" ry="58" fill="url(#archGlow)" opacity=".5"/>
-    <!-- steps -->
-    <path d="M8 118h98l-8 20H16z" fill="#7a2e16"/>
-    <path d="M16 138h82l-6 14H22z" fill="#5c2010"/>
-    <path d="M24 152h66l-4 10H28z" fill="#4a180c"/>
-    <!-- outer arch shell -->
-    <path d="M14 118V52c0-28 20-48 43-48s43 20 43 48v66" fill="url(#archBody)"/>
-    <!-- inner lit opening -->
-    <path d="M28 118V58c0-18 12-32 29-32s29 14 29 32v60" fill="url(#archGlow)"/>
-    <path d="M28 118V58c0-18 12-32 29-32s29 14 29 32v60" fill="none" stroke="#f0d78a" stroke-width="1.4" opacity=".85"/>
-    <!-- pillars -->
-    <rect x="10" y="52" width="14" height="66" fill="#8c3018"/>
-    <rect x="90" y="52" width="14" height="66" fill="#8c3018"/>
-    <rect x="10" y="48" width="14" height="6" fill="#e3c36f" opacity=".45"/>
-    <rect x="90" y="48" width="14" height="6" fill="#e3c36f" opacity=".45"/>
-    <!-- ornamental top -->
-    <path d="M42 12l15-14 15 14" fill="#e3c36f" opacity=".55"/>
-    <circle cx="57" cy="18" r="5" fill="#ffe09a" opacity=".8"/>
-    <!-- Durga silhouette -->
+  <!-- central gateway -->
+  <g transform="translate(145,28)">
+    <ellipse cx="50" cy="90" rx="62" ry="28" fill="url(#glow)"/>
+    <path d="M10 95h80l-6 14H16z" fill="#7a2e16"/>
+    <path d="M16 109h68l-4 10H20z" fill="#5c2010"/>
+    <path d="M16 95V42c0-20 14-34 34-34s34 14 34 34v53" fill="#c46838"/>
+    <path d="M26 95V48c0-14 10-24 24-24s24 10 24 24v47" fill="url(#glow)"/>
+    <path d="M26 95V48c0-14 10-24 24-24s24 10 24 24v47" fill="none" stroke="#f0d78a" stroke-width="1.2" opacity=".85"/>
+    <rect x="12" y="42" width="10" height="53" fill="#8c3018"/>
+    <rect x="78" y="42" width="10" height="53" fill="#8c3018"/>
+    <circle cx="50" cy="28" r="4" fill="#ffe09a" opacity=".85"/>
     <g fill="#3b0a14" opacity=".9">
-      <ellipse cx="57" cy="62" rx="11" ry="13"/>
-      <path d="M57 50l-10-16h5l5 10 5-10h5z"/>
-      <path d="M57 48l-4-8 4 3 4-3z" fill="#e3c36f" opacity=".5"/>
-      <path d="M38 88c6-16 12-22 19-22s13 6 19 22l-8 28H46z"/>
-      <!-- arms -->
-      <path d="M30 78l16 8M84 78L68 86"/>
-      <path d="M34 72l12 14M80 72L68 86"/>
-      <path d="M28 84l14 4M86 84l-14 4"/>
+      <ellipse cx="50" cy="52" rx="8" ry="10"/>
+      <path d="M50 42l-7-12h3.5l3.5 7 3.5-7H57z"/>
+      <path d="M36 72c4-12 9-16 14-16s10 4 14 16l-6 22H42z"/>
+      <path d="M28 66l12 6M72 66L60 72"/>
     </g>
   </g>
-  <!-- curved path -->
-  <path d="M95 250C145 205 245 205 295 250" fill="none" stroke="#c48a50" stroke-width="22" opacity=".5"/>
-  <path d="M95 250C145 205 245 205 295 250" fill="none" stroke="#f3e2c4" stroke-width="11" opacity=".75"/>
-  <path d="M95 250C145 205 245 205 295 250" fill="none" stroke="#e8c898" stroke-width="2" opacity=".6" stroke-dasharray="4 8"/>
-  <!-- streetlights -->
-  <g>
-    <path d="M118 248v-42" stroke="#3b0a14" stroke-width="2"/>
-    <path d="M112 206h12" stroke="#3b0a14" stroke-width="2.5"/>
-    <circle cx="118" cy="200" r="5" fill="#ffe09a" opacity=".95"/>
-    <circle cx="118" cy="200" r="9" fill="#e3c36f" opacity=".25"/>
-    <path d="M272 248v-42" stroke="#3b0a14" stroke-width="2"/>
-    <path d="M266 206h12" stroke="#3b0a14" stroke-width="2.5"/>
-    <circle cx="272" cy="200" r="5" fill="#ffe09a" opacity=".95"/>
-    <circle cx="272" cy="200" r="9" fill="#e3c36f" opacity=".25"/>
+  <!-- path -->
+  <path d="M110 152C150 125 240 125 280 152" fill="none" stroke="#c48a50" stroke-width="16" opacity=".45"/>
+  <path d="M110 152C150 125 240 125 280 152" fill="none" stroke="#f3e2c4" stroke-width="8" opacity=".7"/>
+  <!-- lights -->
+  <g stroke="#3b0a14" stroke-width="1.6" fill="#ffe09a">
+    <path d="M128 150v-28"/><path d="M124 122h8" stroke-width="2"/><circle cx="128" cy="118" r="3.5"/>
+    <path d="M262 150v-28"/><path d="M258 122h8" stroke-width="2"/><circle cx="262" cy="118" r="3.5"/>
   </g>
-  <!-- ground -->
-  <path d="M0 248h390v12H0z" fill="#c99258" opacity=".55"/>
+  <path d="M0 152h390v8H0z" fill="#c99258" opacity=".45"/>
 </svg>
