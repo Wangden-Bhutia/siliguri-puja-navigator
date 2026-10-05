@@ -33,12 +33,18 @@
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8v.01"/></symbol>
 </svg>
 
-<header class="mast" id="mast">
+<header class="mast mast-festive" id="mast">
+  <div class="mast-art" aria-hidden="true">
+    <img class="mast-art-img" src="assets/illustrations/mast-art.svg" alt="" width="200" height="160" decoding="async">
+  </div>
+  <div class="mast-mandala" aria-hidden="true"></div>
   <div class="wrap mast-inner">
     <a href="#/" class="brand" id="brand-link">
-      <span class="brand-name" id="brand-name">Siliguri Puja Guide</span>
+      <span class="brand-name" id="brand-name">Siliguri <span class="brand-puja">Puja</span> Guide</span>
       <span class="brand-tag" id="brand-tag">Find pandals. Plan your route. Travel safely.</span>
     </a>
     <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" title="Night mode">
@@ -53,35 +59,46 @@
     <div class="idstrip-logos" id="idstrip-logos"></div>
     <p class="idstrip-cap" id="idstrip-cap"></p>
   </div>
+  <div class="mast-wave" aria-hidden="true">
+    <svg viewBox="0 0 720 36" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 22C48 8 96 2 144 6c48 4 72 16 120 18 48 2 72-8 120-12 48-4 96 2 144 8 48 6 96 8 144 4 24-2 36-4 48-6v18H0z" fill="currentColor" opacity=".55"/><path d="M0 26C60 10 120 4 180 10c60 6 90 18 150 16s90-14 150-16c60-2 120 8 180 12 30 2 45 2 60 0v14H0z" fill="currentColor"/></svg>
+  </div>
 </header>
 
 <div id="status-banners" class="wrap banners" aria-live="polite"></div>
 
 <main id="main" class="wrap">
   <!-- HOME -->
-  <section id="view-home" class="view" data-view="home" hidden>
+  <section id="view-home" class="view view-home-festive" data-view="home" hidden>
     <h1 class="sr-only">Home</h1>
     <div class="bigactions">
       <a class="bigbtn bigbtn-primary" href="#/pandals" data-go="pandals">
         <svg class="ic bi" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg>
         <span class="bt">Find a Pandal</span>
+        <svg class="ic chev" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg>
       </a>
       <div class="bigrow">
-        <a class="bigbtn" href="#/parking" data-go="parking">
+        <a class="bigbtn bigbtn-secondary" href="#/parking" data-go="parking">
           <svg class="ic bi" aria-hidden="true" focusable="false"><use href="#i-car"/></svg>
           <span class="bt">Parking &amp; Walking</span>
+          <svg class="ic chev" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg>
         </a>
-        <a class="bigbtn" href="#/parking/traffic" data-go="traffic">
+        <a class="bigbtn bigbtn-secondary" href="#/parking/traffic" data-go="traffic">
           <svg class="ic bi" aria-hidden="true" focusable="false"><use href="#i-traffic"/></svg>
           <span class="bt">Traffic</span>
+          <svg class="ic chev" aria-hidden="true" focusable="false"><use href="#i-chev"/></svg>
         </a>
       </div>
     </div>
-    <div class="freshness" id="home-fresh"></div>
-    <aside class="warn-card" role="note">
+    <div class="freshness-row">
+      <div class="freshness" id="home-fresh"></div>
+    </div>
+    <aside class="warn-card warn-card-home" role="note">
       <span class="warn-ic" aria-hidden="true">&#9888;</span>
       <p>Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.</p>
     </aside>
+    <div class="home-scene" aria-hidden="true">
+      <img class="home-scene-img" src="assets/illustrations/home-pandal-scene.svg" alt="" width="390" height="220" decoding="async">
+    </div>
   </section>
 
   <!-- PANDALS: neighbourhood browse -->
