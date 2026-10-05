@@ -25,7 +25,8 @@ const approved = ALL.filter(x => x.verificationStatus === 'approved').length;
 const pending = r.pandals.filter(x => x.verificationStatus === 'pendingVerification').length;
 console.log('File: ' + file);
 console.log('Dataset ' + r.meta.datasetVersion + ' (schema ' + r.meta.schemaVersion + '), last updated ' + L.fmtDateTime(r.meta.lastUpdatedMs) + (r.meta.isDemoDataset ? ' [DEMO DATASET]' : ''));
-console.log('Valid records: ' + r.pandals.length + ' pandals (' + pending + ' pending verification), ' +
+var locOk = r.pandals.filter(function (p) { return L.isLocationConfirmed(p); }).length;
+console.log('Valid records: ' + r.pandals.length + ' pandals (' + locOk + ' location confirmed, ' + pending + ' ops pending verification), ' +
   r.neighbourhoods.length + ' neighbourhoods, ' + r.parking.length + ' parking/drop, ' +
   r.walkingRoutes.length + ' walking routes, ' + r.traffic.length + ' traffic, ' +
   r.facilities.length + ' facilities (' + approved + ' approved, ' + demo + ' demo); skipped: ' + r.skipped.length);

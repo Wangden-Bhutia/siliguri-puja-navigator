@@ -3,9 +3,9 @@
 **Find pandals. Plan your route. Travel safely.**
 A mobile-first, installable web app (PWA) with a pandal directory, a map, parking, and *published* traffic-restriction schedules for Siliguri during the puja season.
 
-> **Important:** the bundled `data/puja-data.json` is a **DEMO dataset** ("Demo data – locations and traffic orders are not verified"). It contains no real pandals or orders. Replace it with verified records before public use (see [docs/ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md)).
+> **Data status (2026):** all **83 pandal locations are confirmed** and usable for directions. **2026 parking is not finalised.** **2026 traffic orders are not finalised.** DEMO parking/traffic/facility cards are samples only (labelled DEMO — NOT VERIFIED). Official branding stays **disabled** until written approval (`officialBrandingApproved = false`).
 >
-> The app **does not show live traffic** and never says a road is open. Schedules are copied from published information. *Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.*
+> The app **does not show live traffic** and never says a road is open. Historical 2024/2025 traffic stays in the data file for audit but is hidden from the visitor feed. *Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.*
 
 Live site (after deployment): https://wangden-bhutia.github.io/siliguri-puja-navigator/
 
