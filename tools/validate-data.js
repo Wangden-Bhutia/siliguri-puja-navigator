@@ -18,14 +18,15 @@ let problems = 0;
 r.skipped.forEach(s => { problems++; console.error('SKIPPED ' + s.kind + ' "' + s.id + '": ' + s.reasons.join('; ')); });
 r.notices.forEach(n => console.warn('note: ' + n));
 
-const pandalIds = new Set(r.pandals.map(p => p.id)), rIds = new Set(r.restrictions.map(x => x.id));
+const rIds = new Set(r.restrictions.map(x => x.id));
 r.pandals.forEach(p => (p.restrictionIds || []).forEach(id => { if (!rIds.has(id)) console.warn('note: pandal ' + p.id + ' refers to unknown restriction "' + id + '"'); }));
 
-const demo = [].concat(r.pandals, r.parking, r.restrictions).filter(x => x.demo).length;
-const verified = [].concat(r.pandals, r.parking, r.restrictions).filter(x => x.verified).length;
+const ALL = [].concat(r.pandals, r.parking, r.accessPoints, r.restrictions, r.walkingRoutes, r.diversionPoints, r.facilities);
+const demo = ALL.filter(x => x.demo).length;
+const verified = ALL.filter(x => x.verified).length;
 console.log('File: ' + file);
 console.log('Dataset ' + r.meta.datasetVersion + ', last updated ' + L.fmtDateTime(r.meta.lastUpdatedMs) + (r.meta.isDemoDataset ? ' [DEMO DATASET]' : ''));
-console.log('Valid records: ' + r.pandals.length + ' pandals, ' + r.parking.length + ' parking, ' + r.restrictions.length + ' restrictions (' + verified + ' verified, ' + demo + ' demo); drafts hidden: ' + r.draftCount + '; skipped: ' + r.skipped.length);
+console.log('Valid records: ' + r.pandals.length + ' pandals, ' + r.parking.length + ' parking, ' + r.accessPoints.length + ' access points, ' + r.walkingRoutes.length + ' walking routes, ' + r.restrictions.length + ' restrictions, ' + r.diversionPoints.length + ' diversion points, ' + r.facilities.length + ' facilities (' + verified + ' verified, ' + demo + ' demo); drafts hidden: ' + r.draftCount + '; skipped: ' + r.skipped.length);
 if (!r.meta.isDemoDataset && demo) console.warn('WARNING: meta.isDemoDataset is false but ' + demo + ' demo record(s) are present.');
 if (r.meta.isDemoDataset && verified) console.warn('WARNING: meta.isDemoDataset is true but verified records are present.');
 const now = Date.now();

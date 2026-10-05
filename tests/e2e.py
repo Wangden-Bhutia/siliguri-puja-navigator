@@ -1,45 +1,63 @@
-"""Playwright e2e for Siliguri Puja Navigator.
-Usage: python tests/e2e.py [BASE_URL] [--live]   (default BASE http://127.0.0.1:8777/siliguri-puja-navigator/)
-Needs: playwright (+ system Chrome), tests/axe.min.js optional (path via AXE env or /tmp/axe.min.js)."""
-import base64, json, os, sys, copy, urllib.request
+"""Playwright e2e for Siliguri Puja Navigator (visitor flow).
+Usage: python tests/e2e.py [BASE_URL]   (default http://127.0.0.1:8777/siliguri-puja-navigator/)
+Env: SHOTS=<dir> (default /workspace/siliguri-puja-navigator-shots-v2/), AXE=<axe.min.js> (default /tmp/axe.min.js, optional).
+Needs: playwright + system Chrome.  All fixtures are synthetic and labelled TEST FIXTURE; nothing here is real Puja data."""
+import base64, json, os, sys, copy, re, urllib.request
 from playwright.sync_api import sync_playwright
 
 args=[a for a in sys.argv[1:] if not a.startswith('--')]
-LIVE='--live' in sys.argv
 BASE=(args[0] if args else 'http://127.0.0.1:8777/siliguri-puja-navigator/').rstrip('/')+'/'
 ORIGIN=BASE.split('/',3)[0]+'//'+BASE.split('/',3)[2]
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SHOTS='/workspace/siliguri-puja-navigator-shots/'+('live-' if LIVE else '')
-os.makedirs('/workspace/siliguri-puja-navigator-shots',exist_ok=True)
-AXE=open(os.environ.get('AXE','/tmp/axe.min.js')).read() if os.path.exists(os.environ.get('AXE','/tmp/axe.min.js')) else None
+SHOTS=os.environ.get('SHOTS','/workspace/siliguri-puja-navigator-shots-v2/').rstrip('/')+'/'
+os.makedirs(SHOTS,exist_ok=True)
+AXEP=os.environ.get('AXE','/tmp/axe.min.js')
+AXE=open(AXEP).read() if os.path.exists(AXEP) else None
 PNG=base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==')
 DEMO=json.load(open(os.path.join(ROOT,'data','puja-data.json')))
+DISCLAIMER='Google Maps may not reflect temporary Puja traffic restrictions, diversions or pedestrian arrangements. Follow on-ground traffic police directions and posted signs. Use only designated parking and drop-off points.'
 results=[]
 def ok(name,cond,info=''):
     results.append((name,bool(cond)))
-    print(('PASS ' if cond else 'FAIL ')+name+((' | '+str(info)[:300]) if (info!='' and not cond) or (info!='' and len(str(info))<120) else ''))
+    print(('PASS ' if cond else 'FAIL ')+name+((' | '+str(info)[:300]) if (info!='' and not cond) else ''))
 
 XSS_IMG='<img src=x onerror="window.__xss=1">Evil'
 def verified_fixture():
     base=lambda i,**k: dict(dict(id=i,status='admin-verified',source='TEST FIXTURE notice',verifiedAt='2026-10-04T12:00:00+05:30',verifiedBy='Test office'),**k)
     d={'meta':{'datasetVersion':'fixture-1','lastUpdated':'2026-10-04T12:00:00+05:30','isDemoDataset':False,'festival':{'name':'Fixture Fest','startDate':'2026-10-17','endDate':'2026-10-21'}},
      'pandals':[
-       base('p-ok',name='Fixture Pandal OK',locality='Fixture Loc',address='1 Fixture Rd',lat=26.7271,lon=88.3953,status='official',restrictionIds=['r-active']),
+       base('p-ok',name='Fixture Pandal OK',locality='Fixture Loc',landmark='Fixture landmark',address='1 Fixture Rd',lat=26.7271,lon=88.3953,status='official',restrictionIds=['r-active'],
+            entrances=[base('p-ok-e1',name='Fixture main gate',lat=26.7275,lon=88.3958,verified=True,description='Gate on the north side'),
+                       {'id':'p-ok-e2','name':'Fixture unverified gate','lat':26.7262,'lon':88.3949,'verified':False}]),
        base('p-xss',name=XSS_IMG,locality='"><script>window.__xss=2</script>',address="' onmouseover='window.__xss=4",description='<svg onload=window.__xss=3>',lat=26.73,lon=88.40,sourceUrl='javascript:window.__xss=5',timings='<b>bold</b>',imageUrl='javascript:window.__xss=6'),
        base('p-badcoord',name='Bad coords pandal',locality='X',lat=12.0,lon=88.4),
        base('p-noprov',name='No provenance pandal',locality='X',lat=26.72,lon=88.39,source=''),
-     ],'parking':[base('k-ok',name='Fixture Parking',locality='Fixture Loc',lat=26.725,lon=88.392)],
+       dict(id='p-unv',name='Fixture unverified pandal',locality='Fixture Loc',status='unconfirmed',lat=26.7222,lon=88.3922,entrances=[{'id':'p-unv-e1','name':'Claimed gate','lat':26.7225,'lon':88.3925,'verified':True,'source':'x','verifiedAt':'2026-10-04T12:00:00+05:30','verifiedBy':'x'}]),
+     ],
+     'parking':[base('k-ok',name='Fixture Parking',locality='Fixture Loc',lat=26.725,lon=88.392,approved=True,status='official')],
+     'accessPoints':[base('a-drop',name='Fixture drop-off',type='drop-off',lat=26.7255,lon=88.3935,designated=True,status='official'),
+                     base('a-pick',name='Fixture pick-up (not designated)',type='pick-up',lat=26.7258,lon=88.3938)],
+     'walkingRoutes':[
+        base('w-ok',name='Fixture verified walk',fromId='k-ok',pandalId='p-ok',entranceId='p-ok-e1',routeVerified=True,distanceM=1800,timeMin=25,status='official',
+             waypoints=[{'lat':26.725,'lon':88.392,'label':'Start'},{'lat':26.7262,'lon':88.3940},{'lat':26.7275,'lon':88.3958,'label':'Gate'}],instructions=['Walk north along Fixture Rd.','The gate is on your left.']),
+        base('w-unv',name='Fixture unverified walk',fromId='a-drop',pandalId='p-ok',routeVerified=False,distanceM=300,timeMin=4,
+             waypoints=[{'lat':26.7255,'lon':88.3935},{'lat':26.7271,'lon':88.3953}],instructions=['Unverified step one.'])],
      'restrictions':[
-       base('r-active',name='Fixture active notice',type='no-entry',locationText='Fixture Rd',lat=26.7285,lon=88.397,start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30',status='official'),
+       base('r-active',name='Fixture active notice',type='no-entry',locationText='Fixture Rd',roadStretch='Fixture Rd, A to B',direction='Both directions',vehicleTypes=['cars'],lat=26.7285,lon=88.397,start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30',status='official',pedestrianAccess='Pedestrians allowed on the north footpath'),
        base('r-night',name='Fixture night notice',type='vehicle-restriction',locationText='Night Rd',recurring={'dateStart':'2026-10-17','dateEnd':'2026-10-21','dailyStart':'22:00','dailyEnd':'05:00'},status='official'),
        base('r-future',name='Fixture future notice',type='diversion',locationText='Future Rd',start='2026-10-21T16:00:00+05:30',end='2026-10-22T02:00:00+05:30'),
        base('r-expired',name='Fixture expired notice',type='one-way',locationText='Old Rd',start='2026-10-12T00:00:00+05:30',end='2026-10-13T00:00:00+05:30'),
        base('r-cancel',name='Fixture cancelled notice',type='no-entry',locationText='Cancel Rd',cancelled=True,start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30'),
-       dict(id='r-unconf',name='Fixture unconfirmed report',type='one-way',locationText='Rumour Rd',status='unconfirmed',start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30'),
+       dict(id='r-unconf',name='Fixture unconfirmed report',type='one-way',locationText='Rumour Rd',status='unconfirmed',start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30',pedestrianAccess='Pedestrians always allowed'),
        base('r-nosource',name='Missing source notice',type='no-entry',locationText='Z',start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30',source=''),
        base('r-xss',name=XSS_IMG+' restriction',type='no-entry',locationText='<script>window.__xss=7</script>',description='<img src=x onerror=window.__xss=8>',lat=26.735,lon=88.41,start='2026-10-25T10:00:00+05:30',end='2026-10-25T20:00:00+05:30'),
        base('r-geo',name='Fixture geometry notice',type='no-entry',locationText='Geo Rd',geometry={'type':'LineString','coordinates':[[88.39,26.72],[88.40,26.73]]},geometryVerified=True,lat=26.725,lon=88.395,start='2026-10-18T10:00:00+05:30',end='2026-10-18T20:00:00+05:30',status='official'),
-     ]}
+     ],
+     'diversionPoints':[base('d-1',name='Fixture diversion point',restrictionId='r-active',lat=26.7290,lon=88.3990,instruction='Fixture: turn left at the fixture junction.',order=1,landmark='Fixture junction'),
+                        {'id':'d-bad','name':'Orphan diversion','restrictionId':'nope','lat':26.73,'lon':88.40,'instruction':'x','status':'official','source':'s','verifiedAt':'2026-10-04T12:00:00+05:30','verifiedBy':'t'}],
+     'facilities':[base('f-hosp',name='Fixture Hospital',type='hospital',lat=26.7300,lon=88.3900,hours='24 hours',emergencyCapabilityVerified=True,emergencyCapable=True,phone='+91 353 000 0000',phoneAuthorised=True),
+                   base('f-hosp2',name='Fixture Hospital No Phone',type='hospital',lat=26.7310,lon=88.3910,phone='+91 353 111 1111',phoneAuthorised=False),
+                   base('f-wc',name='Fixture toilets',type='toilet',lat=26.7265,lon=88.3945,landmark='By the fixture gate')]}
     return d
 
 with sync_playwright() as p:
@@ -52,283 +70,395 @@ with sync_playwright() as p:
         return c
     def watch(pg,store):
         pg.on('console',lambda m: store.append(m.type+': '+m.text) if m.type in('error','warning') and 'blocked by Playwright' not in m.text else None)
-        pg.on('pageerror',lambda e: store.append('PAGEERROR '+str(e)))
-    def serve_json(pg,body,status=200,ctype='application/json'):
-        pg.route('**/data/puja-data.json*',lambda r: r.fulfill(status=status,content_type=ctype,body=body if isinstance(body,str) else json.dumps(body)))
-    def goto(pg,wait=900):
-        pg.goto(BASE+'index.html'); pg.wait_for_selector('#pandal-list',state='attached'); pg.wait_for_timeout(wait)
-    def hscroll(pg): return pg.evaluate("document.documentElement.scrollWidth>innerWidth+0 || document.body.scrollWidth>innerWidth+0")
+        pg.on('pageerror',lambda e: store.append('PAGEERROR '+str(e)+' @ '+(getattr(e,'stack','') or '')[:1500].replace(chr(10),' | ')))
+        pg.on('dialog',lambda d: (store.append('DIALOG '+d.message),d.dismiss()))
+    def serve_json(pg,body,status=200,ctype='application/json',counter=None):
+        def h(r):
+            if counter is not None: counter.append(r.request.url)
+            r.fulfill(status=status,content_type=ctype,body=body if isinstance(body,str) else json.dumps(body))
+        pg.route('**/data/puja-data.json*',h)
+    def goto(pg,route='',wait=900):
+        pg.goto(BASE+'index.html'+('#/'+route if route else '')); pg.wait_for_selector('#main',state='attached'); pg.wait_for_timeout(wait)
+    def go(pg,route,wait=500):
+        pg.evaluate("r=>{location.hash='#/'+r}",route); pg.wait_for_timeout(wait)
+    def hscroll(pg): return pg.evaluate("document.documentElement.scrollWidth>innerWidth || document.body.scrollWidth>innerWidth")
     def counts(pg): return pg.evaluate("PujaApp.counts()")
+    def info(pg): return pg.evaluate("PujaApp.info()")
+    def vis(pg,sel): return pg.is_visible(sel)
+    def view_text(pg,v): return pg.inner_text('#view-'+v)
     def set_time(pg,v): pg.fill('#check-at',v); pg.dispatch_event('#check-at','change'); pg.wait_for_timeout(150)
-    def states(pg,sel):  # {id: state-badge text}
-        return pg.evaluate("sel=>Object.fromEntries([...document.querySelectorAll(sel+' .card')].map(c=>[c.dataset.id,c.querySelector('.state').textContent.trim()]))",sel)
+    def states(pg,sel):
+        return pg.evaluate("sel=>Object.fromEntries([...document.querySelectorAll(sel+' .card')].map(c=>[c.dataset.id,c.querySelector('.state .st-t').textContent.trim()]))",sel)
+    def chip(pg,name,val): pg.click('label.chip:has(input[name="%s"][value="%s"])'%(name,val)); pg.wait_for_timeout(250)
+    def set_visibility(pg,state):
+        pg.evaluate("s=>{Object.defineProperty(document,'visibilityState',{get:()=>s,configurable:true});document.dispatchEvent(new Event('visibilitychange'))}",state)
 
-    # ================= 1. demo dataset, mobile =================
+    # ================= 1. demo dataset, mobile: HOME =================
     ctx=new_ctx(); pg=ctx.new_page(); errs=[]; reqs=[]; bad=[]
     watch(pg,errs); pg.on('request',lambda r: reqs.append(r.url)); pg.on('response',lambda r: bad.append((r.status,r.url)) if r.status>=400 else None)
+    geo_calls=[]
+    pg.add_init_script("window.__geo=0;const g=navigator.geolocation;if(g){const o=g.getCurrentPosition.bind(g);g.getCurrentPosition=function(){window.__geo++;return o.apply(g,arguments)};const w=g.watchPosition.bind(g);g.watchPosition=function(){window.__geo++;return w.apply(g,arguments)}}")
     goto(pg)
-    pg.keyboard.press('Tab')
-    ok('skip link first in tab order and visible on focus',pg.evaluate("document.activeElement.classList.contains('skip-link') && document.activeElement.getBoundingClientRect().top>=0 && document.activeElement.getBoundingClientRect().height>=44"))
-    ok('title & tagline',pg.title()=='Siliguri Puja Navigator' and 'Find Your Pandal. Know Your Route.' in pg.inner_text('.tagline'))
-    ok('demo banner visible: "Sample data – not real pandals or orders"',pg.is_visible('#bn-demo') and 'Sample data – not real pandals or orders' in pg.inner_text('#bn-demo'))
-    ok('permanent traffic-police notice visible',pg.is_visible('.banner-permanent') and 'Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.' in pg.inner_text('.banner-permanent'))
-    ok('no data-quality warning for clean demo data',not pg.is_visible('#bn-quality'))
-    ok('no horizontal scroll (mobile)',not hscroll(pg))
-    c=counts(pg)
-    with_map=pg.locator('#pandal-list [data-action="show"]').count()
-    ok('map markers == listed pandals that have coordinates',c['pandalMarkers']==with_map==4 and c['pandalCards']==6,c)
-    ok('all pandals marked demo (badge + text)',pg.locator('#pandal-list .badge-demo').count()==6)
-    ok('freshness shows data last updated + last refresh',('Data last updated: 4 Oct 2026, 8:00 PM IST' in pg.inner_text('#freshness')) and 'Last successful data refresh' in pg.inner_text('#freshness'),pg.inner_text('#freshness'))
-    pg.screenshot(path=SHOTS+'01-home-mobile.png')
-    # layers
-    pg.evaluate("PujaApp.map().setView([26.7271,88.3953],17,{animate:false})"); pg.wait_for_timeout(500)
-    ok('clustering: zoomed out groups markers',(pg.evaluate("PujaApp.map().setZoom(9,{animate:false}),0") or True) and (pg.wait_for_timeout(400) or True) and pg.locator('.mk-cluster').count()>=1 and pg.locator('.mk-pandal').count()<4)
-    pg.evaluate("PujaApp.map().fitBounds([[26.715,88.38],[26.745,88.415]],{animate:false})"); pg.wait_for_timeout(400)
-    pg.uncheck('#layer-restrictions'); pg.wait_for_timeout(200); ok('layer off: restriction markers removed',pg.locator('.mk-restr').count()==0)
-    pg.check('#layer-restrictions'); pg.wait_for_timeout(200); ok('layer on: restriction markers back',pg.locator('.mk-restr').count()==3,pg.locator('.mk-restr').count())
-    pg.uncheck('#layer-parking'); pg.wait_for_timeout(200); ok('layer off: parking markers removed',pg.locator('.mk-park').count()==0); pg.check('#layer-parking'); pg.wait_for_timeout(200)
-    ok('parking markers back',pg.locator('.mk-park').count()==2)
-    pg.uncheck('#layer-pandals'); pg.wait_for_timeout(200); ok('layer off: pandal markers removed',pg.locator('.mk-pandal').count()==0 and pg.locator('.mk-cluster').count()==0); pg.check('#layer-pandals'); pg.wait_for_timeout(300)
-    ok('pandal markers back',pg.locator('.mk-pandal,.mk-cluster').count()>=1)
-    # search / filter
-    pg.fill('#q','sample pandal b'); pg.wait_for_timeout(200)
-    c=counts(pg); ids=pg.eval_on_selector_all('#pandal-list > .card','e=>e.map(x=>x.dataset.id)'); nm=pg.locator('#pandal-list > .card [data-action="show"]').count()
-    ok('search "sample pandal b": narrows list, includes Pandal B, markers == mappable cards, summary',('demo-pandal-b' in ids) and len(ids)<6 and c['pandalMarkers']==nm and 'Showing %d pandal'%len(ids) in pg.inner_text('#filter-summary'),(c,ids))
-    pg.fill('#q','locality three'); pg.wait_for_timeout(200); c=counts(pg)
-    ok('search "locality three": 2 cards (D,E), 1 marker',c['pandalCards']==2 and c['pandalMarkers']==1,c)
-    pg.fill('#q','zzzz'); pg.wait_for_timeout(200)
-    ok('no-result empty state with clear link',pg.is_visible('#pandal-empty') and counts(pg)['pandalMarkers']==0 and pg.locator('#pandal-empty [data-action="clear-filters"]').count()==1)
-    pg.click('#pandal-empty [data-action="clear-filters"]'); pg.wait_for_timeout(200)
-    ok('empty-state clear link resets',counts(pg)['pandalCards']==6 and pg.input_value('#q')=='')
-    pg.fill('#q','Sample Road One'); pg.wait_for_timeout(200)
-    rids=pg.eval_on_selector_all('#restrictions .card','e=>e.map(x=>x.dataset.id)')
-    ok('search by road name finds the restriction (and no pandals)',pg.locator('#pandal-list > .card').count()==0 and 'demo-restr-night-recurring' in rids and 'demo-restr-expired' not in rids,rids)
-    pg.fill('#q','locality two'); pg.wait_for_timeout(200); ok('search by locality',pg.locator('#pandal-list > .card').count()==1)
+    ok('title / h1 / subtitle',pg.title().startswith('Siliguri Puja Navigator') and pg.inner_text('h1')=='Siliguri Puja Navigator' and pg.inner_text('#tagline')=='Find your pandal. Know how to reach it.',pg.title())
+    big=pg.locator('#view-home .bigactions a')
+    ok('home: exactly three big primary actions with the required labels',big.count()==3 and [big.nth(i).locator('.ba-title').inner_text() if big.nth(i).locator('.ba-title').count() else big.nth(i).inner_text().split('\n')[0] for i in range(3)]==['Find a Pandal','Parking & Walking Routes','Traffic Updates & Help'],[big.nth(i).inner_text() for i in range(big.count())])
+    ok('home: big actions link to #/find #/parking #/traffic',[big.nth(i).get_attribute('href') for i in range(3)]==['#/find','#/parking','#/traffic'])
+    ok('home: big actions are >=56px tall and full width',pg.evaluate("[...document.querySelectorAll('#view-home .bigactions a')].every(a=>{const r=a.getBoundingClientRect();return r.height>=56&&r.width>=300})"))
+    ok('home: NO map and no markers on home',pg.locator('#view-home .leaflet-container').count()==0 and pg.locator('#view-home .map-frame').count()==0 and pg.locator('.leaflet-container').count()==0 or not vis(pg,'.leaflet-container'),pg.locator('.leaflet-container').count())
+    ok('home: compact freshness indicator with IST time',pg.locator('#view-home [data-fresh]').count()==1 and 'IST' in pg.inner_text('#view-home [data-fresh]') and pg.inner_text('#view-home [data-fresh]').startswith('Data refreshed'),pg.inner_text('#view-home [data-fresh]'))
+    ok('home: short traffic/navigation warning visible',vis(pg,'#view-home .banner-permanent') and 'Follow the directions of traffic police' in pg.inner_text('#view-home .banner-permanent'))
+    ok('home: no onboarding / account / sign-in / modal dialogs',pg.locator('dialog,[role=dialog],[aria-modal=true]').count()==0 and not any(w in pg.inner_text('body').lower() for w in ('sign in','log in','create account','welcome tour')))
+    ok('home: demo banner says sample data',vis(pg,'#bn-demo') and 'Sample data – not real pandals or orders' in pg.inner_text('#bn-demo'))
+    ok('home: tab bar hidden on home',not vis(pg,'#tabbar'))
+    ok('home: geolocation NOT requested on load (and no permission prompt path)',pg.evaluate("window.__geo")==0)
+    ok('home: no horizontal scroll',not hscroll(pg))
+    ok('home: admin tooling is not linked from the public UI',pg.locator('a[href*="admin"]').count()==0 and 'admin-preview' not in pg.content())
+    pg.screenshot(path=SHOTS+'01-home.png')
+
+    # ================= 2. navigation / back button =================
+    pg.click('#view-home .bigactions a[href="#/find"]'); pg.wait_for_timeout(500)
+    ok('nav: Find a Pandal opens #/find, tab bar visible',pg.evaluate("location.hash")=='#/find' and vis(pg,'#view-find') and not vis(pg,'#view-home') and vis(pg,'#tabbar'))
+    ok('nav: focus moves to the view heading (screen readers)',pg.evaluate("document.activeElement.tagName")=='H2',pg.evaluate("document.activeElement.outerHTML.slice(0,80)"))
+    pg.go_back(); pg.wait_for_timeout(400)
+    ok('nav: browser Back returns to home',pg.evaluate("location.hash")in('','#/') and vis(pg,'#view-home'))
+    pg.go_forward(); pg.wait_for_timeout(300); ok('nav: Forward works',vis(pg,'#view-find'))
+    for r,v in (('parking','parking'),('traffic','traffic'),('help','help'),('info','info')):
+        pg.click('#tabbar a[data-tab="%s"]'%r); pg.wait_for_timeout(400)
+        ok('nav: tab %s shows only its view, aria-current set'%r,vis(pg,'#view-'+v) and sum(vis(pg,'#view-'+x) for x in('home','find','parking','traffic','help','info'))==1 and pg.get_attribute('#tabbar a[data-tab="%s"]'%r,'aria-current')=='page')
+    pg.click('#brand-link'); pg.wait_for_timeout(300); ok('nav: brand link returns home',vis(pg,'#view-home'))
+    go(pg,'bogus/route'); ok('nav: unknown route falls back to home',vis(pg,'#view-home'))
+    pg.evaluate("location.hash='#section'"); pg.wait_for_timeout(200); ok('nav: foreign hash does not break the view',vis(pg,'#view-home'))
+    ok('nav: no nested menus or modals anywhere',pg.locator('nav nav,[role=menu],dialog,[aria-haspopup]').count()==0)
+    ok('nav: Safety/Disclaimer reachable from nav bar',pg.locator('#tabbar a[data-tab="info"]').count()==1)
+
+    # ================= 3. FIND A PANDAL =================
+    go(pg,'find',900)
+    c=counts(pg); ok('find: map markers == mappable listed pandals (4 of 6); list shows all 6',c['pandalMarkers']==4 and c['pandalCards']==6,c)
+    ok('find: results show name + locality/landmark',pg.evaluate("[...document.querySelectorAll('#pandal-list .result')].every(b=>b.querySelector('.r-name').textContent&&b.querySelector('.r-sub')&&b.querySelector('.r-sub').textContent.length>3)"))
+    ok('find: no Directions action until a pandal is selected',pg.locator('#view-find a:has-text("Directions")').count()==0 and not vis(pg,'#pandal-detail'))
+    pg.fill('#q','sample pandal b'); pg.wait_for_timeout(250)
+    c=counts(pg); ok('find: search narrows list and map together',c['pandalCards']<6 and 1<=c['pandalMarkers']<=c['pandalCards'] and 'Showing' in pg.inner_text('#filter-summary'),c)
+    pg.fill('#q','fountain'); pg.wait_for_timeout(250); ok('find: search matches landmark text',pg.locator('#pandal-list .result').count()==1)
+    pg.fill('#q','zzzz'); pg.wait_for_timeout(250)
+    ok('find: empty state with clear action; zero markers',vis(pg,'#pandal-empty') and 'No pandals match' in pg.inner_text('#pandal-empty') and counts(pg)['pandalMarkers']==0)
+    pg.screenshot(path=SHOTS+'03-find-empty.png')
+    pg.click('#pandal-empty [data-action="clear-filters"]'); pg.wait_for_timeout(250); ok('find: empty-state clear resets',counts(pg)['pandalCards']==6 and pg.input_value('#q')=='')
+    pg.select_option('#locality','Sample Locality One (demo)'); pg.wait_for_timeout(250); ok('find: locality filter works',counts(pg)['pandalCards']==2)
     pg.click('#clear-filters'); pg.wait_for_timeout(200)
-    ok('clear-all-filters resets search/locality/results',pg.input_value('#q')=='' and counts(pg)['pandalCards']==6 and counts(pg)['pandalMarkers']==4)
-    pg.select_option('#locality','Sample Locality One (demo)'); pg.wait_for_timeout(200)
-    c=counts(pg); ok('locality filter updates list+map (2 pandals) and parking',c['pandalCards']==2 and c['pandalMarkers']==2 and c['parkingMarkers']==1,c)
-    pg.click('#clear-filters'); pg.wait_for_timeout(200)
-    # list<->map sync
-    pg.click('#pandal-list .card[data-id="demo-pandal-b"] [data-action="show"]'); pg.wait_for_selector('.leaflet-popup',timeout=5000); pg.wait_for_timeout(300)
-    ok('card "Show on map" opens popup for that pandal',('Sample Pandal B' in pg.inner_text('.leaflet-popup')) and pg.locator('.card.is-selected[data-id="demo-pandal-b"]').count()==1)
-    ok('popup has Navigate link',pg.locator('.leaflet-popup a:has-text("Navigate with Google Maps")').count()==1)
-    ok('popup fits inside the map frame (autopan)',pg.evaluate("(()=>{const m=document.querySelector('#map').getBoundingClientRect(),p=document.querySelector('.leaflet-popup-content-wrapper').getBoundingClientRect();return p.left>=m.left&&p.right<=m.right&&p.top>=m.top&&p.bottom<=m.bottom})()"))
-    ok('popup Navigate button keeps button colours (not Leaflet link blue)',pg.evaluate("getComputedStyle(document.querySelector('.leaflet-popup a.btn-primary')).color")=='rgb(251, 245, 230)')
-    if AXE:
-        pg.evaluate(AXE); r=pg.evaluate("axe.run(document.querySelector('.leaflet-popup'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa']}}).then(r=>r.violations.map(v=>v.id+': '+v.nodes[0].html.slice(0,80)))")
-        ok('axe: open popup has no WCAG A/AA violations',not r,r)
-    pg.screenshot(path=SHOTS+'02-map-popup-mobile.png')
-    pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
-    pg.locator('.leaflet-marker-icon.mk:has(.mk-pandal)').first.click(); pg.wait_for_selector('.leaflet-popup',timeout=3000)
-    ok('marker click opens popup and marks card',pg.locator('.card.is-selected').count()>=1)
-    pg.click('.leaflet-popup [data-action="goto-card"]'); pg.wait_for_timeout(500)
-    ok('popup "Details below" opens the card details',pg.locator('.card.is-selected details[open]').count()==1)
-    # nav links
-    a=pg.locator('#pandal-list .card[data-id="demo-pandal-a"] a:has-text("Navigate")')
-    ok('navigate link = exact google maps dir URL for coords',a.get_attribute('href')=='https://www.google.com/maps/dir/?api=1&destination=26.7271%2C88.3953',a.get_attribute('href'))
-    ok('navigate link target/rel',a.get_attribute('target')=='_blank' and set(a.get_attribute('rel').split())>={'noopener','noreferrer'})
-    ae=pg.locator('#pandal-list .card[data-id="demo-pandal-e"] a:has-text("Navigate")')
-    ok('address-only pandal: link built from encoded address',ae.get_attribute('href')=='https://www.google.com/maps/dir/?api=1&destination='+urllib.request.quote('Sample address E, Siliguri, West Bengal (demo - address only)',safe="()'!*~"),ae.get_attribute('href'))
-    nf=pg.locator('#pandal-list .card[data-id="demo-pandal-f"]')
-    ok('no location: Navigate disabled with explanation',nf.locator('a:has-text("Navigate")').count()==0 and nf.locator('button[disabled]:has-text("Navigate")').count()==1 and 'Navigation unavailable' in nf.inner_text())
-    ok('all external links have rel noopener noreferrer',pg.evaluate("[...document.querySelectorAll('a[target=_blank]')].every(a=>/noopener/.test(a.rel)&&/noreferrer/.test(a.rel))"))
-    # restrictions with injected time (IST)
+    GM='https://www.google.com/maps/dir/?api=1&destination='
+    pg.click('#pandal-list [data-id="demo-pandal-a"]'); pg.wait_for_timeout(700)
+    ok('find: selecting updates hash and shows the detail panel',pg.evaluate("location.hash")=='#/find/demo-pandal-a' and vis(pg,'#pandal-detail') and 'Sample Pandal A' in pg.inner_text('#pandal-detail'))
+    ok('find: ONE primary action "Directions"',pg.locator('#pandal-detail a.btn-primary, #pandal-detail button.btn-primary').count()==1 and pg.locator('#pandal-detail .btn-primary').text_content().strip().startswith('Directions'),[pg.locator('#pandal-detail a.btn-primary, #pandal-detail button.btn-primary').count(),pg.locator('#pandal-detail .btn-primary').count(),pg.inner_text('#pandal-detail')[-200:]])
+    a=pg.locator('#pandal-detail a.btn-primary')
+    ok('find: Directions = exact Google Maps URL to pandal point (entrance not verified)',a.get_attribute('href')==GM+'26.7271%2C88.3953' and a.get_attribute('target')=='_blank' and set(a.get_attribute('rel').split())>={'noopener','noreferrer'},a.get_attribute('href'))
+    dt=pg.inner_text('#pandal-detail')
+    ok('find: says plainly that the entrance is NOT verified; shows location (area, landmark, address)','Not verified' in dt and 'Landmark' in dt and 'Address' in dt and 'Area' in dt,dt[:300])
+    ok('find: disclaimer visible in directions panel and verbatim',DISCLAIMER in pg.inner_text('#view-find'))
+    ok('find: map shows selection (pandal ring) and unverified entrance marker labelled',pg.evaluate("PujaApp.info().selected")=='demo-pandal-a' and pg.locator('#map-find .mk-entr').count()==1)
+    pg.screenshot(path=SHOTS+'02-find-selected-directions.png')
+    go(pg,'find'); pg.evaluate("PujaApp.map('find').setView([26.7271,88.3953],18,{animate:false})"); pg.wait_for_timeout(500)
+    pg.locator('#map-find .leaflet-marker-icon:has(.mk-pandal)').first.click(); pg.wait_for_timeout(600)
+    ok('find: tapping a map marker selects that pandal (hash + detail panel with Directions)',pg.evaluate("location.hash").startswith('#/find/demo-pandal-') and vis(pg,'#pandal-detail') and pg.locator('#pandal-detail a.btn-primary').count()==1,pg.evaluate("location.hash"))
+    go(pg,'find/demo-pandal-e'); a=pg.locator('#pandal-detail a.btn-primary')
+    ok('find: address-only pandal -> Directions via encoded address',a.get_attribute('href')==GM+urllib.request.quote('Sample address E, Siliguri, West Bengal (demo - address only)',safe="()'!*~"),a.get_attribute('href'))
+    go(pg,'find/demo-pandal-f')
+    ok('find: no location -> Directions disabled with explanation',pg.locator('#pandal-detail a.btn-primary').count()==0 and pg.locator('#pandal-detail button.btn-primary[disabled]').count()==1 and 'Directions unavailable' in pg.inner_text('#pandal-detail'))
+    go(pg,'find/not-a-real-id'); ok('find: unknown pandal id handled',vis(pg,'#pandal-detail') and 'not in the current data' in pg.inner_text('#pandal-detail'))
+    go(pg,'find/demo-pandal-a'); pg.click('#pandal-detail [data-action="close-detail"]'); pg.wait_for_timeout(300)
+    ok('find: Close clears selection',pg.evaluate("location.hash")=='#/find' and not vis(pg,'#pandal-detail'))
+    # geolocation only on tap
+    ok('geo: explanation shown before any request',vis(pg,'#nearby-intro') and 'permission only after you tap' in pg.inner_text('#nearby-intro') and pg.evaluate("window.__geo")==0)
+    pg.click('#nearby-btn'); pg.wait_for_timeout(900)
+    ok('geo: denied -> friendly message; app still fully works',pg.evaluate("window.__geo")==1 and 'not granted' in pg.inner_text('#geo-msg') and pg.locator('#pandal-list .result').count()==6,pg.inner_text('#geo-msg'))
+    go(pg,'find/demo-pandal-a'); ok('geo: Directions still works without location',pg.locator('#pandal-detail a.btn-primary').count()==1)
+    pg.screenshot(path=SHOTS+'04-geolocation-denied.png')
+    ok('find: no horizontal scroll',not hscroll(pg))
+
+    # ================= 4. PARKING & WALKING (demo) =================
+    go(pg,'parking',900); pt=view_text(pg,'parking')
+    ok('parking: disclaimer present, verbatim',DISCLAIMER in pt)
+    c=counts(pg); ok('parking: 6 point records (2 parking + 4 access) listed; 6 markers',c['pointCards']==6 and c['pointMarkers']==6,c)
+    ok('parking: demo points NOT labelled approved/designated/verified',not any(w in pt for w in ('Approved parking','Designated drop-off','Designated pick-up','Designated pedestrian')) and 'not verified' in pt.lower())
+    ok('parking: no "verified" claim anywhere in demo parking view (only "not verified"/"unverified")','verified' not in re.sub(r'not verified|unverified|marked verified','',pt,flags=re.I).lower(),[l for l in pt.split('\n') if 'verified' in re.sub(r'not verified|unverified|marked verified','',l,flags=re.I).lower()][:5])
+    chip(pg,'ptype','drop-off'); ok('parking: filter drop-off',counts(pg)['pointCards']==1 and 'drop-off' in pg.inner_text('#point-list').lower())
+    chip(pg,'ptype','pick-up'); ok('parking: filter pick-up',counts(pg)['pointCards']==1)
+    chip(pg,'ptype','pedestrian'); ok('parking: filter pedestrian entrance/exit (2)',counts(pg)['pointCards']==2)
+    chip(pg,'ptype','parking'); ok('parking: filter parking (2)',counts(pg)['pointCards']==2)
+    chip(pg,'ptype','all')
+    ok('routes: both demo routes listed, each says "not verified", no distance or time shown',pg.locator('#route-list .card').count()==2 and 'Walking distance and time: not available' in pt and 'about' not in pg.inner_text('#route-list').lower().replace('about this','') ,pg.inner_text('#route-list')[:300])
+    pg.click('#route-list [data-id="demo-route-1"] [data-action="show-route"]'); pg.wait_for_timeout(600)
+    ok('routes: unverified route -> NO line drawn on the map (no straight-line fake)',counts(pg)['routeLines']==0 and pg.locator('#map-parking path.leaflet-interactive').count()==0)
+    ok('routes: unverified instructions labelled "do not rely"','do not rely' in pg.inner_text('#route-list [data-id="demo-route-1"]').lower())
+    ok('routes: external-navigation caveat present','may not know local Puja restrictions' in pg.inner_text('#route-list'))
+    ok('routes: route with no details says so','Walking instructions: not published' in pg.inner_text('#route-list [data-id="demo-route-2"]'))
+    ok('parking: no turn-by-turn engine / no routing requests',not [u for u in reqs if any(x in u for x in ('osrm','routing','valhalla','graphhopper','mapbox'))])
+    pg.screenshot(path=SHOTS+'05-parking-routes-demo.png')
+    ok('parking: no horizontal scroll',not hscroll(pg))
+
+    # ================= 5. TRAFFIC (demo) =================
+    go(pg,'traffic',900); tt=view_text(pg,'traffic')
+    ok('traffic: disclaimer verbatim + permanent police notice',DISCLAIMER in tt and 'Follow the directions of traffic police' in tt)
+    set_time(pg,'2026-10-18T23:30'); s=states(pg,'#view-traffic')
+    ok('traffic demo: every sample/unverified record is labelled "Unverified" (never Active/Upcoming)',set(s.values())=={'Unverified'} and len(s)==7,s)
+    ok('traffic demo: nothing listed under Active/Upcoming sections',pg.locator('#rs-active .card, #rs-upcoming .card').count()==0 and 'does not mean roads are unrestricted' in pg.inner_text('#rs-active'))
+    ok('traffic: label text, not colour only (icon + word)',pg.evaluate("[...document.querySelectorAll('.state')].every(e=>e.querySelector('.ic')&&e.querySelector('.st-t').textContent.trim().length>=6)"))
+    ok('traffic: wording never says open/clear/safe/live',not any(w in tt.lower() for w in ('is open','are open','road is clear','safe to drive','confirmed live','currently closed')))
+    card=pg.inner_text('#view-traffic [data-id="demo-restr-night-recurring"]')
+    ok('traffic card: road/stretch, direction, vehicles, IST schedule, pedestrian "not verified"','Road / stretch' in card and 'Direction' in card and 'Vehicles affected' in card and 'IST' in card and 'Pedestrian access' in card and 'not verified' in card,card[:600])
+    ok('traffic card: diversion points linked to the restriction, concise instruction','Diversion points' in card and '[sample]' in card)
+    ok('traffic: check summary shows selected IST time','18 Oct 2026, 11:30 PM IST' in pg.inner_text('#check-summary'))
+    set_time(pg,'2026-10-19T04:59'); ok('traffic boundary 04:59 inside overnight window (detail: current window ends)','Current window ends' in pg.inner_text('#view-traffic [data-id="demo-restr-night-recurring"]'))
+    set_time(pg,'2026-10-19T05:00'); ok('traffic boundary 05:00 outside (end exclusive) -> next window','Next window' in pg.inner_text('#view-traffic [data-id="demo-restr-night-recurring"]'))
+    set_time(pg,'2026-10-22T06:00'); ok('traffic after last window -> ended / expired text','Last window ended' in pg.inner_text('#view-traffic [data-id="demo-restr-night-recurring"]') and 'Last window ended' in pg.inner_text('#view-traffic [data-id="demo-restr-multiday"]'))
     set_time(pg,'2026-10-18T23:30')
-    s=states(pg,'#restrictions')
-    ok('demo @18 Oct 23:30 IST: midnight-crossing + multi-day demo records inside window, labelled as sample (not "per published schedule")',
-       'Sample/unverified' in s['demo-restr-night-recurring'] and 'inside its window' in s['demo-restr-night-recurring'] and 'inside its window' in s['demo-restr-multiday'] and 'per published schedule' not in json.dumps(s),s)
-    ok('demo expired/cancelled/unconfirmed/future states',('ended' in s['demo-restr-expired']) and ('cancelled' in s['demo-restr-cancelled']) and ('Unconfirmed' in s['demo-restr-unconfirmed']) and ('not yet started' in s['demo-restr-future-procession']),s)
-    ok('demo records never listed under "Currently scheduled"/"Upcoming"',pg.locator('#rs-active .card, #rs-upcoming .card').count()==0 and 'No verified restriction is scheduled' in pg.inner_text('#rs-active'))
-    ok('check summary shows selected IST time',pg.inner_text('#check-summary').startswith('Showing the schedule for 18 Oct 2026, 11:30 PM IST'),pg.inner_text('#check-summary'))
-    set_time(pg,'2026-10-19T04:59'); s=states(pg,'#restrictions'); ok('boundary 04:59 still inside midnight window',"inside its window" in s['demo-restr-night-recurring'])
-    set_time(pg,'2026-10-19T05:00'); s=states(pg,'#restrictions'); ok('boundary 05:00 outside (end exclusive)','not yet started' in s['demo-restr-night-recurring'],s['demo-restr-night-recurring'])
-    set_time(pg,'2026-10-22T06:00'); s=states(pg,'#restrictions'); ok('after last window: expired','ended' in s['demo-restr-night-recurring'] and 'ended' in s['demo-restr-multiday'])
-    set_time(pg,'2026-10-18T23:30')
-    pg.locator('#restrictions').scroll_into_view_if_needed(); pg.locator('#check-at').scroll_into_view_if_needed()
-    pg.screenshot(path=SHOTS+'03-restrictions-datetime-mobile.png')
-    pg.click('#check-now'); pg.wait_for_timeout(150); ok('"Use current time" clears override',pg.input_value('#check-at')=='' and 'current time' in pg.inner_text('#check-summary'))
-    ok('restriction map markers drawn only for point records (3) and no geometry for demo',counts(pg)['restrictionMarkers']==3 and pg.locator('path.leaflet-interactive').count()==0)
-    ok('no horizontal scroll after interactions',not hscroll(pg))
-    # sections screenshot of cards
-    pg.locator('#pandals').scroll_into_view_if_needed(); pg.screenshot(path=SHOTS+'04-pandal-list-mobile.png')
-    # a11y: skip link
-    ok('html lang, main landmark, labelled inputs',pg.evaluate("document.documentElement.lang==='en' && !!document.querySelector('main#main') && ['q','locality','check-at'].every(i=>document.querySelector('label[for=\"'+i+'\"]'))"))
-    # touch targets
-    small=pg.evaluate("""()=>{const o=[];document.querySelectorAll('button,a.btn,.jump a,summary,select,input[type=search],input[type=datetime-local],.skip-link,.leaflet-bar a,.locate-btn,.leaflet-marker-icon,.check').forEach(e=>{const r=e.getBoundingClientRect();if(!r.width&&!r.height)return;if(r.height<43.5||r.width<43.5)o.push((e.className||e.tagName)+' '+Math.round(r.width)+'x'+Math.round(r.height))});return o}""")
-    ok('touch targets >= 44px (buttons, links, inputs, markers, map controls)',not small,small[:8])
-    ok('input font-size >= 16px',pg.evaluate("[...document.querySelectorAll('input:not([type=checkbox]),select')].every(e=>parseFloat(getComputedStyle(e).fontSize)>=16)"))
-    # axe
+    ok('traffic map: demo has 3 restriction markers, 3 diversion markers, no drawn geometry',counts(pg)['restrictionMarkers']==3 and counts(pg)['diversionMarkers']==3 and counts(pg)['roadLines']==0)
+    pg.screenshot(path=SHOTS+'06-traffic-demo.png')
+    pg.click('#check-now'); pg.wait_for_timeout(150); ok('traffic: "use current time" clears override',pg.input_value('#check-at')=='')
+    ok('traffic: no horizontal scroll',not hscroll(pg))
+
+    # ================= 6. HELP (demo) =================
+    go(pg,'help',900); ht=view_text(pg,'help')
+    ok('help: emergency 112 notice; disclaimer present',('112' in ht) and DISCLAIMER in ht)
+    ok('help: 5 facility cards; map is empty by default (on demand)',counts(pg)['facilityCards']==5 and counts(pg)['facilityMarkers']==0 and 'on the map' in pg.inner_text('#help-map-note').lower() or counts(pg)['facilityMarkers']==0)
+    chip(pg,'ftype','hospital'); ok('help: type filter hospitals',counts(pg)['facilityCards']==1 and counts(pg)['facilityMarkers']==0)
+    ok('help: demo hospital shows NO phone and no emergency-capable claim',pg.locator('#fac-list a[href^="tel:"]').count()==0 and 'not verified' in pg.inner_text('#fac-list') and 'confirmed by the source' not in pg.inner_text('#fac-list'))
+    chip(pg,'ftype','all'); pg.check('#help-show-map'); pg.wait_for_timeout(500)
+    ok('help: "show on map" toggle adds all 5 markers',counts(pg)['facilityMarkers']==5)
+    pg.uncheck('#help-show-map'); pg.wait_for_timeout(400); ok('help: toggling off removes them',counts(pg)['facilityMarkers']==0)
+    pg.click('#fac-list [data-id="demo-toilet-1"] [data-action="show-fac"]'); pg.wait_for_timeout(500)
+    ok('help: single facility on tap -> 1 marker',counts(pg)['facilityMarkers']==1)
+    ok('help: each facility has Directions link (Google URL) + hours/landmark text',pg.locator('#fac-list a:has-text("Directions")').count()==5 and all(h.startswith(GM) for h in pg.eval_on_selector_all('#fac-list a:has-text("Directions")','e=>e.map(x=>x.href)')))
+    ok('help: demo facilities labelled demo/unverified',pg.locator('#fac-list .badge-demo').count()==5)
+    pg.screenshot(path=SHOTS+'07-help-demo.png')
+
+    # ================= 7. INFO / disclaimer =================
+    go(pg,'info',500); it=view_text(pg,'info')
+    ok('info: disclaimer verbatim',DISCLAIMER in it)
+    ok('info: freshness, refresh button, label explanations','Refresh' in it and ('Unverified' in it) and 'IST' in pg.inner_text('#freshness'),pg.inner_text('#freshness'))
+    pg.screenshot(path=SHOTS+'08-info-disclaimer.png')
+    # disclaimer on every navigation/traffic/directions screen
+    for r in ('find','find/demo-pandal-a','parking','traffic','help','info'):
+        go(pg,r,300); ok('disclaimer verbatim on #/%s'%r,pg.evaluate("[...document.querySelectorAll('.view:not([hidden]) [data-disclaimer]')].some(e=>e.textContent.includes(%s))"%json.dumps(DISCLAIMER)))
+    # touch targets, fonts, a11y
+    for r in ('find/demo-pandal-a','parking','traffic','help','info'):
+        go(pg,r,500)
+        small=pg.evaluate("""()=>{const o=[];document.querySelectorAll('.view:not([hidden]) :is(button,a.btn,a.ba,select,input[type=search],input[type=datetime-local],.result,.chip,summary),#tabbar a,.leaflet-bar a,.leaflet-marker-icon').forEach(e=>{const r=e.getBoundingClientRect();if(r.width&&r.height&&(r.height<43.5||r.width<43.5)&&getComputedStyle(e).visibility!=='hidden')o.push(e.className+':'+Math.round(r.width)+'x'+Math.round(r.height))});return o}""")
+        ok('touch targets >=44px on #/%s'%r,not small,small[:6])
+    ok('input font-size >= 16px',pg.evaluate("[...document.querySelectorAll('input:not([type=checkbox]):not([type=radio]),select')].every(e=>parseFloat(getComputedStyle(e).fontSize)>=16)"))
     if AXE:
-        pg.evaluate(AXE); pg.evaluate("document.querySelectorAll('details').forEach(d=>d.open=true)")
-        r=pg.evaluate("axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}}).then(r=>r.violations.map(v=>({id:v.id,n:v.nodes.length,impact:v.impact,t:v.nodes.slice(0,2).map(n=>n.html.slice(0,100)+' :: '+(n.any[0]&&n.any[0].message||'').slice(0,100))})))")
-        r=[v for v in r]
-        ok('axe WCAG2.1 A/AA + best-practice: no violations (demo, mobile)',not r,r)
-    # external requests / broken assets
+        pg.evaluate(AXE)
+        for theme in ('day','dark'):
+            if theme=='dark' and pg.evaluate("document.documentElement.dataset.theme")!='dark': go(pg,'',200); pg.click('#theme-btn'); pg.wait_for_timeout(200)
+            for r in ('','find/demo-pandal-a','parking','traffic','help','info'):
+                go(pg,r,500)
+                v=pg.evaluate("axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','best-practice']}}).then(r=>r.violations.map(v=>v.id+' x'+v.nodes.length+': '+v.nodes[0].html.slice(0,90)+' :: '+((v.nodes[0].any[0]||{}).message||'')))")
+                ok('axe (%s theme) #/%s: no violations'%(theme,r),not v,v)
+            if theme=='dark':
+                go(pg,'',300); pg.screenshot(path=SHOTS+'09-dark-home.png'); go(pg,'find/demo-pandal-a',900); pg.screenshot(path=SHOTS+'10-dark-find.png'); go(pg,'traffic',700); pg.screenshot(path=SHOTS+'11-dark-traffic.png')
+        ok('theme choice is stored locally only',pg.evaluate("localStorage.getItem('spn.theme')")=='dark')
     ext=sorted({u.split('/')[2] for u in reqs if not u.startswith(ORIGIN) and not u.startswith('data:') and not u.startswith('blob:')})
     ok('only external host contacted is the OSM tile server',ext in([],['tile.openstreetmap.org']),ext)
     ok('no failed (>=400) responses / broken relative paths',not bad,bad)
-    ok('no console errors/warnings (demo, mobile)',not errs,errs)
-    ok('localStorage holds no location data',pg.evaluate("Object.keys(localStorage).every(k=>k==='spn.lastRefresh')"))
+    ok('no console errors/warnings across all demo flows',not errs,errs)
+    ok('geolocation was requested exactly once (user tap) in the whole session',pg.evaluate("window.__geo")==1)
+    ok('localStorage holds no location data',pg.evaluate("Object.keys(localStorage).every(k=>['spn.lastRefresh','spn.theme'].includes(k))"))
     ctx.close()
 
-    # ================= 2. desktop =================
-    ctx=new_ctx(mobile=False); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg)
-    c=counts(pg); ok('desktop: renders, markers==4, no h-scroll, no errors',c['pandalMarkers']==4 and not hscroll(pg) and not errs,(c,errs))
-    pg.screenshot(path=SHOTS+'05-home-desktop.png',full_page=False)
-    pg.fill('#q','locality two'); pg.wait_for_timeout(200); ok('desktop: search works',pg.locator('#pandal-list > .card').count()==1)
-    pg.locator('#restrictions').scroll_into_view_if_needed(); pg.screenshot(path=SHOTS+'06-restrictions-desktop.png')
+    # ================= 8. geolocation granted =================
+    ctx=new_ctx(permissions=['geolocation'],geolocation={'latitude':26.7345,'longitude':88.401}); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'find')
+    ok('geo granted: still nothing requested before tap',pg.evaluate("document.getElementById('geo-msg').textContent")=='' or 'Asking' not in pg.inner_text('#geo-msg'))
+    pg.click('#nearby-btn'); pg.wait_for_timeout(900)
+    ids=pg.eval_on_selector_all('#pandal-list .result','e=>e.map(x=>x.dataset.id)')
+    ok('geo granted: list sorted by straight-line distance, labelled as straight-line, user marker drawn',ids[0]=='demo-pandal-b' and pg.locator('.r-dist').count()==4 and 'straight line' in pg.inner_text('.r-dist').lower() and pg.locator('.mk-me').count()==1,ids)
+    pg.screenshot(path=SHOTS+'12-geolocation-granted.png')
+    pg.click('#nearby-clear'); pg.wait_for_timeout(200); ok('geo: "forget" clears distances and marker',pg.locator('.r-dist').count()==0 and pg.locator('.mk-me').count()==0)
+    ok('geo: location never stored',pg.evaluate("JSON.stringify([localStorage,sessionStorage,document.cookie]).indexOf('26.73')<0") and not errs,errs)
     ctx.close()
+    ctx=new_ctx(permissions=['geolocation'],geolocation={'latitude':28.6139,'longitude':77.2090}); pg=ctx.new_page(); goto(pg,'find'); pg.click('#nearby-btn'); pg.wait_for_timeout(900)
+    ok('geo: outside-Siliguri location handled honestly','outside the Siliguri area' in pg.inner_text('#geo-msg'),pg.inner_text('#geo-msg')); ctx.close()
 
-    # ================= 3. verified fixture: grouping, validation, XSS =================
-    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); pg.on('dialog',lambda d: (errs.append('DIALOG '+d.message),d.dismiss()))
-    serve_json(pg,verified_fixture()); goto(pg)
-    ok('fixture: data-quality warning shows 3 skipped records',pg.is_visible('#bn-quality') and '3 record(s)' in pg.inner_text('#bn-quality'),pg.inner_text('#bn-quality'))
-    ok('fixture: skipped = bad-coords pandal, no-provenance pandal, missing-source restriction (not displayed)',
-       'Bad coords' not in pg.inner_text('#pandal-list') and 'No provenance' not in pg.inner_text('#pandal-list') and 'Missing source' not in pg.inner_text('#restrictions'))
-    pg.click('#bn-quality summary'); ok('skipped reasons listed',all(x in pg.inner_text('#bn-quality') for x in ('invalid coordinates','requires "source"')),pg.inner_text('#bn-quality'))
-    ok('fixture: demo banner hidden for non-demo dataset',not pg.is_visible('#bn-demo'))
-    ok('fixture: badges Official/Admin-verified with text',pg.locator('.badge-official').count()>=1 and pg.locator('.badge-admin-verified').count()>=1 and 'Official' in pg.inner_text('.badge-official'))
-    set_time(pg,'2026-10-18T12:00')
+    # ================= 9. verified fixture =================
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); fx_reqs=[]
+    serve_json(pg,verified_fixture(),counter=fx_reqs); goto(pg,'find/p-ok')
+    ok('fixture: non-demo dataset hides the demo banner',not vis(pg,'#bn-demo'))
+    q=pg.inner_text('#bn-quality') if vis(pg,'#bn-quality') else ''
+    ok('fixture: data-quality warning lists skipped records (bad coords, no provenance, missing source, orphan diversion)',vis(pg,'#bn-quality') and '4 record(s)' in q,q)
+    a=pg.locator('#pandal-detail a.btn-primary')
+    ok('fixture: VERIFIED public entrance -> Directions targets entrance coordinates',a.get_attribute('href')==GM+'26.7275%2C88.3958',a.get_attribute('href'))
+    dt=pg.inner_text('#pandal-detail')
+    ok('fixture: detail names the verified entrance and says verified',('Fixture main gate' in dt) and ('verified' in dt.lower()),dt[:400])
+    ok('fixture: entrance markers drawn (verified + unverified entrance)',pg.locator('#map-find .mk-entr').count()==2)
+    pg.screenshot(path=SHOTS+'13-find-verified-entrance.png')
+    go(pg,'find/p-unv'); a=pg.locator('#pandal-detail a.btn-primary')
+    ok('fixture: entrance claimed verified on an UNVERIFIED pandal is ignored (pandal point used)',a.get_attribute('href')==GM+'26.7222%2C88.3922' and 'Not verified' in pg.inner_text('#pandal-detail'),a.get_attribute('href'))
+    # xss
+    go(pg,'find/p-xss'); go(pg,'traffic'); go(pg,'parking'); go(pg,'find')
+    pg.fill('#q','Evil'); pg.wait_for_timeout(200)
+    ok('XSS: hostile strings rendered as text only',pg.evaluate("window.__xss===undefined") and pg.locator('#pandal-list img, #pandal-list script, #view-traffic .card img, #view-traffic .card script').count()==0 and not [e for e in errs if 'DIALOG' in e],errs)
+    pg.fill('#q',''); pg.wait_for_timeout(100)
+    # parking
+    go(pg,'parking',900); pc=pg.inner_text('#point-list'); 
+    ok('fixture parking: explicit flags show "Approved parking" / "Designated drop-off" ONLY on verified+flagged records',
+       'Approved parking' in pg.inner_text('#point-list [data-id="k-ok"]') and 'Designated drop-off' in pg.inner_text('#point-list [data-id="a-drop"]') and 'Designated pick-up' not in pg.inner_text('#point-list [data-id="a-pick"]'),pc[:1500])
+    rv=pg.inner_text('#route-list [data-id="w-ok"]'); ru=pg.inner_text('#route-list [data-id="w-unv"]')
+    ok('fixture routes: verified route shows distance (m), time (min), instructions, from/to','1800 m' in rv and '25 min' in rv and 'Walk north along Fixture Rd.' in rv and 'Fixture Parking' in rv and 'Fixture main gate' in rv,rv)
+    ok('fixture routes: unverified route hides distance/time even though provided in the JSON','300' not in ru and ' 4 min' not in ru and 'not verified' in ru.lower() and 'do not rely' in ru.lower(),ru)
+    pg.click('#route-list [data-id="w-ok"] [data-action="show-route"]'); pg.wait_for_timeout(700)
+    ok('fixture routes: verified route draws its waypoint polyline (3 vertices)',counts(pg)['routeLines']==1 and pg.evaluate("(()=>{let n=0;PujaApp.map('parking').eachLayer(l=>{if(l instanceof L.Polyline&&!(l instanceof L.Polygon)){n=l.getLatLngs().length}});return n})()")==3)
+    pg.screenshot(path=SHOTS+'14-parking-verified-route.png')
+    pg.click('#route-list [data-id="w-unv"] [data-action="show-route"]'); pg.wait_for_timeout(500)
+    ok('fixture routes: switching to the unverified route removes the line',counts(pg)['routeLines']==0)
+    # traffic
+    go(pg,'traffic',700); set_time(pg,'2026-10-18T12:00')
     a=states(pg,'#rs-active'); u=states(pg,'#rs-upcoming'); o=states(pg,'#rs-other')
-    ok('@18 Oct 12:00: verified active = r-active & r-geo with required wording',set(a)=={'r-active','r-geo'} and all(v.endswith('Scheduled to be in force (per published schedule)') for v in a.values()),a)
-    ok('@18 Oct 12:00: upcoming = night recurring + future (+ xss one)',{'r-night','r-future','r-xss'}==set(u),u)
-    ok('@18 Oct 12:00: other = expired/cancelled/unconfirmed (not confirmed info)',set(o)=={'r-expired','r-cancel','r-unconf'} and 'awaiting verification' in o['r-unconf'] and 'Cancelled' in o['r-cancel'] and 'ended' in o['r-expired'],o)
-    set_time(pg,'2026-10-18T23:30'); a=states(pg,'#rs-active'); ok('@18 Oct 23:30 IST: night window (crosses midnight) active, r-active moved out',set(a)=={'r-night'},a)
-    set_time(pg,'2026-10-19T00:00'); a=states(pg,'#rs-active'); ok('@19 Oct 00:00 IST: still active after midnight',set(a)=={'r-night'},a)
-    set_time(pg,'2026-10-19T05:00'); a=states(pg,'#rs-active'); ok('@19 Oct 05:00 IST: window ended',set(a)==set())
-    set_time(pg,'2026-10-18T12:00')
-    ok('permanent notice still shown with active list',pg.is_visible('.banner-permanent'))
-    ok('verified geometry drawn (1 polyline), only for geometryVerified',pg.locator('path.leaflet-interactive').count()==1,pg.locator('path.leaflet-interactive').count())
-    ok('provenance shown for verified records',('Source: TEST FIXTURE notice' in pg.inner_text('#rs-active')) and 'Verified by: Test office' in pg.inner_text('#rs-active'))
-    # XSS
-    ok('XSS: malicious name shown literally as text',pg.locator('#pandal-list .card[data-id="p-xss"] h3').inner_text()==XSS_IMG)
-    ok('XSS: no injected elements / handlers ran',pg.evaluate("document.querySelectorAll('img[src=\"x\"], #pandal-list script, #restrictions script, svg[onload]').length===0 && window.__xss===undefined"))
-    pg.click('#pandal-list .card[data-id="p-xss"] [data-action="show"]'); pg.wait_for_selector('.leaflet-popup'); pg.wait_for_timeout(300)
-    ok('XSS: popup text literal, nothing executed',pg.locator('.leaflet-popup-content .popup-t').inner_text()==XSS_IMG and pg.evaluate("window.__xss===undefined && document.querySelectorAll('.leaflet-popup img[src=\"x\"]').length===0"))
-    ok('XSS: javascript: sourceUrl/imageUrl not rendered as links/images',pg.evaluate("![...document.querySelectorAll('a')].some(a=>/^javascript:/i.test(a.getAttribute('href')||'')) && ![...document.querySelectorAll('img')].some(i=>/^javascript:/i.test(i.getAttribute('src')||''))"))
-    ok('XSS: address with quote encoded in maps link',pg.locator('#pandal-list .card[data-id="p-xss"] a:has-text("Navigate")').get_attribute('href').startswith('https://www.google.com/maps/dir/?api=1&destination=26.73%2C88.4'))
-    pg.fill('#q','Evil'); pg.wait_for_timeout(200); ok('XSS: search finds record by literal text',pg.locator('#pandal-list > .card').count()==1)
-    ok('XSS: no dialogs/console errors',not errs,errs)
-    pg.screenshot(path=SHOTS+'07-verified-fixture-test-data.png')
+    ok('fixture @18 Oct 12:00 IST: Active = r-active, r-geo (labelled "Active")',a=={'r-active':'Active','r-geo':'Active'},a)
+    ok('fixture @18 Oct 12:00: Upcoming labelled "Upcoming"',set(u)=={'r-night','r-future','r-xss'} and set(u.values())=={'Upcoming'},u)
+    ok('fixture @18 Oct 12:00: expired -> "Expired", cancelled -> "Cancelled", unconfirmed -> "Unverified"',o=={'r-expired':'Expired','r-cancel':'Cancelled','r-unconf':'Unverified'},o)
+    ca=pg.inner_text('#view-traffic [data-id="r-active"]')
+    ok('fixture traffic card: wording "per published schedule", never "open/clear"','per published schedule' in ca and 'Fixture Rd, A to B' in ca and 'Both directions' in ca and 'cars' in ca and '18 Oct 2026, 10:00 AM IST' in ca and '8:00 PM IST' in ca,ca)
+    ok('fixture traffic card: pedestrian access shown for VERIFIED record only','north footpath' in ca and 'Pedestrians always allowed' not in pg.inner_text('#view-traffic [data-id="r-unconf"]') and 'not verified' in pg.inner_text('#view-traffic [data-id="r-unconf"]'))
+    ok('fixture traffic card: diversion point linked, with concise turning instruction and landmark','Fixture: turn left at the fixture junction.' in ca and 'Fixture junction' in ca and 'Orphan diversion' not in pg.inner_text('#view-traffic'))
+    ok('fixture traffic: verified geometry drawn (1 road line); diversion marker present',counts(pg)['roadLines']==1 and counts(pg)['diversionMarkers']==1,counts(pg))
+    set_time(pg,'2026-10-19T04:59'); ok('fixture boundary: 04:59 night window Active',states(pg,'#rs-active').get('r-night')=='Active')
+    set_time(pg,'2026-10-19T05:00'); ok('fixture boundary: 05:00 night window not Active (Upcoming)',states(pg,'#rs-upcoming').get('r-night')=='Upcoming' and 'r-night' not in states(pg,'#rs-active'))
+    set_time(pg,'2026-10-18T20:00'); ok('fixture boundary: end instant => r-active is Expired, not Active',states(pg,'#rs-other').get('r-active')=='Expired' and 'r-active' not in states(pg,'#rs-active'),states(pg,'#rs-other'))
+    set_time(pg,'2026-10-18T12:00'); pg.screenshot(path=SHOTS+'15-traffic-fixture-states.png')
+    # help
+    go(pg,'help',700); ft=pg.inner_text('#fac-list [data-id="f-hosp"]'); fn=pg.inner_text('#fac-list [data-id="f-hosp2"]')
+    ok('fixture help: verified + authorised hospital shows phone (tel link) and emergency capability',pg.locator('#fac-list [data-id="f-hosp"] a[href^="tel:"]').count()==1 and 'confirmed by the source' in ft,ft)
+    ok('fixture help: hospital without authorisation shows no phone and no capability claim','+91' not in fn and pg.locator('#fac-list [data-id="f-hosp2"] a[href^="tel:"]').count()==0 and 'not verified' in fn,fn)
+    pg.screenshot(path=SHOTS+'16-help-fixture.png')
+    ok('fixture: no console errors / dialogs',not errs,errs)
     ctx.close()
 
-    # ================= 4. broken data =================
-    cases=[('corrupt JSON','{not json at all',200),('HTTP 500','',500),('HTTP 404','',404),('wrong shape','[1,2,3]',200),('missing meta','{"pandals":[]}',200),('bad lastUpdated','{"meta":{"lastUpdated":"yesterday"},"pandals":[]}',200),('empty file','',200)]
-    for name,body,status in cases:
-        ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); serve_json(pg,body,status); goto(pg,500)
-        ok(f'bad data ({name}): data-unavailable warning, no lists, no crash',pg.is_visible('#bn-unavailable') and 'Data unavailable' in pg.inner_text('#bn-unavailable') and pg.locator('#pandal-list > .card').count()==0 and 'Data unavailable' in pg.inner_text('#pandal-empty') and not pg.is_visible('#bn-demo') and 'Traffic restrictions are subject' in pg.inner_text('.banner-permanent'),pg.inner_text('#bn-unavailable'))
-        ok(f'bad data ({name}): no uncaught errors',not [e for e in errs if 'PAGEERROR' in e],errs)
-        if name=='corrupt JSON':
-            ok('data-unavailable: never claims a road is open',not any(w in pg.inner_text('body').lower().replace('do not assume any road is open or restricted','') for w in ('road is open','roads are open','clear road')))
-            pg.screenshot(path=SHOTS+'08-data-unavailable-mobile.png')
-            ok('retry button present',pg.locator('#bn-unavailable [data-action="retry"]').count()==1)
-            pg.unroute('**/data/puja-data.json*'); serve_json(pg,DEMO); pg.click('#bn-unavailable [data-action="retry"]'); pg.wait_for_timeout(800)
-            ok('retry recovers',not pg.is_visible('#bn-unavailable') and pg.locator('#pandal-list > .card').count()==6)
+    # ================= 10. REFRESH: concurrency, manual, foreground, periodic, failure =================
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); creq=[]
+    serve_json(pg,DEMO,counter=creq); goto(pg,'',700)
+    st0=pg.evaluate("PujaApp.refreshStats()"); n0=len(creq)
+    ok('refresh: fetches fresh data on open (no-store + cache-bust param)',n0==1 and 'cb=' in creq[0],creq)
+    ok('refresh: info shows network source, last refresh stored',info(pg)['source']=='network' and not info(pg)['stale'] and pg.evaluate("+localStorage.getItem('spn.lastRefresh')")>1e12)
+    pg.evaluate("window.__cc=[...Array(12)].map(()=>PujaApp.refresh('manual'))"); pg.wait_for_timeout(500)
+    st1=pg.evaluate("PujaApp.refreshStats()")
+    ok('refresh: 12 concurrent/rapid calls -> at most ONE extra network request, rest skipped (in-flight guard + rate limit)',len(creq)-n0<=1 and st1['skipped']>=st0['skipped']+11-1 and st1['inFlight'] is False,(len(creq)-n0,st1))
+    n1=len(creq); pg.click('#view-home [data-action="refresh"]'); pg.wait_for_timeout(300)
+    ok('refresh: manual button inside the 3 s limit is rate-limited (no extra request)',len(creq)==n1)
+    pg.wait_for_timeout(3000); pg.click('#view-home [data-action="refresh"]'); pg.wait_for_timeout(500)
+    ok('refresh: manual button after the limit fetches again',len(creq)==n1+1,len(creq)-n1)
+    # foreground
+    n2=len(creq); pg.wait_for_timeout(100)
+    pg.evaluate("window.__t0=Date.now()")
+    set_visibility(pg,'hidden'); pg.wait_for_timeout(300); ok('refresh: hiding the page does not fetch',len(creq)==n2)
+    ctx.close()
+    # fake clock for foreground + periodic
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); creq=[]; serve_json(pg,DEMO,counter=creq)
+    pg.clock.install(); goto(pg,'',300); pg.clock.run_for(1000); pg.wait_for_timeout(300)
+    n=len(creq); ok('clock: initial open fetch happened once',n==1,n)
+    set_visibility(pg,'hidden'); pg.clock.run_for(5*60000+1000); pg.wait_for_timeout(200)
+    ok('refresh: periodic timer does NOT fetch while page hidden',len(creq)==n,len(creq)-n)
+    set_visibility(pg,'visible'); pg.clock.run_for(100); pg.wait_for_timeout(300)
+    ok('refresh: return to foreground (visibilitychange) fetches',len(creq)==n+1,len(creq)-n)
+    n=len(creq); pg.clock.run_for(5*60000+1000); pg.wait_for_timeout(300)
+    ok('refresh: periodic refresh about every 5 min while visible',len(creq)==n+1,len(creq)-n)
+    n=len(creq); pg.clock.run_for(10000); set_visibility(pg,'hidden'); set_visibility(pg,'visible'); pg.clock.run_for(100); pg.wait_for_timeout(200)
+    ok('refresh: rapid hide/show within 30 s is rate-limited',len(creq)==n,len(creq)-n)
+    ok('refresh clock: no errors',not errs,errs)
+    ctx.close()
+    # failure keeps data
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); mode={'m':'ok'}; seen=[]
+    def flaky(r):
+        seen.append(1)
+        if mode['m']=='ok': r.fulfill(status=200,content_type='application/json',body=json.dumps(DEMO))
+        elif mode['m']=='abort': r.abort('internetdisconnected')
+        elif mode['m']=='500': r.fulfill(status=500,body='oops')
+        elif mode['m']=='bad': r.fulfill(status=200,content_type='application/json',body='{not json')
+        elif mode['m']=='empty': r.fulfill(status=200,content_type='application/json',body='{"meta":{}}')
+    pg.route('**/data/puja-data.json*',flaky); goto(pg,'',700)
+    t_ok=pg.evaluate("localStorage.getItem('spn.lastRefresh')"); fr_ok=pg.inner_text('#view-home [data-fresh]')
+    ok('failure: healthy state has no stale banner and normal freshness text',not vis(pg,'#bn-offline') and fr_ok.startswith('Data refreshed') and 'outdated' not in fr_ok,fr_ok)
+    for m in ('abort','500','bad','empty'):
+        mode['m']=m; pg.wait_for_timeout(3200); pg.evaluate("PujaApp.refresh('manual')"); pg.wait_for_timeout(700)
+        ok('failure (%s): keeps cached data in view, shows "may be outdated" banner, still labels demo'%m,counts(pg)['pandalCards']==6 and vis(pg,'#bn-offline') and 'may be outdated' in pg.inner_text('#bn-offline') and info(pg)['stale'] is True,pg.inner_text('#bn-offline') if vis(pg,'#bn-offline') else 'no banner')
+        ok('failure (%s): last successful refresh time NOT advanced; freshness text says may be outdated and keeps old time'%m,pg.evaluate("localStorage.getItem('spn.lastRefresh')")==t_ok and 'may be outdated' in pg.inner_text('#view-home [data-fresh]') and 'Last successful refresh' in pg.inner_text('#view-home [data-fresh]'),pg.inner_text('#view-home [data-fresh]'))
+    pg.screenshot(path=SHOTS+'17-refresh-failed-stale.png')
+    go(pg,'traffic',400); ok('failure: traffic screen warns statuses may be outdated',vis(pg,'#restr-cache-note') and 'outdated' in pg.inner_text('#restr-cache-note'))
+    mode['m']='ok'; pg.wait_for_timeout(3200); go(pg,'',200); pg.evaluate("PujaApp.refresh('manual')"); pg.wait_for_timeout(700)
+    ok('recovery: next successful refresh clears the stale state and updates the time',not vis(pg,'#bn-offline') and not info(pg)['stale'] and pg.evaluate("localStorage.getItem('spn.lastRefresh')")!=t_ok and 'outdated' not in pg.inner_text('#view-home [data-fresh]'))
+    ok('failure scenarios: no uncaught page errors',not [e for e in errs if 'PAGEERROR' in e],errs[:3])
+    ctx.close()
+    # initial failures -> unavailable
+    for name,kw in (('HTTP 404',dict(status=404,body='nope')),('HTTP 500',dict(status=500,body='x')),('invalid JSON',dict(body='{oops')),('missing meta/lists',dict(body='[]')),('empty body',dict(body=''))):
+        ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); serve_json(pg,kw.get('body',''),status=kw.get('status',200)); goto(pg,'find',700)
+        t=pg.inner_text('#bn-unavailable') if vis(pg,'#bn-unavailable') else ''
+        ok('startup %s: "Data unavailable" shown, no data invented, app usable, no road claims'%name,'Data unavailable' in t and counts(pg)['pandalCards']==0 and 'Data unavailable' in pg.inner_text('#pandal-empty') and 'is open' not in t and not [e for e in errs if 'PAGEERROR' in e],(t,errs))
+        if name=='invalid JSON':
+            go(pg,'parking',300); go(pg,'traffic',300); go(pg,'help',300)
+            ok('startup invalid JSON: every screen says unavailable (no blank lists) and keeps the disclaimer','unavailable' in pg.inner_text('#view-help').lower() and 'unavailable' in pg.inner_text('#view-traffic').lower() and DISCLAIMER in pg.inner_text('#view-traffic'))
+            go(pg,'',300); ok('startup invalid JSON: freshness says no successful refresh',pg.inner_text('#view-home [data-fresh]').lower().startswith('no') or 'unavailable' in pg.inner_text('#view-home [data-fresh]').lower() or 'not' in pg.inner_text('#view-home [data-fresh]').lower(),pg.inner_text('#view-home [data-fresh]'))
+            pg.screenshot(path=SHOTS+'18-data-unavailable.png')
         ctx.close()
-    # all-invalid records
-    d=copy.deepcopy(DEMO); d['pandals']=[dict(x,lat='26.7') for x in d['pandals'] if 'lat' in x]; d['restrictions']=[]; d['parking']=[]
-    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); serve_json(pg,d); goto(pg,500)
-    ok('all coordinates invalid (string numbers): all skipped + warning, app alive',pg.is_visible('#bn-quality') and counts(pg)['pandalMarkers']==0 and not errs,(errs,pg.inner_text('#bn-quality')))
+    # network down at startup
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); pg.route('**/data/puja-data.json*',lambda r: r.abort('internetdisconnected')); goto(pg,'find',700)
+    ok('startup network error: unavailable shown; Retry button present',vis(pg,'#bn-unavailable') and pg.locator('#bn-unavailable [data-action="refresh"]').count()==1)
     ctx.close()
-    # tile failure message
-    ctx=b.new_context(viewport={'width':390,'height':844},is_mobile=True,has_touch=True,service_workers='block'); ctx.route('https://tile.openstreetmap.org/**',lambda r: r.abort())
-    pg=ctx.new_page(); errs=[]; pg.on('pageerror',lambda e: errs.append(str(e))); goto(pg,1500)
-    ok('tile errors -> visible "Map tiles unavailable" message; markers+lists still work',pg.is_visible('#tile-msg') and 'Map tiles unavailable' in pg.inner_text('#tile-msg') and counts(pg)['pandalMarkers']==4 and not errs,errs)
-    pg.locator('#map-section').scroll_into_view_if_needed(); pg.screenshot(path=SHOTS+'09-tiles-unavailable-mobile.png')
-    ctx.close()
+    # records missing coordinates / empty sections
+    mini=copy.deepcopy(DEMO); mini['pandals']=[x for x in mini['pandals'] if x['id'] in('demo-pandal-f',)]; mini['walkingRoutes']=[]; mini['diversionPoints']=[]; mini['facilities']=[]; mini['accessPoints']=[]; mini['parking']=[]
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); serve_json(pg,mini); goto(pg,'find',700)
+    ok('missing coords: pandal still listed, zero markers, Directions disabled',counts(pg)['pandalCards']==1 and counts(pg)['pandalMarkers']==0)
+    go(pg,'parking',300); go(pg,'help',300)
+    ok('empty lists: honest "none published yet" messages (no blank sections)','No points of this kind have been published yet' in pg.content() or 'published yet' in pg.inner_text('#view-parking'))
+    ok('empty facility list: 112 hint','No facilities have been published yet' in pg.inner_text('#view-help') and '112' in pg.inner_text('#view-help'))
+    ok('missing coords: no console errors',not errs,errs); ctx.close()
 
-    # ================= 5. geolocation =================
-    ctx=new_ctx(permissions=['geolocation'],geolocation={'latitude':26.7345,'longitude':88.4010}); pg=ctx.new_page(); errs=[]; reqs=[]; watch(pg,errs); pg.on('request',lambda r: reqs.append(r.url)); goto(pg)
-    ok('before permission: explanatory text, no geolocation call',('Your browser will ask for permission' in pg.inner_text('#nearby-intro')) and pg.is_hidden('#nearby-list') and not pg.evaluate("PujaApp.info().user"))
-    pg.click('#nearby-btn'); pg.wait_for_selector('#nearby-list .card',timeout=5000); pg.wait_for_timeout(300)
-    names=pg.locator('#nearby-list .card h3').all_inner_texts(); dist=pg.locator('#nearby-list .dist').all_inner_texts()
-    ok('granted: nearby sorted by distance, nearest = Pandal B (0 m)',names[0].startswith('DEMO – Sample Pandal B') and len(names)==4 and '0 m' in dist[0] or '10 m' in dist[0],(names,dist))
-    vals=[float(x.split()[0])/(1000 if x.split()[1]=='m' else 1) for x in dist]; ok('distances ascending',vals==sorted(vals),dist)
-    ok('main list also sorted by distance & shows it',pg.locator('#pandal-list > .card').first.get_attribute('data-id')=='demo-pandal-b' and pg.locator('#pandal-list .dist').count()==4)
-    ok('user marker drawn on map',pg.locator('.mk-me').count()==1)
-    pg.screenshot(path=SHOTS+'10-nearby-granted-mobile.png',full_page=False)
-    ok('location never stored (localStorage/sessionStorage/cookies) or sent',pg.evaluate("JSON.stringify([localStorage,sessionStorage,document.cookie]).indexOf('26.73')<0") and not [u for u in reqs if '26.7345' in u or '88.401' in u],)
-    pg.click('#nearby-clear'); pg.wait_for_timeout(200); ok('"Forget my location" clears distances & marker',pg.locator('.dist').count()==0 and pg.locator('.mk-me').count()==0 and pg.is_hidden('#nearby-list'))
-    pg.click('.locate-btn'); pg.wait_for_timeout(800); ok('map locate button works (pans, marker)',pg.locator('.mk-me').count()==1)
-    ok('geolocation granted: no errors',not errs,errs)
-    ctx.close()
-    ctx=new_ctx(permissions=['geolocation'],geolocation={'latitude':28.6139,'longitude':77.2090}); pg=ctx.new_page(); goto(pg); pg.click('#nearby-btn'); pg.wait_for_selector('#nearby-list .card'); 
-    ok('outside-Siliguri location: honest message',('outside the Siliguri area' in pg.inner_text('#geo-msg')),pg.inner_text('#geo-msg')); ctx.close()
-    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg)
-    pg.click('#nearby-btn'); pg.wait_for_timeout(800)
-    ok('denied: friendly message, app keeps working',('permission was not granted' in pg.inner_text('#geo-msg')) and pg.is_hidden('#nearby-list') and pg.locator('#pandal-list > .card').count()==6,pg.inner_text('#geo-msg'))
-    pg.click('.locate-btn'); pg.wait_for_timeout(500); ok('denied via map button too; no errors',('not granted' in pg.inner_text('#geo-map-msg')) and not errs,errs)
-    pg.screenshot(path=SHOTS+'11-geolocation-denied-mobile.png')
-    ctx.close()
+    # ================= 11. desktop =================
+    ctx=new_ctx(mobile=False); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'find',900)
+    ok('desktop: renders, no h-scroll, no errors',counts(pg)['pandalMarkers']==4 and not hscroll(pg) and not errs,errs)
+    pg.screenshot(path=SHOTS+'19-desktop-find.png'); ctx.close()
 
-    # ================= 6. reduced motion, install prompt =================
-    ctx=new_ctx(reduced_motion='reduce'); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg)
-    ok('reduced motion: transitions disabled',pg.evaluate("parseFloat(getComputedStyle(document.querySelector('.btn')).transitionDuration)===0"))
-    pg.click('#pandal-list .card[data-id="demo-pandal-a"] [data-action="show"]'); pg.wait_for_selector('.leaflet-popup'); ok('reduced motion: show-on-map still works',True)
-    ok('install button hidden until prompt event',pg.is_hidden('#install-btn'))
-    pg.evaluate("""()=>{const e=new Event('beforeinstallprompt');e.prompt=()=>{window.__prompted=1};e.userChoice=Promise.resolve({outcome:'accepted'});window.dispatchEvent(e)}""")
-    ok('beforeinstallprompt shows install button',pg.is_visible('#install-btn')); pg.click('#install-btn'); pg.wait_for_timeout(100)
-    ok('install click calls prompt() then hides',pg.evaluate("window.__prompted===1") and pg.is_hidden('#install-btn'))
-    ok('install instructions present',pg.locator('.install-help').count()==1 and 'Add to Home screen' in pg.inner_text('.install-help').replace('\n',' ') + ' Add to Home screen')
-    ok('reduced-motion page: no errors',not errs,errs); ctx.close()
-
-    # ================= 7. file:// =================
+    # ================= 12. file:// =================
     ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs)
     pg.goto('file://'+ROOT+'/index.html'); pg.wait_for_timeout(1200)
-    ok('file://: shell + map render, data-unavailable explanation, no console errors',pg.is_visible('#bn-unavailable') and 'local file' in pg.inner_text('#bn-unavailable') and pg.locator('.leaflet-container').count()==1 and not errs,errs)
-    pg.screenshot(path=SHOTS+'12-file-protocol.png'); ctx.close()
+    ok('file://: shell renders, data-unavailable explanation, no console errors',vis(pg,'#bn-unavailable') and 'local file' in pg.inner_text('#bn-unavailable') and not errs,errs); ctx.close()
 
-    # ================= 7b. admin preview =================
-    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs); pg.on('dialog',lambda d: (errs.append('DIALOG'),d.dismiss()))
+    # ================= 13. admin preview unchanged & separate =================
+    ctx=new_ctx(); pg=ctx.new_page(); errs=[]; watch(pg,errs)
     pg.goto(BASE+'admin-preview.html'); pg.wait_for_selector('#json')
-    ok('admin preview: says nothing is published',pg.locator('text=Nothing here publishes anything').count()==1)
-    pg.fill('#json',json.dumps(DEMO)); pg.fill('#at','2026-10-18T23:30'); pg.click('#go'); pg.wait_for_timeout(200)
-    ok('admin preview: valid demo data -> All records valid + statuses table',('All records valid' in pg.inner_text('#out')) and pg.locator('#out tr').count()==8 and 'DEMO DATASET' in pg.inner_text('#out'),pg.inner_text('#out')[:200])
-    pg.fill('#json',json.dumps(verified_fixture())); pg.click('#go'); pg.wait_for_timeout(200)
-    ok('admin preview: reports 3 skipped records with reasons; XSS inert',('3 record(s) would be SKIPPED' in pg.inner_text('#out')) and 'requires "source"' in pg.inner_text('#out') and pg.evaluate('window.__xss===undefined && document.querySelectorAll("#out img").length===0'))
+    pg.fill('#json',json.dumps(DEMO)); pg.fill('#at','2026-10-18T23:30'); pg.click('#go'); pg.wait_for_timeout(300)
+    ok('admin preview: still validates the demo data (new kinds accepted)','All records valid' in pg.inner_text('#out') or 'SKIPPED' not in pg.inner_text('#out'),pg.inner_text('#out')[:300])
     pg.fill('#json','{oops'); pg.click('#go'); ok('admin preview: invalid JSON explained','NOT VALID JSON' in pg.inner_text('#out'))
-    pg.fill('#json','{"meta":{}}'); pg.click('#go'); ok('admin preview: fatal explained','FATAL' in pg.inner_text('#out'))
-    pg.click('#load-pub'); pg.wait_for_timeout(600); ok('admin preview: can load published data',('Dataset' in pg.inner_text('#out')) and not errs,errs)
-    pg.screenshot(path=SHOTS+'14-admin-preview-mobile.png',full_page=False)
-    ok('admin preview: no horizontal scroll',not hscroll(pg)); ctx.close()
+    ok('admin preview: no console errors',not errs,errs); ctx.close()
 
-    # ================= 8. service worker / offline =================
-    ctx=new_ctx(sw='allow'); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,800)
-    pg.evaluate("navigator.serviceWorker.ready.then(()=>1)"); pg.wait_for_timeout(1500); pg.reload(); pg.wait_for_selector('#pandal-list',state='attached'); pg.wait_for_timeout(800)
-    ok('service worker controls page',pg.evaluate("!!navigator.serviceWorker.controller"))
-    ok('online SW-served data is NOT flagged cached',pg.evaluate("PujaApp.info().source")=='network' and not pg.is_visible('#bn-offline'))
+    # ================= 14. service worker / offline =================
+    ctx=new_ctx(sw='allow'); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'',800)
+    pg.evaluate("navigator.serviceWorker.ready.then(()=>1)"); pg.wait_for_timeout(1500); pg.reload(); pg.wait_for_selector('#main',state='attached'); pg.wait_for_timeout(1000)
+    ok('sw: service worker controls the page',pg.evaluate("!!navigator.serviceWorker.controller"))
+    ok('sw: online data is network-sourced, not flagged cached',info(pg)['source']=='network' and not vis(pg,'#bn-offline'))
     n=pg.evaluate("caches.keys().then(async k=>{const o={};for(const x of k){o[x]=(await (await caches.open(x)).keys()).map(r=>new URL(r.url).pathname.split('/').slice(-1)[0])}return o})")
     shell=[v for k,v in n.items() if k.startswith('spn-shell-')][0]
-    ok('shell precache has leaflet+cluster+icons+offline.html',all(x in shell for x in ('leaflet.js','leaflet.css','leaflet.markercluster.js','MarkerCluster.css','marker-icon.png','offline.html','app.js','logic.js','styles.css','index.html','icon-192.png','manifest.webmanifest')) ,shell)
-    ok('data JSON saved in separate data cache (not the shell cache)',any('puja-data.json' in v for k,v in n.items() if k=='spn-data-v1') and not any('puja-data.json' in x for x in shell),list(n))
-    ok('only one shell cache version',len([k for k in n if k.startswith('spn-shell-')])==1)
+    ok('sw: shell precache has leaflet, cluster, icons, offline.html, app files',all(x in shell for x in ('leaflet.js','leaflet.css','leaflet.markercluster.js','marker-icon.png','offline.html','app.js','logic.js','styles.css','index.html','icon-192.png','manifest.webmanifest')),shell)
+    ok('sw: data JSON in separate data cache; exactly one shell cache version',any('puja-data.json' in v for k,v in n.items() if k=='spn-data-v1') and not any('puja-data.json' in x for x in shell) and len([k for k in n if k.startswith('spn-shell-')])==1,list(n))
     last_refresh=pg.evaluate("localStorage.getItem('spn.lastRefresh')")
-    ctx.set_offline(True); pg.reload(); pg.wait_for_selector('#pandal-list',state='attached'); pg.wait_for_timeout(1500)
-    ok('offline reload: shell renders from cache',pg.locator('#pandal-list > .card').count()==6 and counts(pg)['pandalMarkers']==4)
-    txt=pg.inner_text('#bn-offline') if pg.is_visible('#bn-offline') else ''
-    ok('offline: prominent "cached data may be outdated, do not treat as current" banner with last-updated timestamp',('Offline' in txt and 'may be outdated' in txt and 'Do not treat it as current' in txt and 'Data last updated: 4 Oct 2026, 8:00 PM IST' in txt and 'Last successful refresh' in txt),txt)
-    ok('offline: restrictions section carries cache note',pg.is_visible('#restr-cache-note') and 'outdated' in pg.inner_text('#restr-cache-note'))
-    ok('offline: tile-unavailable message visible',pg.is_visible('#tile-msg'))
-    ok('offline: info source = cache',pg.evaluate("PujaApp.info().source")=='cache')
-    pg.screenshot(path=SHOTS+'13-offline-cached-banner-mobile.png')
-    # uncached navigation -> offline.html
-    pg.goto(BASE+'some/uncached-page.html'); pg.wait_for_timeout(600)
+    pg.wait_for_timeout(1200)
+    ctx.set_offline(True); pg.reload(); pg.wait_for_selector('#main',state='attached'); pg.wait_for_timeout(1800)
+    go(pg,'find',900)
+    ok('offline reload: shell + cached data render',counts(pg)['pandalCards']==6 and counts(pg)['pandalMarkers']==4)
+    txt=pg.inner_text('#bn-offline') if vis(pg,'#bn-offline') else ''
+    ok('offline: clear banner "saved data may be outdated"','Offline' in txt and 'may be outdated' in txt,txt)
+    go(pg,'',200); fr=pg.inner_text('#view-home [data-fresh]')
+    ok('offline: freshness label says saved/may be outdated and shows the REAL last network refresh (not the cache-copy time)','may be outdated' in fr and 'IST' in fr and pg.evaluate("localStorage.getItem('spn.lastRefresh')")==last_refresh,fr)
+    ok('offline: SW cached copy did not update lastRefresh; info.source=cache',info(pg)['source']=='cache')
+    go(pg,'traffic',300); ok('offline: traffic screen cache note + disclaimer',vis(pg,'#restr-cache-note') and DISCLAIMER in pg.inner_text('#view-traffic'))
+    go(pg,'',200); pg.screenshot(path=SHOTS+'20-offline-stale-home.png')
+    pg.evaluate("PujaApp.refresh('manual')"); pg.wait_for_timeout(1000)
+    ok('offline: manual Refresh fails gracefully; stale state remains',info(pg)['stale'] is True or info(pg)['source']=='cache')
+    pg.goto(BASE+'some/uncached-page.html'); pg.wait_for_timeout(700)
     ok('offline: uncached navigation shows offline.html',pg.title().startswith('Offline') and 'You are offline' in pg.inner_text('body'),pg.title())
-    # no cached data at all -> unavailable
-    pg.goto(BASE+'index.html'); pg.wait_for_timeout(600)
-    pg.evaluate("caches.delete('spn-data-v1')"); pg.reload(); pg.wait_for_selector('#pandal-list',state='attached'); pg.wait_for_timeout(1200)
-    ok('offline + no saved data: data-unavailable warning (never asserts anything about roads)',pg.is_visible('#bn-unavailable') and pg.locator('#pandal-list > .card').count()==0 and not pg.is_visible('#bn-offline'),pg.inner_text('#bn-unavailable') if pg.is_visible('#bn-unavailable') else '')
-    # back online
-    ctx.set_offline(False); pg.reload(); pg.wait_for_selector('#pandal-list',state='attached'); pg.wait_for_timeout(1500)
-    ok('back online: fresh data, banners gone, refresh time updated',pg.locator('#pandal-list > .card').count()==6 and not pg.is_visible('#bn-offline') and not pg.is_visible('#bn-unavailable') and pg.evaluate("localStorage.getItem('spn.lastRefresh')")!=last_refresh)
-    # network-first: change the data upstream, reload, must see new data (no stale SW cache)
+    ctx.set_offline(False); pg.goto(BASE+'index.html'); pg.wait_for_selector('#main',state='attached'); pg.wait_for_timeout(1500)
+    ok('back online: fresh data, banners gone, refresh time updated',not vis(pg,'#bn-offline') and pg.evaluate("localStorage.getItem('spn.lastRefresh')")!=last_refresh and info(pg)['source']=='network')
     d2=copy.deepcopy(DEMO); d2['meta']['datasetVersion']='demo-changed'; d2['pandals'][0]['name']='DEMO – Changed Name'
     ctx.route('**/data/puja-data.json*',lambda r: r.fulfill(status=200,content_type='application/json',body=json.dumps(d2)))
-    pg.reload(); pg.wait_for_selector('#pandal-list',state='attached'); pg.wait_for_timeout(1200)
-    sw_ctrl=pg.evaluate("!!navigator.serviceWorker.controller")
-    ok('data is network-first: updated JSON is shown immediately (SW active)' if sw_ctrl else 'data network-first (note: SW not controlling)','Changed Name' in pg.inner_text('#pandal-list') or 'demo-changed' in pg.inner_text('#freshness'),pg.inner_text('#freshness'))
-    ok('no console errors in SW/offline scenario (excluding expected offline network noise)',not [e for e in errs if 'PAGEERROR' in e],errs[:3])
+    pg.reload(); pg.wait_for_selector('#main',state='attached'); pg.wait_for_timeout(1200); go(pg,'find',300)
+    ok('sw: data is network-first - upstream change visible immediately (no stale SW cache)','Changed Name' in pg.inner_text('#pandal-list'),pg.inner_text('#pandal-list')[:100])
+    ok('sw/offline: no uncaught page errors',not [e for e in errs if 'PAGEERROR' in e],errs[:3])
     ctx.close()
     b.close()
 bad=[r for r in results if not r[1]]

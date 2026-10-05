@@ -122,9 +122,115 @@ t('maps invalid coords no address -> null', L.mapsDirUrl({ lat: 5, lon: 5 }) ===
 t('distance ~0 and ~1.1km per 0.01deg lat', L.distanceKm(26.7, 88.4, 26.7, 88.4) === 0 && Math.abs(L.distanceKm(26.7, 88.4, 26.71, 88.4) - 1.112) < 0.01);
 t('search: AND of word-prefixes, case-insensitive, punctuation-insensitive', L.matches('sample  a', ['DEMO – Sample Pandal A']) && !L.matches('sample z', ['DEMO – Sample Pandal A']) && L.matches('', []) && L.matches('pand', ['Pandal']) && !L.matches('andal', ['Pandal']) && L.matches('rd', ['Hill Cart Rd.']) && L.matches('demo sample', ['DEMO – Sample']));
 
+// ================= visitor-flow additions =================
+const DEMO = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'puja-data.json'), 'utf8'));
+const OKP = { status: 'admin-verified', source: 'Test notice 1', verifiedAt: '2026-10-04T10:00:00+05:30', verifiedBy: 'Test desk' };
+function fixture(extra) { // a small fully-verified fixture dataset
+  const d = ds([], {
+    pandals: [Object.assign({ id: 'p1', name: 'P1', locality: 'L', lat: 26.72, lon: 88.40, entrances: [Object.assign({ id: 'p1-e1', name: 'Gate', lat: 26.7205, lon: 88.4005, verified: true }, OKP)] }, OKP),
+              { id: 'p2', name: 'P2', locality: 'L', address: 'Road 2', status: 'unconfirmed', entrances: [{ id: 'p2-e1', name: 'Gate2', lat: 26.73, lon: 88.41, verified: true, source: 's', verifiedAt: OKP.verifiedAt, verifiedBy: 'x' }] },
+              { id: 'p3', name: 'P3', locality: 'L', status: 'unconfirmed' }],
+    parking: [Object.assign({ id: 'k1', name: 'K1', lat: 26.71, lon: 88.39, approved: true }, OKP)],
+    accessPoints: [Object.assign({ id: 'a1', name: 'A1', type: 'drop-off', lat: 26.715, lon: 88.395, designated: true }, OKP)],
+    walkingRoutes: [Object.assign({ id: 'w1', name: 'W1', fromId: 'k1', pandalId: 'p1', entranceId: 'p1-e1', routeVerified: true, distanceM: 1800, timeMin: 25,
+      waypoints: [{ lat: 26.71, lon: 88.39 }, { lat: 26.715, lon: 88.397 }, { lat: 26.7205, lon: 88.4005 }], instructions: ['Walk north.', 'Gate on left.'] }, OKP)],
+    restrictions: [mk({ start: '2026-10-18T10:00:00+05:30', end: '2026-10-18T20:00:00+05:30' })],
+    diversionPoints: [Object.assign({ id: 'd1', name: 'D1', restrictionId: 'r1', lat: 26.72, lon: 88.40, instruction: 'Turn left.' }, OKP)],
+    facilities: [Object.assign({ id: 'f1', name: 'Hospital', type: 'hospital', lat: 26.72, lon: 88.40, emergencyCapabilityVerified: true, emergencyCapable: true, phone: '+91 353 000000', phoneAuthorised: true }, OKP)]
+  });
+  return Object.assign(d, extra || {});
+}
+const good = L.validateDataset(fixture());
+t('fixture dataset fully valid', good.ok && good.skipped.length === 0, good.skipped);
+t('all new kinds parsed', good.accessPoints.length === 1 && good.walkingRoutes.length === 1 && good.diversionPoints.length === 1 && good.facilities.length === 1);
+t('verified route keeps distance/time', good.walkingRoutes[0].routeVerified && good.walkingRoutes[0].distanceM === 1800 && good.walkingRoutes[0].timeMin === 25);
+t('verified hospital: capability + authorised phone kept', good.facilities[0].emergencyCapable === true && good.facilities[0].phone === '+91 353 000000');
+t('verified entrance kept (own provenance, verified pandal)', good.pandals[0].entrances[0].verified === true);
+t('entrance on UNVERIFIED pandal stays unverified', good.pandals[1].entrances[0].verified === false);
+t('old-format dataset (no new lists) still valid and silent', (() => { const v = L.validateDataset(ds([mk({ start: single.start, end: single.end })])); return v.ok && v.notices.length === 0 && v.walkingRoutes.length === 0; })());
+
+// directions: verified entrance > point > address > null
+const gp = good.pandals;
+t('directions -> verified entrance coordinates', L.directionsFor(gp[0]).url === 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent('26.7205,88.4005') && L.directionsFor(gp[0]).target === 'entrance');
+t('directions -> unverified entrance is NOT used (address fallback)', L.directionsFor(gp[1]).target === 'address' && /Road%202$/.test(L.directionsFor(gp[1]).url));
+t('directions -> none (disabled)', L.directionsFor(gp[2]) === null);
+t('directions -> pandal point when no verified entrance', (() => { const p = Object.assign({}, gp[0], { entrances: [] }); return L.directionsFor(p).target === 'point'; })());
+t('demo data: no entrance is treated as verified, so directions use the pandal point/address', (() => { const v = L.validateDataset(DEMO); return v.pandals.every(p => !L.verifiedEntrance(p)) && L.directionsFor(v.pandals[0]).target === 'point'; })());
+
+// references
+function route(extra) { const d = fixture(); d.walkingRoutes = [Object.assign({}, d.walkingRoutes[0], extra)]; return L.validateDataset(d); }
+t('route: unknown fromId skipped', route({ fromId: 'nope' }).walkingRoutes.length === 0 && route({ fromId: 'nope' }).skipped[0].reasons.join().includes('fromId'));
+t('route: unknown pandalId skipped', route({ pandalId: 'nope' }).walkingRoutes.length === 0);
+t('route: entrance of another pandal skipped', route({ entranceId: 'p2-e1' }).walkingRoutes.length === 0);
+t('route: from can be an access point', route({ fromId: 'a1' }).walkingRoutes.length === 1);
+t('route: invalid waypoint coordinates skipped', route({ waypoints: [{ lat: 26.7, lon: 88.4 }, { lat: 50, lon: 88.4 }] }).walkingRoutes.length === 0);
+t('route: verified but missing distance -> downgraded, no distance shown', (() => { const v = route({ distanceM: undefined }); return v.walkingRoutes[0].routeVerified === false && v.walkingRoutes[0].distanceM === null && v.notices.some(n => /unverified/.test(n)); })());
+t('route: verified flag on non-verified record -> downgraded', (() => { const d = fixture(); d.walkingRoutes[0].status = 'demo'; d.walkingRoutes[0].demo = true; const v = L.validateDataset(d); return v.walkingRoutes[0].routeVerified === false && v.walkingRoutes[0].timeMin === null; })());
+t('route: distance shorter than straight line -> downgraded', route({ distanceM: 50 }).walkingRoutes[0].routeVerified === false);
+t('route: <2 waypoints cannot be verified', route({ waypoints: [{ lat: 26.71, lon: 88.39 }] }).walkingRoutes[0].routeVerified === false);
+t('route: distance/time ignored when not routeVerified', (() => { const v = route({ routeVerified: false }); return v.walkingRoutes[0].distanceM === null && v.walkingRoutes[0].timeMin === null; })());
+t('route: skipped pandal also skips its route', (() => { const d = fixture(); d.pandals[0].lat = 5; return L.validateDataset(d).walkingRoutes.length === 0; })());
+function div(extra) { const d = fixture(); d.diversionPoints = [Object.assign({}, d.diversionPoints[0], extra)]; return L.validateDataset(d); }
+t('diversion: unknown restrictionId skipped', div({ restrictionId: 'zzz' }).diversionPoints.length === 0);
+t('diversion: needs instruction and coordinates', div({ instruction: '' }).diversionPoints.length === 0 && div({ lat: 1 }).diversionPoints.length === 0);
+t('diversion: linked ok', div({}).diversionPoints[0].restrictionId === 'r1');
+t('diversion: skipped restriction skips its diversion', (() => { const d = fixture(); d.restrictions[0].source = ''; return L.validateDataset(d).diversionPoints.length === 0; })());
+function fac(extra) { const d = fixture(); d.facilities = [Object.assign({}, d.facilities[0], extra)]; return L.validateDataset(d); }
+t('facility: invalid type skipped', fac({ type: 'bar' }).facilities.length === 0);
+t('facility: phone dropped unless phoneAuthorised', fac({ phoneAuthorised: false }).facilities[0].phone === '' );
+t('facility: phone dropped on demo/unverified record', fac({ status: 'demo', demo: true }).facilities[0].phone === '' && fac({ status: 'unconfirmed' }).facilities[0].phone === '');
+t('facility: emergency capability only when verified flag', fac({ emergencyCapabilityVerified: false }).facilities[0].emergencyCapable === false);
+t('facility: malformed phone dropped', fac({ phone: '<script>' }).facilities[0].phone === '');
+t('facility: needs coordinates/address/landmark', fac({ lat: undefined, lon: undefined, landmark: undefined }).facilities.length === 0 && fac({ lat: undefined, lon: undefined, landmark: 'Near the gate' }).facilities.length === 1);
+t('facility: bad coordinates skipped', fac({ lat: 30 }).facilities.length === 0);
+t('access point: invalid type / missing coordinates skipped', (() => { const d = fixture(); d.accessPoints = [Object.assign({}, d.accessPoints[0], { type: 'parking' }), Object.assign({}, d.accessPoints[0], { id: 'a2', lat: undefined, lon: undefined })]; const v = L.validateDataset(d); return v.accessPoints.length === 0 && v.skipped.length >= 2 && v.walkingRoutes.length === 1; })());
+t('ids are unique across all kinds incl. entrances', (() => { const d = fixture(); d.facilities[0].id = 'p1-e1'; return L.validateDataset(d).facilities.length === 0; })());
+t('published access point without source rejected', (() => { const d = fixture(); d.accessPoints[0].source = ''; return L.validateDataset(d).accessPoints.length === 0; })());
+
+// labels: never "approved/designated" unless explicit AND verified
+t('shortLabel: unverified is always "Unverified"', ['active', 'upcoming', 'expired', 'cancelled', 'unconfirmed'].every(s => L.shortLabel(s, false) === 'Unverified'));
+t('shortLabel: verified labels', L.shortLabel('active', true) === 'Active' && L.shortLabel('upcoming', true) === 'Upcoming' && L.shortLabel('expired', true) === 'Expired' && L.shortLabel('unconfirmed', true) === 'Unverified');
+
+// expired never active (walk every minute around/after the end of several schedule kinds)
+(function () {
+  const cases = [single, night, day, full, mk({ start: '2026-10-12T00:00:00+05:30', end: '2026-10-13T12:00:00+05:30' })];
+  let bad = 0;
+  cases.forEach(r => {
+    const w = L.windowsOf(r), last = w[w.length - 1].end;
+    for (let m = 0; m <= 3 * 24 * 60; m += 7) { const ev = L.evaluateRestriction(r, last + m * 60000); if (ev.state !== 'expired') bad++; }
+    const evEnd = L.evaluateRestriction(r, last - 1); if (evEnd.state !== 'active') bad++;
+  });
+  t('expired never active: all minutes at/after the final end are "expired"', bad === 0, bad);
+})();
+t('incomplete data is never active: no schedule -> unconfirmed', L.evaluateRestriction(mk({ status: 'unconfirmed' }), ms('2026-10-18T12:00:00+05:30')).state === 'unconfirmed');
+
+// freshness text
+const NOW = ms('2026-10-05T09:00:00+05:30');
+t('freshness: fresh network', (() => { const f = L.freshness({ status: 'ok', source: 'network', stale: false, lastRefresh: NOW - 60000 }, NOW); return f.level === 'ok' && f.text === 'Data refreshed 8:59 AM IST'; })());
+t('freshness: old (>15 min) shows age and is not "ok"', (() => { const f = L.freshness({ status: 'ok', source: 'network', stale: false, lastRefresh: NOW - 40 * 60000 }, NOW); return f.level === 'old' && /40 min ago/.test(f.text); })());
+t('freshness: cached copy is "may be outdated" with last real refresh', (() => { const f = L.freshness({ status: 'ok', source: 'cache', stale: false, lastRefresh: NOW - 3600000 }, NOW); return f.level === 'stale' && /may be outdated/.test(f.text) && /8:00 AM IST/.test(f.text); })());
+t('freshness: failed refresh keeps data but flags stale', L.freshness({ status: 'ok', source: 'network', stale: true, lastRefresh: NOW - 1000 }, NOW).level === 'stale');
+t('freshness: unknown refresh time never looks current', L.freshness({ status: 'ok', source: 'cache', lastRefresh: null }, NOW).text.includes('unknown'));
+t('freshness: other day shows the date', /4 Oct 2026/.test(L.freshness({ status: 'ok', source: 'cache', lastRefresh: ms('2026-10-04T08:00:00+05:30') }, NOW).text));
+t('freshness: unavailable / loading', L.freshness({ status: 'unavailable', lastRefresh: null }, NOW).level === 'none' && L.freshness({ status: 'loading' }, NOW).level === 'loading');
+t('freshness text never claims current/live/confirmed', ['network', 'cache'].every(src => !/\b(current|live|confirmed|up to date)\b/i.test(L.freshness({ status: 'ok', source: src, stale: false, lastRefresh: NOW }, NOW).text)));
+
+// ---- the bundled demo data file itself
+const dv = L.validateDataset(DEMO);
+t('demo file: valid, nothing skipped, no notices', dv.ok && dv.skipped.length === 0 && dv.notices.length === 0, [dv.skipped, dv.notices]);
+t('demo file: flagged as demo dataset', dv.meta.isDemoDataset === true);
+const allDemo = [].concat(dv.pandals, dv.parking, dv.accessPoints, dv.restrictions, dv.walkingRoutes, dv.diversionPoints, dv.facilities);
+t('demo file: every record is demo/unconfirmed, none verified', allDemo.every(r => (r.demo || r.status === 'unconfirmed') && r.verified === false), allDemo.filter(r => r.verified).map(r => r.id));
+t('demo file: every record id unique and in range', (() => { const ids = allDemo.map(r => r.id); return new Set(ids).size === ids.length && allDemo.every(r => r.lat === undefined || L.validCoords(r.lat, r.lon)); })());
+t('demo file: no walking route claims verification, no distance/time', dv.walkingRoutes.every(r => !r.routeVerified && r.distanceM === null && r.timeMin === null) && !/"routeVerified"\s*:\s*true/.test(JSON.stringify(DEMO)));
+t('demo file: no phone numbers, no designation/approval claims', !/"phone"|"phoneAuthorised"/.test(JSON.stringify(DEMO)) && !/"(approved|designated)"\s*:\s*true/.test(JSON.stringify(DEMO)) && !/"verified"\s*:\s*true/.test(JSON.stringify(DEMO)));
+t('demo file: all route / diversion references resolve', dv.walkingRoutes.length === DEMO.walkingRoutes.length && dv.diversionPoints.length === DEMO.diversionPoints.length);
+t('demo file: all five facility types and all four access types present', ['toilet', 'drinking-water', 'first-aid', 'hospital', 'police-booth'].every(x => dv.facilities.some(f => f.type === x)) && ['drop-off', 'pick-up', 'pedestrian-entrance', 'pedestrian-exit'].every(x => dv.accessPoints.some(f => f.type === x)));
+t('demo file: no verified geometry drawn', dv.restrictions.every(r => !r.geometry));
+
 // --- copy lint: no false claims of live traffic / open roads / "confirmed in force"
 const root = path.join(__dirname, '..');
-const scan = ['index.html', 'app.js', 'logic.js', 'offline.html', 'data/puja-data.json'];
+const scan = ['index.html', 'app.js', 'logic.js', 'offline.html', 'admin-preview.html', 'data/puja-data.json'];
 const banned = [/confirmed in force/i, /\bconfirmed live\b/i, /\bclear road/i, /roads? (is|are) (open|clear)/i, /\bsafe to (drive|travel|go)/i, /\bis open\b/i, /\bcurrently closed\b/i, /\bcurrently open\b/i];
 scan.forEach(f => {
   const txt = fs.readFileSync(path.join(root, f), 'utf8').replace(/aria-live/g, 'aria-x').replace(/(not|never) assume any road is open or restricted/gi, 'NEGATED-OK');

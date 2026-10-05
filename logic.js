@@ -13,6 +13,8 @@
   var RTYPES = ['no-entry', 'vehicle-restriction', 'one-way', 'diversion', 'parking-restriction', 'pedestrian-zone', 'other'];
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var MAX_RECURRING_DAYS = 366;
+  var ACCESS_TYPES = ['drop-off', 'pick-up', 'pedestrian-entrance', 'pedestrian-exit'];
+  var FACILITY_TYPES = ['toilet', 'drinking-water', 'first-aid', 'hospital', 'police-booth'];
 
   /* ---------- time helpers (all IST) ---------- */
   function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -58,6 +60,32 @@
   function toLocalInputValue(ms) { var p = istParts(ms); return p.y + '-' + pad(p.mo) + '-' + pad(p.d) + 'T' + pad(p.h) + ':' + pad(p.mi); }
   function fromLocalInputValue(v) { return typeof v === 'string' && v ? parseIST(v + (v.length === 16 ? ':00' : '') + '+05:30') : NaN; }
 
+  // "6:44 AM IST" if on the same IST date as `now`, else "4 Oct 2026, 6:44 AM IST"
+  function fmtShort(ms, now) {
+    if (!isFinite(ms)) return 'unknown';
+    var a = istParts(ms), b = istParts(isFinite(now) ? now : ms);
+    return (a.y === b.y && a.mo === b.mo && a.d === b.d) ? fmtTime(ms) + ' IST' : fmtDateTime(ms);
+  }
+  function fmtAge(ms) {
+    var m = Math.max(0, Math.round(ms / 60000));
+    if (m < 1) return 'under a minute';
+    if (m < 60) return m + ' min';
+    var h = Math.floor(m / 60); return h + ' h ' + (m % 60) + ' min';
+  }
+  var OLD_AFTER_MS = 15 * 60000;
+  // Text for the compact freshness indicator. Never claims the data is up to date.
+  // load = {status:'loading'|'ok'|'unavailable', source:'network'|'cache', stale:bool, lastRefresh:ms|null}
+  function freshness(load, now) {
+    if (!load || load.status === 'loading') return { level: 'loading', text: 'Loading data…' };
+    var last = load.lastRefresh ? fmtShort(load.lastRefresh, now) : 'unknown';
+    if (load.status === 'unavailable') return { level: 'none', text: 'Data unavailable. Last successful refresh on this device: ' + last };
+    if (load.source === 'cache' || load.stale) return { level: 'stale', text: 'Saved data – may be outdated. Last successful refresh: ' + last };
+    var age = now - load.lastRefresh;
+    if (!(load.lastRefresh > 0)) return { level: 'stale', text: 'Refresh time unknown – data may be outdated' };
+    if (age > OLD_AFTER_MS) return { level: 'old', text: 'Data last refreshed ' + last + ' (' + fmtAge(age) + ' ago)' };
+    return { level: 'ok', text: 'Data refreshed ' + last };
+  }
+
   /* ---------- coordinates / links ---------- */
   function isNum(x) { return typeof x === 'number' && isFinite(x); }
   function validCoords(lat, lon) {
@@ -77,6 +105,22 @@
   function safeHttpUrl(u) {
     if (typeof u !== 'string') return '';
     try { var x = new URL(u.trim()); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : ''; } catch (e) { return ''; }
+  }
+
+  // The destination for the single "Directions" action of a pandal:
+  // verified public entrance > pandal map point > written address > none (disabled).
+  function verifiedEntrance(p) {
+    var es = (p && p.entrances) || [];
+    for (var i = 0; i < es.length; i++) if (es[i].verified === true && p.verified === true && validCoords(es[i].lat, es[i].lon)) return es[i];
+    return null;
+  }
+  function directionsFor(p) {
+    var e = verifiedEntrance(p);
+    if (e) return { url: mapsDirUrl(e), target: 'entrance', note: 'Directions go to the verified public entrance.' };
+    if (p && validCoords(p.lat, p.lon)) return { url: mapsDirUrl(p), target: 'point', note: 'Directions go to the pandal\'s mapped point; its public entrance is not verified.' + (p.approximateLocation ? ' The point is approximate.' : '') };
+    var u = mapsDirUrl(p);
+    if (u) return { url: u, target: 'address', note: 'Directions use the written address and may be approximate.' };
+    return null;
   }
 
   /* ---------- schedule windows ---------- */
@@ -142,6 +186,12 @@
   };
   function stateLabel(state, verified) { return (verified ? STATE_LABEL_VERIFIED : STATE_LABEL_SAMPLE)[state] || state; }
 
+  // Short, non-colour-only badge text. Anything not verified is simply "Unverified".
+  function shortLabel(state, verified) {
+    if (!verified) return 'Unverified';
+    return { active: 'Active', upcoming: 'Upcoming', expired: 'Expired', cancelled: 'Cancelled', unconfirmed: 'Unverified' }[state] || 'Unverified';
+  }
+
   function describeSchedule(r) {
     if (r.recurring && typeof r.recurring === 'object') {
       var rc = r.recurring, s = parseHM(rc.dailyStart, false), e = parseHM(rc.dailyEnd, true);
@@ -198,9 +248,10 @@
     return out;
   }
   function badgeOf(o) { return o.demo ? 'demo' : o.status; }
+  function isVerifiedRec(o) { return !o.demo && (o.status === 'official' || o.status === 'admin-verified'); }
 
   function validateDataset(raw) {
-    var res = { ok: false, fatal: '', meta: null, pandals: [], parking: [], restrictions: [], skipped: [], notices: [], draftCount: 0 };
+    var res = { ok: false, fatal: '', meta: null, pandals: [], parking: [], accessPoints: [], restrictions: [], walkingRoutes: [], diversionPoints: [], facilities: [], skipped: [], notices: [], draftCount: 0 };
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) { res.fatal = 'Data file is not a JSON object.'; return res; }
     var m = raw.meta;
     if (!m || typeof m !== 'object') { res.fatal = 'Data file has no "meta" section.'; return res; }
@@ -219,8 +270,9 @@
     var seen = {};
     function skip(kind, rec, reasons) { res.skipped.push({ kind: kind, id: rec && typeof rec === 'object' ? str(rec.id, 80) : '', reasons: reasons }); }
 
-    function handle(list, kind, build) {
-      if (list === undefined) { res.notices.push('No "' + kind + '" list found; treated as empty.'); return; }
+    function find(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+    function handle(list, kind, build, optional) {
+      if (list === undefined) { if (!optional) res.notices.push('No "' + kind + '" list found; treated as empty.'); return; }
       if (!Array.isArray(list)) { res.notices.push('"' + kind + '" is not a list; ignored.'); return; }
       list.forEach(function (rec) {
         var reasons = [], notices = [], base = checkCommon(rec, kind === 'restrictions' ? 'restriction' : 'other', seen, reasons, notices);
@@ -233,11 +285,29 @@
       });
     }
 
-    handle(raw.pandals, 'pandals', function (rec, o, reasons) {
+    handle(raw.pandals, 'pandals', function (rec, o, reasons, notices) {
       if (!o.hasCoords && !o.address && !o.locality) reasons.push('needs coordinates, address or locality');
       o.kind = 'pandal';
       o.timings = str(rec.timings, 500); o.entrance = str(rec.entrance, 500); o.nearestParking = str(rec.nearestParking, 500);
       o.accessibility = str(rec.accessibility, 500); o.restrictionIds = strList(rec.restrictionIds);
+      o.landmark = str(rec.landmark, 200);
+      // optional public entrances; only a fully sourced entrance on a verified pandal is ever treated as "verified"
+      o.entrances = [];
+      if (Array.isArray(rec.entrances)) rec.entrances.slice(0, 10).forEach(function (en) {
+        var eid = str(en && en.id, 80), why = [];
+        if (!eid || !/^[A-Za-z0-9._-]+$/.test(eid)) why.push('no valid id');
+        else if (seen[eid] || eid === o.id) why.push('duplicate id');
+        if (!en || !validCoords(en.lat, en.lon)) why.push('invalid coordinates');
+        if (why.length) { notices.push('entrance dropped (' + why.join(', ') + ')'); return; }
+        seen[eid] = true;
+        var ent = { id: eid, pandalId: o.id, name: str(en.name, 200) || 'Public entrance', lat: en.lat, lon: en.lon, description: str(en.description, 500), verified: false, source: '', verifiedBy: '', verifiedAtMs: NaN };
+        if (en.verified === true) {
+          var vat = parseIST(en.verifiedAt), vby = str(en.verifiedBy, 200), vsrc = str(en.source, 500);
+          if (isVerifiedRec(o) && isFinite(vat) && vby && vsrc) { ent.verified = true; ent.source = vsrc; ent.verifiedBy = vby; ent.verifiedAtMs = vat; }
+          else notices.push('entrance ' + eid + ' treated as unverified (needs a verified pandal plus its own source, verifiedAt, verifiedBy)');
+        }
+        o.entrances.push(ent);
+      });
       var img = str(rec.imageUrl, 500);
       o.imageUrl = /^https:\/\//i.test(img) || /^(?!\w+:|\/\/)[\w./-]+\.(png|jpe?g|webp|gif)$/i.test(img) ? img : '';
       return o;
@@ -246,13 +316,23 @@
       if (!o.hasCoords && !o.address) reasons.push('needs coordinates or address');
       o.kind = 'parking'; o.notes = str(rec.notes, 500); o.capacity = isNum(rec.capacity) && rec.capacity >= 0 ? Math.floor(rec.capacity) : null;
       o.vehicleTypes = strList(rec.vehicleTypes);
+      o.approved = rec.approved === true; o.landmark = str(rec.landmark, 200); o.hours = str(rec.hours, 300);
       return o;
     });
+    handle(raw.accessPoints, 'accessPoints', function (rec, o, reasons) {
+      o.kind = 'accessPoint';
+      var t = str(rec.type, 40); if (ACCESS_TYPES.indexOf(t) < 0) reasons.push('invalid type "' + t + '" (use ' + ACCESS_TYPES.join(', ') + ')'); o.type = t;
+      if (!o.hasCoords) reasons.push('needs valid coordinates');
+      o.designated = rec.designated === true; o.landmark = str(rec.landmark, 200); o.hours = str(rec.hours, 300);
+      o.vehicleTypes = strList(rec.vehicleTypes); o.notes = str(rec.notes, 500);
+      return o;
+    }, true);
     handle(raw.restrictions, 'restrictions', function (rec, o, reasons, notices) {
       o.kind = 'restriction';
       var t = str(rec.type, 40); if (RTYPES.indexOf(t) < 0) reasons.push('invalid type "' + t + '"'); o.type = t;
       o.cancelled = rec.cancelled === true;
       o.locationText = str(rec.locationText, 500); o.roads = strList(rec.roads);
+      o.roadStretch = str(rec.roadStretch, 300); o.direction = str(rec.direction, 200);
       if (!o.locationText && !o.hasCoords) reasons.push('needs locationText or a valid point');
       var hasSingle = rec.start !== undefined || rec.end !== undefined, hasRec = rec.recurring !== undefined;
       if (hasSingle && hasRec) reasons.push('use either start/end or recurring, not both');
@@ -282,6 +362,72 @@
       }
       return o;
     });
+    handle(raw.walkingRoutes, 'walkingRoutes', function (rec, o, reasons, notices) {
+      o.kind = 'walkingRoute';
+      o.fromId = str(rec.fromId, 80); o.pandalId = str(rec.pandalId, 80); o.entranceId = str(rec.entranceId, 80);
+      var from = find(res.accessPoints, o.fromId) || find(res.parking, o.fromId), pd = find(res.pandals, o.pandalId);
+      if (!from) reasons.push('fromId "' + o.fromId + '" is not a valid access point or parking record');
+      if (!pd) reasons.push('pandalId "' + o.pandalId + '" is not a valid pandal');
+      var ent = null;
+      if (o.entranceId) {
+        ent = pd ? pd.entrances.filter(function (e) { return e.id === o.entranceId; })[0] || null : null;
+        if (pd && !ent) reasons.push('entranceId "' + o.entranceId + '" is not an entrance of pandal "' + o.pandalId + '"');
+      }
+      o.waypoints = [];
+      if (rec.waypoints !== undefined) {
+        if (!Array.isArray(rec.waypoints) || rec.waypoints.length > 60) reasons.push('waypoints must be a list (max 60)');
+        else rec.waypoints.forEach(function (w) {
+          if (w && validCoords(w.lat, w.lon)) o.waypoints.push({ lat: w.lat, lon: w.lon, label: str(w.label, 120) });
+          else if (reasons.indexOf('invalid waypoint coordinates') < 0) reasons.push('invalid waypoint coordinates');
+        });
+      }
+      o.instructions = strList(rec.instructions);
+      o.routeVerified = false; o.distanceM = null; o.timeMin = null;
+      if (rec.routeVerified === true) {
+        var prob = [];
+        if (!isVerifiedRec(o)) prob.push('record is not official/admin-verified');
+        if (!isNum(rec.distanceM) || rec.distanceM <= 0 || rec.distanceM > 20000) prob.push('distanceM must be a number 1-20000');
+        if (!isNum(rec.timeMin) || rec.timeMin <= 0 || rec.timeMin > 240) prob.push('timeMin must be a number 1-240');
+        if (o.waypoints.length < 2) prob.push('needs at least 2 waypoints');
+        if (!o.instructions.length) prob.push('needs instructions');
+        var tgt = ent || (pd && pd.hasCoords ? pd : null);
+        if (from && from.hasCoords && tgt && isNum(rec.distanceM) && rec.distanceM < 0.9 * 1000 * distanceKm(from.lat, from.lon, tgt.lat, tgt.lon)) prob.push('distance is shorter than the straight line between the endpoints');
+        if (prob.length) notices.push('route treated as unverified: ' + prob.join('; '));
+        else { o.routeVerified = true; o.distanceM = Math.round(rec.distanceM); o.timeMin = Math.round(rec.timeMin); }
+      } else if (rec.distanceM !== undefined || rec.timeMin !== undefined) notices.push('distanceM/timeMin ignored: route is not marked routeVerified:true');
+      return o;
+    }, true);
+    handle(raw.diversionPoints, 'diversionPoints', function (rec, o, reasons) {
+      o.kind = 'diversionPoint';
+      o.restrictionId = str(rec.restrictionId, 80);
+      if (!find(res.restrictions, o.restrictionId)) reasons.push('restrictionId "' + o.restrictionId + '" is not a valid restriction');
+      if (!o.hasCoords) reasons.push('needs valid coordinates');
+      o.instruction = str(rec.instruction, 300); if (!o.instruction) reasons.push('missing instruction (a short turning instruction)');
+      o.landmark = str(rec.landmark, 200); o.order = isNum(rec.order) ? rec.order : 0;
+      return o;
+    }, true);
+    handle(raw.facilities, 'facilities', function (rec, o, reasons, notices) {
+      o.kind = 'facility';
+      var t = str(rec.type, 40); if (FACILITY_TYPES.indexOf(t) < 0) reasons.push('invalid type "' + t + '" (use ' + FACILITY_TYPES.join(', ') + ')'); o.type = t;
+      if (!o.hasCoords && !o.address && !str(rec.landmark, 200)) reasons.push('needs coordinates, address or landmark');
+      o.landmark = str(rec.landmark, 200); o.hours = str(rec.hours, 300);
+      var fa = parseIST(rec.availableFrom), ft = parseIST(rec.availableTo);
+      o.availableFromMs = NaN; o.availableToMs = NaN;
+      if (rec.availableFrom !== undefined || rec.availableTo !== undefined) {
+        if (isFinite(fa) && isFinite(ft) && ft > fa) { o.availableFromMs = fa; o.availableToMs = ft; } else notices.push('availableFrom/availableTo ignored (need both, +05:30, end after start)');
+      }
+      // hospital extras are shown only for verified, authorised records
+      o.emergencyCapable = false; o.phone = '';
+      if (t === 'hospital') {
+        if (rec.emergencyCapabilityVerified === true && isVerifiedRec(o)) o.emergencyCapable = rec.emergencyCapable === true;
+        if (rec.phone !== undefined) {
+          var ph = str(rec.phone, 30);
+          if (rec.phoneAuthorised === true && isVerifiedRec(o) && /^[0-9+][0-9 ()-]{4,19}$/.test(ph)) o.phone = ph;
+          else notices.push('phone ignored (only shown for official/admin-verified records with phoneAuthorised:true)');
+        }
+      } else if (rec.phone !== undefined) notices.push('phone ignored (only hospitals may list a phone number)');
+      return o;
+    }, true);
     res.ok = true;
     return res;
   }
@@ -294,12 +440,13 @@
     var hay = ' ' + norm(fields.join(' ')) + ' ';
     return q.split(' ').every(function (t) { return hay.indexOf(' ' + t) >= 0; });
   }
-  function pandalFields(p) { return [p.name, p.locality, p.address, p.description]; }
-  function restrictionFields(r) { return [r.name, r.locationText, r.description].concat(r.roads || []); }
-  function parkingFields(p) { return [p.name, p.locality, p.address, p.notes]; }
+  function pandalFields(p) { return [p.name, p.locality, p.landmark, p.address, p.description]; }
+  function restrictionFields(r) { return [r.name, r.roadStretch, r.locationText, r.description].concat(r.roads || []); }
+  function parkingFields(p) { return [p.name, p.locality, p.landmark, p.address, p.notes]; }
 
   return {
-    IST_MS: IST_MS, BBOX: BBOX, STATUSES: STATUSES, RTYPES: RTYPES,
+    IST_MS: IST_MS, BBOX: BBOX, STATUSES: STATUSES, RTYPES: RTYPES, ACCESS_TYPES: ACCESS_TYPES, FACILITY_TYPES: FACILITY_TYPES,
+    fmtShort: fmtShort, fmtAge: fmtAge, freshness: freshness, directionsFor: directionsFor, verifiedEntrance: verifiedEntrance, shortLabel: shortLabel,
     parseIST: parseIST, parseISTDate: parseISTDate, parseHM: parseHM, istParts: istParts,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtDateTime: fmtDateTime, fmtHM: fmtHM, toLocalInputValue: toLocalInputValue, fromLocalInputValue: fromLocalInputValue,
     validCoords: validCoords, mapsDirUrl: mapsDirUrl, distanceKm: distanceKm, safeHttpUrl: safeHttpUrl,
