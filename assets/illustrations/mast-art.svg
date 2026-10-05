@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+  <!-- faint mandala (left/back) -->
+  <g opacity=".22" stroke="#e3c36f" stroke-width="0.6">
+    <circle cx="42" cy="36" r="28"/>
+    <circle cx="42" cy="36" r="20"/>
+    <circle cx="42" cy="36" r="12"/>
+    <path d="M42 8v56M14 36h56M22 16l40 40M22 56l40-40"/>
+    <path d="M42 8c10 8 16 16 16 28s-6 20-16 28c-10-8-16-16-16-28s6-20 16-28z"/>
+  </g>
+  <!-- Durga face + crescent (right) -->
+  <g transform="translate(108,8)" stroke="#e3c36f" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+    <!-- crescent -->
+    <path d="M78 28c-2-14-14-24-28-24-2 0-4 .2-6 .6 8 2 14 10 14 20S52 44 44 46c2 .4 4 .6 6 .6 16 0 30-12 28-24z" fill="none"/>
+    <!-- face oval -->
+    <ellipse cx="34" cy="52" rx="22" ry="28"/>
+    <!-- third eye -->
+    <path d="M34 38v8"/>
+    <circle cx="34" cy="36" r="1.6" fill="#e3c36f" stroke="none"/>
+    <!-- eyes -->
+    <path d="M22 50c3-3 7-4 10-2"/>
+    <path d="M36 48c3-2 7-1 10 2"/>
+    <!-- nose -->
+    <path d="M34 54v8"/>
+    <!-- lips -->
+    <path d="M28 68c3 4 9 4 12 0"/>
+    <!-- crown / trident hint -->
+    <path d="M20 28l14-16 14 16"/>
+    <path d="M34 12v10"/>
+    <path d="M28 18h12"/>
+    <!-- earrings -->
+    <circle cx="14" cy="56" r="3"/>
+    <circle cx="54" cy="56" r="3"/>
+  </g>
+  <!-- soft bridge silhouette -->
+  <g fill="#2a0a12" opacity=".55">
+    <path d="M0 128c18-2 32-18 48-18s28 12 44 12 30-14 48-14 28 16 40 18v34H0z"/>
+    <path d="M20 128c8-22 24-36 40-36s28 10 36 22" stroke="#2a0a12" stroke-width="2" fill="none" opacity=".9"/>
+    <path d="M96 114c6-16 18-26 32-26s22 8 28 18" stroke="#2a0a12" stroke-width="2" fill="none"/>
+    <!-- towers -->
+    <rect x="52" y="96" width="3" height="32"/>
+    <rect x="118" y="100" width="3" height="28"/>
+    <path d="M40 128h120" stroke="#2a0a12" stroke-width="1.5"/>
+  </g>
+</svg>

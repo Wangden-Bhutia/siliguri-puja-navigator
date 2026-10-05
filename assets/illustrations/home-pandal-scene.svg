@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 220" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+  <defs>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e3c36f" stop-opacity=".55"/>
+      <stop offset="55%" stop-color="#c45a2a" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="#5a0f1e" stop-opacity=".15"/>
+    </linearGradient>
+    <linearGradient id="skyfade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fbf5e6" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#f3e0c8" stop-opacity=".5"/>
+      <stop offset="100%" stop-color="#e8c9a0" stop-opacity=".85"/>
+    </linearGradient>
+  </defs>
+  <rect width="390" height="220" fill="url(#skyfade)"/>
+  <!-- far pandals -->
+  <g fill="#c47a4a" opacity=".45">
+    <path d="M8 150h54l-6 40H14z"/>
+    <path d="M20 150l15-28 15 28"/>
+    <path d="M70 158h40l-4 32H74z"/>
+    <path d="M78 158l12-18 12 18"/>
+    <path d="M280 155h48l-5 35h-38z"/>
+    <path d="M290 155l14-24 14 24"/>
+    <path d="M335 160h48v30h-48z"/>
+    <path d="M345 160l14-20 14 20"/>
+  </g>
+  <!-- mid pandals -->
+  <g fill="#a84e2e" opacity=".7">
+    <path d="M30 165h70l-8 45H38z"/>
+    <path d="M45 165l20-36 20 36"/>
+    <rect x="58" y="178" width="14" height="20" rx="1" fill="#fbf5e6" opacity=".35"/>
+    <path d="M290 168h72l-8 42h-56z"/>
+    <path d="M308 168l20-32 20 32"/>
+    <rect x="318" y="182" width="16" height="18" rx="1" fill="#fbf5e6" opacity=".3"/>
+  </g>
+  <!-- central glowing arch + Durga -->
+  <g transform="translate(145,78)">
+    <ellipse cx="50" cy="88" rx="58" ry="20" fill="url(#glow)"/>
+    <!-- steps -->
+    <path d="M10 100h80l-6 18H16z" fill="#8c3a22"/>
+    <path d="M18 118h64l-4 12H22z" fill="#6e2a18"/>
+    <!-- arch -->
+    <path d="M18 100V48c0-22 16-40 32-40s32 18 32 40v52" fill="#b04a28"/>
+    <path d="M28 100V52c0-16 10-28 22-28s22 12 22 28v48" fill="url(#glow)"/>
+    <path d="M28 100V52c0-16 10-28 22-28s22 12 22 28v48" fill="none" stroke="#e3c36f" stroke-width="1.2" opacity=".8"/>
+    <!-- pillars -->
+    <rect x="14" y="48" width="12" height="52" fill="#8c3018"/>
+    <rect x="74" y="48" width="12" height="52" fill="#8c3018"/>
+    <!-- Durga silhouette in arch -->
+    <g fill="#5a0f1e" opacity=".85">
+      <ellipse cx="50" cy="58" rx="9" ry="11"/>
+      <path d="M50 48l-8-14h4l4 8 4-8h4z"/>
+      <path d="M36 78c4-12 10-16 14-16s10 4 14 16l-6 22H42z"/>
+      <path d="M28 70l12 6M72 70L60 76"/>
+      <path d="M32 66l8 10M68 66l-8 10"/>
+    </g>
+    <!-- lamp glow -->
+    <circle cx="50" cy="36" r="6" fill="#e3c36f" opacity=".55"/>
+  </g>
+  <!-- path -->
+  <path d="M120 200C160 170 230 170 270 200" fill="none" stroke="#d4a574" stroke-width="18" opacity=".55"/>
+  <path d="M120 200C160 170 230 170 270 200" fill="none" stroke="#f5e6d0" stroke-width="8" opacity=".7"/>
+  <!-- streetlights -->
+  <g stroke="#5a0f1e" stroke-width="1.5" fill="#e3c36f">
+    <path d="M132 198v-36"/>
+    <path d="M128 162h8" stroke-width="2"/>
+    <circle cx="132" cy="158" r="3.5" opacity=".9"/>
+    <path d="M258 198v-36"/>
+    <path d="M254 162h8" stroke-width="2"/>
+    <circle cx="258" cy="158" r="3.5" opacity=".9"/>
+  </g>
+  <!-- ground -->
+  <path d="M0 200h390v20H0z" fill="#e0b888" opacity=".5"/>
+</svg>

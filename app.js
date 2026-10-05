@@ -199,10 +199,17 @@
     if (d && d.meta && (d.meta.isDemoDataset || d.meta.containsDemoRecords)) {
       var db = el('div', 'banner banner-demo');
       // Compact status strip: DEMO kept; locations confirmed; parking/traffic NOT confirmed.
+      var row = el('div', 'banner-demo-row');
+      var ic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      ic.setAttribute('class', 'ic banner-info-ic'); ic.setAttribute('aria-hidden', 'true'); ic.setAttribute('focusable', 'false');
+      var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#i-info'); ic.appendChild(u);
+      var text = el('div', 'banner-demo-text');
       var main = el('p', 'banner-demo-main');
-      add(main, el('strong', '', 'DEMO'), document.createTextNode(' Pandal locations are confirmed \u00B7 Parking and traffic being finalised'));
-      db.appendChild(main);
-      db.appendChild(el('p', 'banner-demo-sub', 'Demo items are samples, not actual 2026 orders.'));
+      add(main, el('strong', 'demo-badge', 'DEMO'), document.createTextNode(' Pandal locations are confirmed \u00B7 Parking and traffic being finalised'));
+      text.appendChild(main);
+      text.appendChild(el('p', 'banner-demo-sub', 'Demo items are samples, not actual 2026 orders.'));
+      add(row, ic, text);
+      db.appendChild(row);
       box.appendChild(db);
     }
     if (L0.source === 'cache' || L0.stale) {
@@ -215,7 +222,12 @@
     var node = $('#home-fresh');
     if (!node) return;
     var f = P.freshness(S.load, nowMs());
-    node.textContent = f.text;
+    clear(node);
+    var ic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    ic.setAttribute('class', 'ic freshness-ic'); ic.setAttribute('aria-hidden', 'true'); ic.setAttribute('focusable', 'false');
+    var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#i-clock'); ic.appendChild(u);
+    node.appendChild(ic);
+    node.appendChild(document.createTextNode(f.text));
     node.setAttribute('data-level', f.level);
     node.title = f.detail || '';
   }
