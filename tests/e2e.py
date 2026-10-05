@@ -2,6 +2,8 @@
 Usage: python tests/e2e.py [BASE_URL]   (default http://127.0.0.1:8777/siliguri-puja-navigator/)
 Env: SHOTS=<dir>. Uses system Chrome. No invented approved traffic; DEMO records only."""
 import base64, json, os, sys
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+import pngpx
 from playwright.sync_api import sync_playwright
 
 args=[a for a in sys.argv[1:] if not a.startswith('--')]
@@ -231,6 +233,130 @@ with sync_playwright() as p:
     pg.click('#sos-fab'); pg.wait_for_timeout(200)
     ok('SOS 112 works without data', pg.get_attribute('#sos-list a[href^="tel:"]','href')=='tel:112')
     ctx.close()
+
+    # ============ TAP-FLASH regression (white flash on mobile taps) ============
+    SAMPLER = """()=>{window.__fs=[];window.__fsOn=true;
+      const sels=['html','body','#mast','#theme-btn','#sos-fab','#sos-sheet','#sos-sheet .sheet-inner','#sos-sheet .sheet-close','#tabbar'];
+      const tick=()=>{ if(!window.__fsOn) return; const f={t:performance.now()|0,theme:document.documentElement.dataset.theme};
+        sels.forEach(s=>{const e=document.querySelector(s); if(!e) return; const c=getComputedStyle(e); f[s]=[c.backgroundColor,c.webkitTapHighlightColor,(e.tagName==='DIALOG'&&e.open)||e.tagName!=='DIALOG'];});
+        const d=document.querySelector('#sos-sheet'); if(d&&d.open){f.backdrop=getComputedStyle(d,'::backdrop').backgroundColor;}
+        window.__fs.push(f); requestAnimationFrame(tick);}; requestAnimationFrame(tick);}"""
+    def rgba(s):
+        import re
+        m=re.findall(r'[\d.]+',s or ''); 
+        if len(m)<3: return None
+        r,g,b=[float(x) for x in m[:3]]; a=float(m[3]) if len(m)>3 else 1.0
+        return r,g,b,a
+    def near_white(s):
+        v=rgba(s)
+        if not v: return False
+        r,g,b,a=v; return a>=0.5 and (0.2126*r+0.7152*g+0.0722*b)>=245
+    def start(pg): pg.evaluate(SAMPLER)
+    def stop(pg):
+        pg.wait_for_timeout(120); fr=pg.evaluate("()=>{window.__fsOn=false;return window.__fs}"); return fr
+    DARK_KEYS=['html','body','#mast','#theme-btn','#sos-fab','#tabbar','#sos-sheet .sheet-inner','#sos-sheet .sheet-close']
+    def white_frames(frames,keys,mode='dark'):
+        bad=[]
+        for f in frames:
+            if mode and f.get('theme')!=mode: continue
+            for k in keys:
+                v=f.get(k)
+                if v and v[2] and near_white(v[0]): bad.append((f['t'],k,v[0]))
+            if 'backdrop' in f and near_white(f['backdrop']): bad.append((f['t'],'::backdrop',f['backdrop']))
+        return bad
+    def tap_hl_bad(frames):
+        return sorted({k for f in frames for k,v in f.items() if isinstance(v,list) and rgba(v[1]) and rgba(v[1])[3]>0})
+    flash_log={}
+    for (w,h) in [(390,844),(360,740)]:
+        ctx=new_ctx(w,h); pg=ctx.new_page(); ef=[]; watch(pg,ef); cdp=ctx.new_cdp_session(pg)
+        goto(pg)
+        pg.evaluate("()=>{localStorage.setItem('spn.theme','light')}"); goto(pg)
+        # all interactive elements: tap highlight transparent + appearance none on buttons
+        hl=pg.evaluate("""()=>[...document.querySelectorAll('a,button,input,[role=tab],summary,label')].map(e=>[e.id||e.className||e.tagName,getComputedStyle(e).webkitTapHighlightColor,e.tagName==='BUTTON'?getComputedStyle(e).appearance:'none']).filter(x=>!/rgba\\(0, 0, 0, 0\\)|transparent/.test(x[1])||x[2]!=='none')""")
+        ok(f'flash {w}: every interactive element has transparent tap highlight + appearance:none', not hl, hl[:8])
+        def hold_stats(sel):
+            bb=pg.locator(sel).bounding_box(); x=bb['x']+bb['width']/2; y=bb['y']+bb['height']/2
+            clip={k:bb[k] for k in ('x','y','width','height')}
+            b0=pngpx.stats(pg.screenshot(clip=clip))
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':x,'y':y}]}); pg.wait_for_timeout(60)
+            b1=pngpx.stats(pg.screenshot(clip=clip,path=SHOTS+f'flash-{w}-{sel.strip("#")}-pressed.png'))
+            pg.wait_for_timeout(60); b2=pngpx.stats(pg.screenshot(clip=clip))
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]}); pg.wait_for_timeout(250)
+            return b0,b1,b2
+        # light -> dark (tap)
+        start(pg); pg.tap('#theme-btn'); fr=stop(pg)
+        ok(f'flash {w}: light→dark switched', pg.evaluate("document.documentElement.dataset.theme")=='dark')
+        ok(f'flash {w}: light→dark no near-white frame in dark', not white_frames(fr,DARK_KEYS), white_frames(fr,DARK_KEYS)[:5])
+        ok(f'flash {w}: theme-btn never near-white during light→dark', not [f for f in fr if near_white(f['#theme-btn'][0])])
+        ok(f'flash {w}: no tap highlight colour during tap', not tap_hl_bad(fr), tap_hl_bad(fr))
+        # pressed-state pixels in dark mode: header button + FAB do not brighten while finger is down
+        for sel in ('#theme-btn','#sos-fab'):
+            b0,b1,b2=hold_stats(sel) if sel!='#theme-btn' else (None,None,None)
+            if sel=='#theme-btn':
+                # holding theme-btn then releasing would toggle; sample press without release via touchCancel
+                bb=pg.locator(sel).bounding_box(); clip={k:bb[k] for k in ('x','y','width','height')}
+                b0=pngpx.stats(pg.screenshot(clip=clip))
+                cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':bb['x']+bb['width']/2,'y':bb['y']+bb['height']/2}]}); pg.wait_for_timeout(60)
+                b1=pngpx.stats(pg.screenshot(clip=clip,path=SHOTS+f'flash-{w}-theme-btn-pressed.png')); b2=pngpx.stats(pg.screenshot(clip=clip))
+                cdp.send('Input.dispatchTouchEvent',{'type':'touchCancel','touchPoints':[]}); pg.wait_for_timeout(200)
+            flash_log[f'{w}-{sel}-dark-press']=(b0,b1,b2)
+            ok(f'flash {w}: {sel} pressed (dark) does not brighten', b1['meanLum']-b0['meanLum']<6 and b2['meanLum']-b0['meanLum']<6 and b1['nearWhitePct']<=b0['nearWhitePct']+1, (b0,b1,b2))
+        if pg.is_visible('#sos-sheet'): pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
+        # open Help (SOS) in dark
+        start(pg); pg.tap('#sos-fab'); pg.wait_for_timeout(250); fr=stop(pg)
+        ok(f'flash {w}: SOS open (dark) sheet visible', pg.is_visible('#sos-sheet'))
+        ok(f'flash {w}: SOS open (dark) no near-white frame incl dialog/backdrop', not white_frames(fr,DARK_KEYS), white_frames(fr,DARK_KEYS)[:5])
+        ok(f'flash {w}: dialog element itself transparent, inner uses theme card', all((not f.get('#sos-sheet') or not f['#sos-sheet'][2] or rgba(f['#sos-sheet'][0])[3]==0) for f in fr))
+        pg.screenshot(path=SHOTS+f'flash-{w}-sos-dark.png')
+        # close with ×
+        start(pg); pg.tap('#sos-sheet .sheet-close'); fr=stop(pg)
+        ok(f'flash {w}: close × hides sheet', not pg.is_visible('#sos-sheet'))
+        ok(f'flash {w}: close × no near-white frame', not white_frames(fr,DARK_KEYS), white_frames(fr,DARK_KEYS)[:5])
+        # backdrop tap closes
+        pg.tap('#sos-fab'); pg.wait_for_timeout(250)
+        start(pg); pg.touchscreen.tap(w//2, 40); fr=stop(pg)
+        ok(f'flash {w}: backdrop tap closes sheet', not pg.is_visible('#sos-sheet'))
+        ok(f'flash {w}: backdrop tap no near-white frame', not white_frames(fr,DARK_KEYS), white_frames(fr,DARK_KEYS)[:5])
+        ok(f'flash {w}: SOS aria-expanded reset after close', pg.get_attribute('#sos-fab','aria-expanded')=='false')
+        # repeated taps x10 (theme toggles 10 times -> ends dark; SOS opens/closes)
+        start(pg)
+        for i in range(10): pg.tap('#theme-btn'); pg.wait_for_timeout(40)
+        fr=stop(pg)
+        ok(f'flash {w}: 10x theme taps end in dark (even count)', pg.evaluate("document.documentElement.dataset.theme")=='dark')
+        ok(f'flash {w}: 10x theme taps no near-white frame on dark frames', not white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar']), white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar'])[:5])
+        ok(f'flash {w}: theme-btn never near-white in any frame (light or dark)', not [f for f in fr if near_white(f['#theme-btn'][0])])
+        ok(f'flash {w}: theme-switching class cleaned up', not pg.evaluate("document.documentElement.classList.contains('theme-switching')"))
+        start(pg)
+        for i in range(10):
+            pg.tap('#sos-fab'); pg.wait_for_timeout(60)
+            if pg.is_visible('#sos-sheet'): pg.tap('#sos-sheet .sheet-close'); pg.wait_for_timeout(40)
+        fr=stop(pg)
+        ok(f'flash {w}: 10x SOS open/close no near-white frame', not white_frames(fr,DARK_KEYS), white_frames(fr,DARK_KEYS)[:5])
+        # navigate + back in dark
+        start(pg); pg.tap('#tabbar a[data-tab="pandals"]'); pg.wait_for_timeout(300)
+        pg.tap('#nhood-list a >> nth=0'); pg.wait_for_timeout(300); pg.go_back(); pg.wait_for_timeout(300); pg.go_back(); pg.wait_for_timeout(300); fr=stop(pg)
+        ok(f'flash {w}: navigate + back no near-white frame (dark)', not white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar']), white_frames(fr,['html','body','#mast','#tabbar'])[:5])
+        # subtab + back link taps in dark
+        go(pg,'parking'); start(pg); pg.tap('#sub-traffic'); pg.wait_for_timeout(150); pg.tap('#sub-parking'); pg.wait_for_timeout(150); fr=stop(pg)
+        sub=pg.evaluate("()=>[...document.querySelectorAll('.subtab')].map(e=>getComputedStyle(e).backgroundColor)")
+        ok(f'flash {w}: subtabs dark bg not near-white', not any(near_white(x) for x in sub), sub)
+        # reload in dark: first frames already dark (theme-init.js)
+        pg.add_init_script("window.__early=[];const t=()=>{if(document.body){window.__early.push([document.documentElement.getAttribute('data-theme'),getComputedStyle(document.documentElement).backgroundColor,getComputedStyle(document.body).backgroundColor])} if(window.__early.length<6)requestAnimationFrame(t)};requestAnimationFrame(t);")
+        pg.reload(); pg.wait_for_selector('#tabbar:not([hidden])'); pg.wait_for_timeout(300)
+        early=pg.evaluate("window.__early")
+        flash_log[f'{w}-reload-dark-early']=early
+        ok(f'flash {w}: reload in dark — first painted frames dark (no cream/white)', early and all(e[0]=='dark' and not near_white(e[1]) and not near_white(e[2]) for e in early), early)
+        # dark -> light (tap): light theme button colours stay design colours (theme-btn/sos never white)
+        start(pg); pg.tap('#theme-btn'); fr=stop(pg)
+        ok(f'flash {w}: dark→light switched', pg.evaluate("document.documentElement.dataset.theme")=='light')
+        ok(f'flash {w}: dark→light theme-btn/FAB/mast never near-white', not white_frames(fr,['#theme-btn','#sos-fab','#mast'],mode=None), white_frames(fr,['#theme-btn','#sos-fab','#mast'],mode=None)[:5])
+        pg.tap('#sos-fab'); pg.wait_for_timeout(250)
+        cl=pg.evaluate("()=>getComputedStyle(document.querySelector('#sos-sheet .sheet-close')).backgroundColor")
+        ok(f'flash {w}: light close × uses theme surface (not pure white)', cl!='rgb(255, 255, 255)', cl)
+        pg.keyboard.press('Escape'); pg.wait_for_timeout(150)
+        ok(f'flash {w}: no console errors', not ef, ef)
+        ctx.close()
+    json.dump(flash_log,open(SHOTS+'flash-samples.json','w'),indent=1)
     b.close()
 
 passed=sum(1 for _,c in results if c); failed=len(results)-passed
