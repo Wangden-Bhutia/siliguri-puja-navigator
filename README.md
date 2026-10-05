@@ -1,9 +1,9 @@
-# Siliguri Puja Navigator
+# Siliguri Puja Guide
 
-**Find Your Pandal. Know Your Route.**
+**Find pandals. Plan your route. Travel safely.**
 A mobile-first, installable web app (PWA) with a pandal directory, a map, parking, and *published* traffic-restriction schedules for Siliguri during the puja season.
 
-> **Important:** the bundled `data/puja-data.json` is a **DEMO dataset** ("Sample data – not real pandals or orders"). It contains no real pandals or orders. Replace it with verified records before public use (see [docs/ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md)).
+> **Important:** the bundled `data/puja-data.json` is a **DEMO dataset** ("Demo data – locations and traffic orders are not verified"). It contains no real pandals or orders. Replace it with verified records before public use (see [docs/ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md)).
 >
 > The app **does not show live traffic** and never says a road is open. Schedules are copied from published information. *Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.*
 
@@ -41,6 +41,12 @@ python3 -m http.server 8000      # then open http://localhost:8000/
 ```
 Opening `index.html` directly (file://) also loads the shell and map but cannot load the data file (browsers block it) – the app then says so. The service worker only runs on http(s).
 
+## Branding (single source: `branding.js`)
+App name, tagline, descriptor, festival dates, footer text and the identity strip live in `branding.js` (`index.html`, `manifest.webmanifest` and `offline.html` carry the same words as fallbacks; `tests/unit.js` checks they match). Repo, file and identifier names (`siliguri-puja-navigator`, `spn-*`) are unchanged.
+- `officialBrandingApproved` is **false**: the footer says "Demo version". Set it to true only after written approval.
+- The identity strip ("A joint initiative by West Bengal Police and Siliguri Metropolitan Police" plus two logos) shows only if `institutionalBranding.enabled` is true **and** both logo files exist in `assets/logos/` (exact names in `assets/logos/README.md`) **and** both load. The logo files are **not** in the repo. After adding them run `node tools/build-sw.js`.
+- Never write "endorsed by" or "approved by", and do not claim government ownership.
+
 ## Validate data
 ```sh
 node tools/validate-data.js                 # checks data/puja-data.json
@@ -50,7 +56,7 @@ Or open `admin-preview.html` (local preview only; it cannot publish).
 
 ## Deploy (GitHub Pages)
 ```sh
-git init -b main && git add -A && git commit -m "Siliguri Puja Navigator"
+git init -b main && git add -A && git commit -m "Siliguri Puja Guide"
 gh repo create Wangden-Bhutia/siliguri-puja-navigator --public --source=. --push
 gh api -X POST repos/Wangden-Bhutia/siliguri-puja-navigator/pages -f "source[branch]=main" -f "source[path]=/"
 curl -I https://wangden-bhutia.github.io/siliguri-puja-navigator/        # wait for 200
@@ -71,4 +77,4 @@ Tiles come from `https://tile.openstreetmap.org/{z}/{x}/{y}.png`. That server is
 - No live traffic, routing or road geometry is computed. "Directions" just opens Google Maps with the destination; Google chooses the route and does not know about local restrictions.
 - Data is only as good as the records you publish. Keep `lastUpdated` honest.
 - iOS Safari may not offer an install prompt; use Share → Add to Home Screen.
-- This is an independent community project; it is not run or endorsed by the police or any authority.
+- Branding that implies an institutional relationship (the "Official …" descriptor, the "A joint initiative by …" caption and the two police logos) must have **written approval from the responsible authority before this is published** – see below.

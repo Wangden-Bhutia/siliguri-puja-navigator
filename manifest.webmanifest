@@ -1,7 +1,7 @@
 {
-  "name": "Siliguri Puja Navigator",
-  "short_name": "Puja Navigator",
-  "description": "Find Your Pandal. Know Your Route. Pandal directory, map and published traffic-restriction schedules for Siliguri (independent community tool).",
+  "name": "Siliguri Puja Guide",
+  "short_name": "Puja Guide",
+  "description": "Find pandals. Plan your route. Travel safely. Pandal directory, parking and walking routes, and published traffic-restriction schedules for Durga Puja 2026.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
@@ -10,10 +10,28 @@
   "background_color": "#fbf5e6",
   "theme_color": "#5a0f1e",
   "lang": "en-IN",
-  "categories": ["travel", "navigation"],
+  "categories": [
+    "travel",
+    "navigation"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

@@ -1,8 +1,9 @@
-/* Siliguri Puja Navigator - UI. All dynamic text is inserted with textContent / setAttribute
+/* Siliguri Puja Guide - UI. All dynamic text is inserted with textContent / setAttribute
    (never innerHTML with data). Pure logic lives in logic.js. */
 (function () {
   'use strict';
   var P = window.PujaLogic;
+  var BR = window.PUJA_BRANDING || { appName: 'Siliguri Puja Guide', institutionalBranding: { enabled: false } };
   var DATA_URL = 'data/puja-data.json';
   var SILIGURI = [26.7271, 88.3953];
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -521,9 +522,8 @@
     var d = S.data, L0 = S.load;
     var demoOn = d && d.meta.isDemoDataset;
     $('#bn-demo').hidden = !demoOn;
-    if (demoOn && d.meta.notice) $('#bn-demo-text').textContent = d.meta.notice;
     if (L0.status === 'unavailable') {
-      var why = L0.reason === 'file' ? 'This page was opened as a local file, and browsers block loading data files that way. Serve the folder over http(s) (see README).'
+      var why = L0.reason === 'file' ? 'This page was opened as a local file, and browsers block loading data files that way. Please open the app from its web address.'
         : L0.reason === 'invalid' ? 'The data file is damaged or invalid (' + (L0.detail || 'unknown problem') + ').'
         : 'You may be offline, or the data file could not be reached, and there is no saved copy on this device.';
       setBanner('bn-unavailable', [el('strong', '', '\u26A0 Data unavailable. '), 'Pandal and restriction information could not be loaded. ' + why + ' Road status is unknown – check official sources and follow the directions of traffic police. ', retryBtn()]);
@@ -538,17 +538,12 @@
       var ul = el('ul', 'plain'); d.skipped.forEach(function (s) { ul.appendChild(el('li', '', s.kind + ' "' + s.id + '": ' + s.reasons.join('; '))); }); det.appendChild(ul);
       setBanner('bn-quality', [el('strong', '', '\u26A0 Data-quality warning: '), d.skipped.length + ' record(s) failed validation and are not shown (for example missing source, missing verification details, invalid coordinates or a broken reference). ', det]);
     } else setBanner('bn-quality', null);
-    var fi = $('#festival-info');
-    if (d && d.meta.festival.name) {
-      var f = d.meta.festival, dates = (f.startDate && f.endDate && isFinite(P.parseISTDate(f.startDate)) && isFinite(P.parseISTDate(f.endDate))) ? ' · ' + P.fmtDate(P.parseISTDate(f.startDate)) + ' to ' + P.fmtDate(P.parseISTDate(f.endDate)) : '';
-      fi.textContent = f.name + dates; fi.hidden = false;
-    } else fi.hidden = true;
-    $('#foot-version').textContent = d ? 'data ' + (d.meta.datasetVersion || '') : '';
     renderFreshness();
   }
   function renderFreshness() {
     var fr = P.freshness(S.load, nowMs());
     $$('[data-fresh]').forEach(function (n) { n.textContent = fr.text; n.className = 'fresh-line lvl-' + fr.level; });
+    $$('[data-fresh-sub]').forEach(function (n) { n.textContent = fr.level === 'ok' ? 'Tap Refresh for the latest information.' : ''; });
     var box = clear($('#freshness')), d = S.data;
     if (d) {
       add(box, el('p', '', 'Dataset ' + (d.meta.datasetVersion || '(no version)') + (d.meta.isDemoDataset ? ' (demo – sample data)' : '') + '. Data last updated by the maintainers: ' + P.fmtDateTime(d.meta.lastUpdatedMs) + '.'),
@@ -557,8 +552,9 @@
     } else add(box, el('p', '', S.load.status === 'loading' ? 'Loading data…' : 'No data loaded. Nothing here should be treated as current information.'));
     $$('[data-action="refresh"]').forEach(function (b) {
       var busy = !!R.inFlight; b.setAttribute('aria-busy', busy ? 'true' : 'false');
-      if (!b.dataset.label) b.dataset.label = b.textContent;
-      b.textContent = busy ? 'Refreshing…' : b.dataset.label;
+      var lb = b.querySelector('.lbl') || b;
+      if (!b.dataset.label) b.dataset.label = lb.textContent;
+      lb.textContent = busy ? 'Refreshing…' : b.dataset.label;
     });
   }
 
@@ -654,11 +650,12 @@
     document.body.dataset.view = r.name;
     var bar = $('#tabbar'); bar.hidden = r.name === 'home'; document.body.classList.toggle('has-tabbar', r.name !== 'home');
     $$('a', bar).forEach(function (a) { var on = a.dataset.tab === r.name; if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-    document.title = (r.name === 'home' ? '' : TITLES[r.name] + ' – ') + 'Siliguri Puja Navigator';
+    document.title = (r.name === 'home' ? '' : TITLES[r.name] + ' – ') + BR.appName;
     if (r.name === 'find') { renderFind(); renderMapFor('find', true); if (S.selected) { focusSelectedOnMap(); } }
     else { renderMapFor(r.name, true); }
     if (r.name === 'traffic') renderTraffic();
     if (!firstShow && changed) { window.scrollTo(0, 0); var h = $('#' + { home: 'home-h', find: 'find-h', parking: 'parking-h', traffic: 'traffic-h', help: 'help-h', info: 'info-h' }[r.name]); if (h) h.focus({ preventScroll: true }); }
+    if (r.name === 'info' && r.arg) { var ia = $({ safety: '#info-safety', privacy: '#info-privacy', terms: '#info-terms' }[r.arg] || '#info-h'); if (ia) { ia.setAttribute('tabindex', '-1'); ia.scrollIntoView({ behavior: 'auto', block: 'start' }); ia.focus({ preventScroll: true }); } }
     if (!firstShow && r.name === 'find' && S.selected) { var d = $('#pandal-detail'); if (!d.hidden) d.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }); }
     firstShow = false;
   }
@@ -683,13 +680,31 @@
   /* ---------- theme ---------- */
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    var b = $('#theme-btn'); b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false'); b.textContent = t === 'dark' ? 'Day mode' : 'Night mode';
+    var b = $('#theme-btn'); b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false'); (b.querySelector('.lbl') || b).textContent = t === 'dark' ? 'Day mode' : 'Night mode';
     var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', t === 'dark' ? '#24060c' : '#5a0f1e');
   }
   function initTheme() {
     var t = null; try { t = localStorage.getItem(LS_THEME); } catch (e) {}
     if (t !== 'dark' && t !== 'light') t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
     applyTheme(t);
+  }
+
+  /* ---------- branding (all words come from branding.js) ---------- */
+  function applyBranding() {
+    var t = function (sel, v) { var n = $(sel); if (n && v) n.textContent = v; };
+    t('#tagline', BR.tagline); t('#descriptor', BR.descriptor); t('#festival-dates', BR.festivalDates);
+    t('#foot-line', BR.officialBrandingApproved ? BR.footerApproved : BR.footerDemo);
+    var ib = BR.institutionalBranding || {}, strip = $('#idstrip');
+    if (!strip || !ib.enabled || !ib.logosPresent || !ib.logos || ib.logos.length < 2) return;   // never requests the files otherwise
+    var imgs = [$('#logo-a'), $('#logo-b')], ok = 0, bad = false;
+    function done() { if (!bad && ok === 2) strip.hidden = false; }
+    imgs.forEach(function (im, i) {
+      im.alt = ib.logos[i].alt;
+      im.addEventListener('load', function () { if (im.naturalWidth > 0) { ok++; done(); } else bad = true; });
+      im.addEventListener('error', function () { bad = true; strip.hidden = true; });
+      im.src = ib.logos[i].src;
+    });
+    t('#id-caption', ib.caption);
   }
 
   /* ---------- events ---------- */
@@ -751,7 +766,7 @@
     });
   }
 
-  initTheme(); bind(); registerSW(); S.load.lastRefresh = readLast(); onRoute(); renderAll(false); refresh('open');
+  initTheme(); applyBranding(); bind(); registerSW(); S.load.lastRefresh = readLast(); onRoute(); renderAll(false); refresh('open');
 
   // Read-only helpers for automated tests (they do not change behaviour).
   window.PujaApp = {

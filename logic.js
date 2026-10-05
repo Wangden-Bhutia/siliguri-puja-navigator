@@ -1,4 +1,4 @@
-/* Siliguri Puja Navigator - pure logic (no DOM). Shared by the app, admin-preview.html,
+/* Siliguri Puja Guide - pure logic (no DOM). Shared by the app, admin-preview.html,
    tools/validate-data.js and the unit tests. All schedule maths is done in Asia/Kolkata
    (fixed UTC+05:30, no DST) using epoch milliseconds, so the device time zone never matters. */
 (function (root, factory) {
@@ -83,7 +83,7 @@
     var age = now - load.lastRefresh;
     if (!(load.lastRefresh > 0)) return { level: 'stale', text: 'Refresh time unknown – data may be outdated' };
     if (age > OLD_AFTER_MS) return { level: 'old', text: 'Data last refreshed ' + last + ' (' + fmtAge(age) + ' ago)' };
-    return { level: 'ok', text: 'Data refreshed ' + last };
+    return { level: 'ok', text: 'Data updated ' + last };
   }
 
   /* ---------- coordinates / links ---------- */
