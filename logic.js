@@ -21,7 +21,7 @@
   var RTYPES = ['noEntry', 'controlledMovement', 'diversion', 'routeRelocation', 'oneWay', 'vehicleClassRestriction'];
   var RTYPE_LABEL = { noEntry: 'No entry', controlledMovement: 'Controlled movement', diversion: 'Diversion', routeRelocation: 'Route relocation', oneWay: 'One-way', vehicleClassRestriction: 'Vehicle restriction' };
   var PARKING_TYPES = ['parking', 'drop', 'parking-drop'];
-  var FACILITY_TYPES = ['police-booth', 'hospital', 'first-aid', 'toilet', 'drinking-water'];
+  var FACILITY_TYPES = ['police-booth', 'hospital'];   // visitor help is limited to Police Assistance Booths and hospitals
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var MAX_RECURRING_DAYS = 366;
 
