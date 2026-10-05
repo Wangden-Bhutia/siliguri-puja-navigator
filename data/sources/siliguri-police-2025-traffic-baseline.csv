@@ -1,0 +1,9 @@
+traffic_id,origin,destination,road_or_corridor,restriction_type,affected_vehicle,action_or_diversion,date_context,police_source
+TP25-01,Junction side,Airview More,Nabin Sen Road / Church Road,Approach restriction / controlled exit,Small vehicles,Diversion/exit via Nabin Sen Road toward Gurdwara,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-02,Junction side,Airview More,Hill Cart Road approaches,No entry toward Airview More,Vehicles approaching Airview More,Follow Police diversion,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-03,Tikia Para / Thana More / Mahabirsthan,Venus More,Approach corridor,No movement toward Venus More,All vehicles,Follow Police diversion,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-04,Junction side,Airview More,Junction approach,Restriction,Buses and goods vehicles,Do not proceed toward Airview More,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-05,Checkpost,Panitanki More,Approach corridor,Diversion,Four-wheelers,Use ISKCON Mandir Road,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-06,Naukaghat,Airview More,Naukaghat → Jhankar More → Thakar Bridge → Matigara corridor,Diversion,Vehicles,Follow Police diversion via Jhankar More / Thakar Bridge / Matigara,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-07,Matigara,Jhankar More,Matigara approach,Movement restriction,Vehicles,Do not proceed toward Jhankar More,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
+TP25-08,Siliguri,Naukaghat,Bus operating point,Route relocation,Buses to Jalpaiguri / Cooch Behar / Alipurduar / Assam,Operate from Naukaghat,04 Oct 2025 carnival order,"C.O. 3193, 04.10.2025"
