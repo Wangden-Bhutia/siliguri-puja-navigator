@@ -59,41 +59,46 @@ h1,h2{font-family:var(--serif);line-height:1.2;margin:0 0 .35em;color:var(--acce
 }
 .mast-festive{
   position:relative;overflow:hidden;
-  background:
-    radial-gradient(ellipse 65% 50% at 80% 30%,rgba(232,184,74,.2),transparent 58%),
-    linear-gradient(165deg,#6e1628 0%,#5a0f1e 42%,#3b0a14 100%);
+  background:#5a0f1e; /* fallback while banner loads */
   padding:calc(8px + env(safe-area-inset-top)) 0 18px;
 }
-.mast-festive .mast-mandala{
-  position:absolute;left:-48px;top:-56px;width:160px;height:160px;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,rgba(227,195,111,.09) 0%,rgba(227,195,111,.035) 38%,transparent 68%);
-  box-shadow:inset 0 0 0 1px rgba(227,195,111,.07),inset 0 0 0 12px rgba(227,195,111,.03),inset 0 0 0 24px rgba(227,195,111,.02);
-  opacity:.65;
-}
+/* Full banner art (Durga/mandala/bridge); left scrim keeps title readable */
 .mast-festive .mast-art{
-  position:absolute;right:-2px;top:22px;bottom:6px;width:min(46%,190px);pointer-events:none;z-index:0;
-  display:flex;align-items:flex-end;justify-content:flex-end;opacity:.92;
+  position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;
+  display:block;
 }
-.mast-festive .mast-art-img{width:100%;height:auto;max-height:100%;object-fit:contain;object-position:right bottom}
+.mast-festive .mast-art picture,.mast-festive .mast-art-img{
+  display:block;width:100%;height:100%;object-fit:cover;object-position:center center;
+}
+.mast-festive::before{
+  content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(42,6,12,.62) 0%,rgba(42,6,12,.38) 38%,rgba(42,6,12,.12) 62%,transparent 82%),
+    linear-gradient(180deg,rgba(42,6,12,.2) 0%,transparent 40%,rgba(42,6,12,.15) 100%);
+}
 .mast-festive .mast-wave{
-  position:absolute;left:0;right:0;bottom:-1px;height:20px;color:var(--bg);line-height:0;pointer-events:none;z-index:1;
+  position:absolute;left:0;right:0;bottom:-1px;height:20px;color:var(--bg);line-height:0;pointer-events:none;z-index:2;
 }
 .mast-festive .mast-wave svg{display:block;width:100%;height:20px}
-.mast-festive .mast-inner,.mast-festive .mast-meta,.mast-festive .idstrip{position:relative;z-index:1}
+.mast-festive .mast-inner,.mast-festive .mast-meta,.mast-festive .idstrip{position:relative;z-index:2}
 .mast-festive .brand-name{
   font-size:clamp(1.22rem,5.2vw,1.48rem);letter-spacing:.01em;
-  text-shadow:0 1px 0 rgba(0,0,0,.15);
+  text-shadow:0 1px 2px rgba(0,0,0,.35);
 }
 .mast-festive .brand-puja{
   position:relative;display:inline;
   background:linear-gradient(90deg,transparent 4%,var(--head-gold) 4%,var(--head-gold) 96%,transparent 96%) bottom / 100% 2px no-repeat;
   padding-bottom:3px;
 }
-.mast-festive .brand-tag{font-family:var(--sans);font-style:normal;font-size:.78rem;color:rgba(251,245,230,.92);opacity:1}
-.mast-festive .theme-btn{position:relative;z-index:3;background:rgba(0,0,0,.35);border-color:rgba(227,195,111,.45);backdrop-filter:blur(2px)}
-html[data-theme="dark"] .mast-festive{background:linear-gradient(165deg,#3b0a14 0%,#24060c 100%)}
-html[data-theme="dark"] .mast-festive .mast-art{opacity:.55;filter:brightness(.85)}
-html[data-theme="dark"] .mast-festive .mast-mandala{opacity:.5}
+.mast-festive .brand-tag{font-family:var(--sans);font-style:normal;font-size:.78rem;color:rgba(251,245,230,.92);opacity:1;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.mast-festive .theme-btn{position:relative;z-index:3;background:rgba(0,0,0,.4);border-color:rgba(227,195,111,.5);backdrop-filter:blur(2px)}
+html[data-theme="dark"] .mast-festive{background:#24060c}
+html[data-theme="dark"] .mast-festive .mast-art{opacity:.72;filter:brightness(.72) saturate(.85)}
+html[data-theme="dark"] .mast-festive::before{
+  background:
+    linear-gradient(90deg,rgba(20,3,8,.72) 0%,rgba(20,3,8,.5) 40%,rgba(20,3,8,.2) 70%,transparent 90%),
+    linear-gradient(180deg,rgba(20,3,8,.25) 0%,transparent 45%,rgba(20,3,8,.2) 100%);
+}
 .mast-inner{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .brand{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit;min-width:0;flex:1;max-width:62%}
 .brand-name{font-family:var(--serif);font-size:clamp(1.12rem,4.6vw,1.38rem);font-weight:700;line-height:1.15;color:var(--head-ink)}
@@ -215,16 +220,21 @@ html[data-theme="dark"] #view-home .warn-card,html[data-theme="dark"] #view-home
   background:var(--warn-bg);color:var(--warn-ink);border-color:var(--warn-bd);
 }
 html[data-theme="dark"] #view-home .warn-card p{color:var(--warn-ink)}
-/* Bottom scene: short editorial gateway (180–220px); fills leftover space only */
+/* Bottom scene: real pandal gateway art (180–260px); cream fade; fills leftover only */
 .home-scene{
-  margin:8px -16px 0;flex:1 1 auto;min-height:0;max-height:min(220px,28dvh);
-  display:flex;align-items:flex-end;pointer-events:none;user-select:none;
+  position:relative;margin:8px -16px 0;flex:1 1 auto;min-height:0;max-height:min(240px,30dvh);
+  display:flex;align-items:flex-end;pointer-events:none;user-select:none;overflow:hidden;
 }
+.home-scene picture{display:block;width:100%;height:100%}
 .home-scene-img{
-  display:block;width:100%;height:100%;max-height:min(220px,28dvh);
-  object-fit:cover;object-position:center bottom;
+  display:block;width:100%;height:100%;max-height:min(240px,30dvh);
+  object-fit:cover;object-position:center 42%;
 }
-html[data-theme="dark"] .home-scene{opacity:.5;filter:brightness(.7) saturate(.8)}
+.home-scene::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:42%;pointer-events:none;z-index:1;
+  background:linear-gradient(to bottom,transparent 0%,var(--bg) 92%);
+}
+html[data-theme="dark"] .home-scene{opacity:.55;filter:brightness(.65) saturate(.8)}
 @media(max-height:700px){
   .home-scene,.home-scene-img{max-height:min(180px,24dvh)}
   #view-home .bigactions{margin:8px 0 10px}
@@ -327,7 +337,7 @@ body.has-chrome:has(#view-home:not([hidden])) #view-home{flex:1 1 auto;min-heigh
 body.has-chrome:has(#view-home:not([hidden])){
   display:flex;flex-direction:column;height:100dvh;max-height:100dvh;min-height:100dvh;overflow:hidden;
 }
-body.has-chrome:has(#view-home:not([hidden])) .footlinks{margin-top:0;flex:none}
+body.has-chrome:has(#view-home:not([hidden])) .footlinks{margin-top:-18px;flex:none;position:relative;z-index:2;padding-top:4px;padding-bottom:2px}
 body.has-chrome:has(#view-home:not([hidden])) .foot{flex:none}
 body.has-chrome:has(#view-home:not([hidden])) .banners{flex:none;padding-top:6px}
 body.has-chrome:has(#view-home:not([hidden])) .mast{flex:none}
