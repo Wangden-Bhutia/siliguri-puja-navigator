@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Siliguri Puja Guide</title>
-<meta name="description" content="Siliguri Puja Guide: find pandals, plan your route and travel safely. Pandal directory, parking and walking routes, and published traffic-restriction schedules for Durga Puja 2026.">
+<meta name="description" content="Siliguri Puja Guide: find pandals, plan your route and travel safely. Pandal directory by neighbourhood, parking and walking routes, and published traffic-restriction schedules for Durga Puja 2026.">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="theme-color" content="#5a0f1e">
 <meta name="color-scheme" content="light">
@@ -22,242 +22,194 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>
-  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></symbol>
-  <symbol id="i-parking" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M9.6 17V7.4h3.3a2.9 2.9 0 0 1 0 5.8H9.6"/></symbol>
-  <symbol id="i-cone" viewBox="0 0 24 24"><path d="M10.3 4h3.4l3.1 11.5H7.2z"/><path d="M8.7 9.8h6.6M7.9 12.7h8.2"/><path d="M5 15.5h14v4H5z"/></symbol>
-  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
-  <symbol id="i-warning" viewBox="0 0 24 24"><path d="M12 3.6 2.8 19.4h18.4z"/><path d="M12 10v4.4M12 17.1v.1"/></symbol>
-  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.7-6"/><path d="M20 4.4v4.7h-4.7"/></symbol>
-  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.6A8.5 8.5 0 1 1 9.4 4a6.7 6.7 0 0 0 10.6 10.6z"/></symbol>
-  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6"/></symbol>
-  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v5.6M12 7.7v.1"/></symbol>
-</defs></svg>
-<a class="skip-link" href="#main" id="skip">Skip to main content</a>
-<noscript><p class="banner banner-error">This app needs JavaScript. Without it nothing can be shown. Dial 112 in an emergency and follow traffic police directions.</p></noscript>
+<a class="skip" href="#main">Skip to content</a>
 
-<header class="masthead" id="masthead">
-  <div class="wrap">
-    <div class="mast-row">
-      <h1 class="brand"><a href="#/" id="brand-link"><span class="b-l1">Siliguri</span> <span class="b-puja">Puja</span> <span class="b-guide">Guide</span></a></h1>
-      <button type="button" id="theme-btn" class="btn btn-ghost btn-sm theme-btn" aria-pressed="false"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg><span class="lbl">Night mode</span></button>
-    </div>
-    <p class="tagline" id="tagline">Find pandals. Plan your route. Travel safely.</p>
-    <p class="descriptor" id="descriptor">Official Durga Puja Traffic &amp; Visitor Information</p>
-    <p id="festival-info" class="festival-info"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-calendar"/></svg><span id="festival-dates">16 &ndash; 21 October 2026</span></p>
-    <button type="button" id="install-btn" class="btn btn-gold btn-sm" hidden>Install app</button>
+<header class="mast" id="mast">
+  <div class="wrap mast-inner">
+    <a href="#/" class="brand" id="brand-link">
+      <span class="brand-name" id="brand-name">Siliguri Puja Guide</span>
+      <span class="brand-tag" id="brand-tag">Find pandals. Plan your route. Travel safely.</span>
+    </a>
+    <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" title="Night mode">
+      <span aria-hidden="true">&#9790;</span><span class="theme-lbl">Night mode</span>
+    </button>
+  </div>
+  <div class="wrap mast-meta">
+    <p class="descriptor" id="brand-descriptor">Official Durga Puja Traffic &amp; Visitor Information</p>
+    <p class="dates" id="brand-dates"><span aria-hidden="true">&#128197;</span> 16 – 21 October 2026</p>
+  </div>
+  <div class="wrap idstrip" id="idstrip" hidden>
+    <div class="idstrip-logos" id="idstrip-logos"></div>
+    <p class="idstrip-cap" id="idstrip-cap"></p>
   </div>
 </header>
 
-<!-- Identity strip: hidden unless branding.js says both logo files exist AND both load (see assets/logos/README.md).
-     Needs written approval from the responsible authority before publishing. -->
-<section class="idstrip" id="idstrip" aria-label="Joint initiative" hidden>
-  <div class="idstrip-in">
-    <img class="id-logo" id="logo-a" alt="West Bengal Police logo" width="44" height="44" decoding="async">
-    <span class="id-div" aria-hidden="true"></span>
-    <p class="id-text"><span class="id-cap" id="id-caption">A joint initiative by</span><strong>West Bengal Police</strong><span class="id-and">and</span><strong>Siliguri Metropolitan Police</strong></p>
-    <span class="id-div" aria-hidden="true"></span>
-    <img class="id-logo" id="logo-b" alt="Siliguri Metropolitan Police logo" width="44" height="44" decoding="async">
-  </div>
-</section>
+<div id="status-banners" class="wrap banners" aria-live="polite"></div>
 
-<section class="wrap" id="banners" aria-label="Data notices">
-  <div id="bn-demo" class="banner banner-demo" hidden role="note"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-info"/></svg><p><strong>Demo data – locations and traffic orders are not verified.</strong><span class="bn-sub">Not real pandals or orders.</span></p></div>
-  <div id="bn-unavailable" class="banner banner-error" hidden role="alert"></div>
-  <div id="bn-offline" class="banner banner-warn" hidden role="alert"></div>
-  <div id="bn-quality" class="banner banner-warn" hidden role="status"></div>
-</section>
-
-<main id="main" tabindex="-1">
-<div class="wrap">
-
-  <!-- ============ HOME ============ -->
-  <section id="view-home" class="view" data-view="home" aria-labelledby="home-h">
-    <h2 id="home-h" class="sr-only" tabindex="-1">Home</h2>
-    <nav class="bigactions" aria-label="What do you need?">
-      <a class="bigbtn bigbtn-primary" href="#/find"><span class="bb-ic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg></span><span class="bb-txt"><span class="bb-t">Find a Pandal</span><span class="bb-s">Search by name or area and get directions.</span></span><span class="bb-go"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></span></a>
+<main id="main" class="wrap">
+  <!-- HOME -->
+  <section id="view-home" class="view" data-view="home" hidden>
+    <h1 class="sr-only">Home</h1>
+    <div class="bigactions">
+      <a class="bigbtn bigbtn-primary" href="#/pandals" data-go="pandals">
+        <span class="bi" aria-hidden="true">&#128205;</span>
+        <span class="bt">Find a Pandal</span>
+      </a>
       <div class="bigrow">
-        <a class="bigbtn" href="#/parking"><span class="bb-top"><span class="bb-ic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-parking"/></svg></span><span class="bb-go"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></span></span><span class="bb-t">Parking &amp; Routes</span><span class="bb-s">Parking, drop-off and walking routes.</span></a>
-        <a class="bigbtn" href="#/traffic"><span class="bb-top"><span class="bb-ic"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-cone"/></svg></span><span class="bb-go"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg></span></span><span class="bb-t">Traffic &amp; Help</span><span class="bb-s">Traffic updates and essential services.</span></a>
+        <a class="bigbtn" href="#/parking" data-go="parking">
+          <span class="bi" aria-hidden="true">P</span>
+          <span class="bt">Parking &amp; Walking</span>
+        </a>
+        <a class="bigbtn" href="#/parking/traffic" data-go="traffic">
+          <span class="bi" aria-hidden="true">&#128678;</span>
+          <span class="bt">Traffic</span>
+        </a>
       </div>
-    </nav>
-    <div class="fresh-row">
-      <span class="fresh-ic" aria-hidden="true"><svg class="ic"><use href="#i-refresh"/></svg></span>
-      <div class="fresh-txt"><p class="fresh-line" data-fresh role="status"></p><p class="fresh-sub" data-fresh-sub></p></div>
-      <button type="button" class="btn btn-ghost fresh-btn" data-action="refresh"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg><span class="lbl">Refresh</span></button>
     </div>
-    <p class="banner banner-permanent safety-bar" role="note"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warning"/></svg><span class="safety-div" aria-hidden="true"></span><strong>Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.</strong></p>
+    <div class="freshness" id="home-fresh"></div>
+    <aside class="warn-card" role="note">
+      <span class="warn-ic" aria-hidden="true">&#9888;</span>
+      <p>Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.</p>
+    </aside>
   </section>
 
-  <!-- ============ FIND A PANDAL ============ -->
-  <section id="view-find" class="view" data-view="find" aria-labelledby="find-h" hidden>
-    <h2 id="find-h" tabindex="-1">Find a Pandal</h2>
-    <form id="filters" class="filters" role="search" aria-label="Search pandals" autocomplete="off">
-      <div class="field">
-        <label for="q">Search by pandal name, area, landmark or road</label>
-        <input id="q" name="q" type="search" inputmode="search" enterkeyhint="search" placeholder="Type a name or area" maxlength="100">
-      </div>
-      <div class="field">
-        <label for="locality">Area</label>
-        <select id="locality" name="locality"><option value="">All areas</option></select>
-      </div>
-      <div class="row">
-        <button type="button" id="clear-filters" class="btn btn-ghost">Clear search</button>
-        <p id="filter-summary" class="muted" role="status" aria-live="polite"></p>
-      </div>
-    </form>
+  <!-- PANDALS: neighbourhood browse -->
+  <section id="view-pandals" class="view" data-view="pandals" hidden>
+    <header class="view-head">
+      <h1>Pandals</h1>
+      <p class="lede">Browse by neighbourhood, or search by name.</p>
+    </header>
+    <label class="sr-only" for="q">Search pandal name</label>
+    <input id="q" type="search" enterkeyhint="search" autocomplete="off" placeholder="Search pandal name" class="search">
+    <p class="filter-sum" id="filter-summary" aria-live="polite"></p>
+    <ul class="nhood-list" id="nhood-list"></ul>
+    <ul class="result-list" id="pandal-search-list" hidden></ul>
+  </section>
 
-    <div class="locbox" id="nearby">
-      <p id="nearby-intro" class="muted"><strong>Optional:</strong> sort the list by distance from you. Your phone will ask permission only after you tap the button. Your location stays on this device and is never stored or sent. Everything works without it.</p>
-      <div class="row">
-        <button type="button" id="nearby-btn" class="btn btn-ghost">Sort by distance from me</button>
-        <button type="button" id="nearby-clear" class="btn btn-ghost" hidden>Forget my location</button>
+  <!-- NEIGHBOURHOOD detail -->
+  <section id="view-nhood" class="view" data-view="nhood" hidden>
+    <header class="view-head">
+      <a class="back" href="#/pandals" id="nhood-back">← Pandals</a>
+      <h1 id="nhood-title">Neighbourhood</h1>
+      <p class="lede" id="nhood-count"></p>
+    </header>
+    <div class="mapbox" id="map-nhood" role="img" aria-label="Map of pandals in this neighbourhood"></div>
+    <ul class="result-list" id="nhood-pandal-list"></ul>
+  </section>
+
+  <!-- PANDAL detail -->
+  <section id="view-pandal" class="view" data-view="pandal" hidden>
+    <header class="view-head">
+      <a class="back" href="#/pandals" id="pandal-back">← Back</a>
+      <h1 id="pandal-title">Pandal</h1>
+      <p class="lede" id="pandal-locality"></p>
+      <p class="badge-row" id="pandal-status"></p>
+    </header>
+    <h2 class="sec">Where is it?</h2>
+    <div class="mapbox" id="map-pandal" role="img" aria-label="Map of this pandal"></div>
+    <div class="actions" id="pandal-actions"></div>
+    <h2 class="sec">Get there</h2>
+    <div id="pandal-parking"></div>
+    <h2 class="sec">Traffic</h2>
+    <div id="pandal-traffic"></div>
+    <h2 class="sec">Nearby help</h2>
+    <div id="pandal-help"></div>
+  </section>
+
+  <!-- PARKING & TRAFFIC (combined tab; sub-switcher) -->
+  <section id="view-parking" class="view" data-view="parking" hidden>
+    <header class="view-head">
+      <h1>Parking &amp; Traffic</h1>
+      <div class="subtabs" role="tablist" aria-label="Parking or traffic">
+        <button type="button" class="subtab" role="tab" id="sub-parking" aria-selected="true" data-sub="parking">Parking &amp; Walking</button>
+        <button type="button" class="subtab" role="tab" id="sub-traffic" aria-selected="false" data-sub="traffic">Traffic</button>
       </div>
-      <p id="geo-msg" class="muted" role="status" aria-live="polite"></p>
+    </header>
+    <div id="panel-parking" role="tabpanel" aria-labelledby="sub-parking">
+      <p class="lede">Where do I leave my vehicle?</p>
+      <div class="mapbox" id="map-parking" role="img" aria-label="Map of parking and drop points"></div>
+      <ul class="card-list" id="parking-list"></ul>
+      <p class="empty" id="parking-empty" hidden>Parking and walking routes will be published after 2026 field verification.</p>
     </div>
-
-    <div class="map-frame"><div id="map-find" class="map" role="region" aria-label="Map of pandals. Every pandal is also listed as text below." tabindex="-1"></div>
-      <p class="banner banner-warn map-fallback" data-map-fallback hidden>The map could not be loaded. All pandals are still listed below.</p></div>
-    <p class="banner banner-warn tile-msg" data-tile-msg role="status" hidden>Map tiles unavailable – you may be offline. Pins and the list still work.</p>
-
-    <div id="pandal-detail" class="detail" aria-live="polite" hidden></div>
-
-    <h3 id="pandals-h">Pandals <span id="pandal-count" class="count"></span></h3>
-    <ul id="pandal-list" class="results"></ul>
-    <p id="pandal-empty" class="empty" hidden></p>
-    <div class="disclaimer" data-disclaimer role="note"></div>
-  </section>
-
-  <!-- ============ PARKING & WALKING ============ -->
-  <section id="view-parking" class="view" data-view="parking" aria-labelledby="parking-h" hidden>
-    <h2 id="parking-h" tabindex="-1">Parking &amp; Walking Routes</h2>
-    <div class="disclaimer" data-disclaimer role="note"></div>
-    <fieldset class="seg" id="ptype">
-      <legend>Show</legend>
-      <label class="chip"><input type="radio" name="ptype" value="all" checked><span>All</span></label>
-      <label class="chip"><input type="radio" name="ptype" value="parking"><span>Parking</span></label>
-      <label class="chip"><input type="radio" name="ptype" value="drop-off"><span>Drop-off</span></label>
-      <label class="chip"><input type="radio" name="ptype" value="pick-up"><span>Pick-up</span></label>
-      <label class="chip"><input type="radio" name="ptype" value="pedestrian"><span>Walk in / out</span></label>
-    </fieldset>
-    <div class="map-frame"><div id="map-parking" class="map" role="region" aria-label="Map of parking, drop-off and pedestrian points. All points are also listed as text below." tabindex="-1"></div>
-      <p class="banner banner-warn map-fallback" data-map-fallback hidden>The map could not be loaded. Points are still listed below.</p></div>
-    <p class="banner banner-warn tile-msg" data-tile-msg role="status" hidden>Map tiles unavailable – you may be offline. Pins and lists still work.</p>
-    <h3 id="points-h">Parking, drop-off, pick-up and pedestrian points <span id="points-count" class="count"></span></h3>
-    <ul id="point-list" class="cards"></ul>
-    <h3 id="routes-h">Walking routes to pandals <span id="routes-count" class="count"></span></h3>
-    <p class="muted small">A route is shown only if its details are published. Distance and time appear only for routes marked verified. External navigation (Google Maps) may not know local Puja restrictions.</p>
-    <ul id="route-list" class="cards"></ul>
-  </section>
-
-  <!-- ============ TRAFFIC ============ -->
-  <section id="view-traffic" class="view" data-view="traffic" aria-labelledby="traffic-h" hidden>
-    <h2 id="traffic-h" tabindex="-1">Traffic Updates &amp; Help</h2>
-    <nav class="subnav" aria-label="Traffic and help"><a href="#/traffic" aria-current="page">Traffic updates</a><a href="#/help">Help &amp; facilities</a></nav>
-    <div class="fresh-row"><p class="fresh-line" data-fresh role="status"></p><button type="button" class="btn btn-ghost btn-sm" data-action="refresh">Refresh</button></div>
-    <p class="banner banner-permanent safety-bar" role="note"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warning"/></svg><span class="safety-div" aria-hidden="true"></span><strong>Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.</strong></p>
-    <div class="disclaimer" data-disclaimer role="note"></div>
-    <p class="notice-inline">These are <strong>published schedules</strong>, not a view of the roads. This app does not show traffic and cannot tell you whether a road is passable.</p>
-    <div class="timecheck">
-      <div class="field">
-        <label for="check-at">Check a date and time (India time, IST)</label>
-        <input id="check-at" type="datetime-local" step="60">
+    <div id="panel-traffic" role="tabpanel" aria-labelledby="sub-traffic" hidden>
+      <p class="lede">Check before you travel.</p>
+      <div class="timecheck">
+        <label>Date <input type="date" id="t-date"></label>
+        <label>Time <input type="time" id="t-time"></label>
+        <button type="button" class="btn" id="t-now">Use now</button>
       </div>
-      <div class="row"><button type="button" id="check-now" class="btn btn-ghost">Use current time</button></div>
+      <h2 class="sec">Active now</h2>
+      <ul class="card-list" id="traffic-active"></ul>
+      <p class="empty" id="traffic-active-empty" hidden>No active restrictions for this time.</p>
+      <h2 class="sec">Upcoming</h2>
+      <ul class="card-list" id="traffic-upcoming"></ul>
+      <p class="empty" id="traffic-upcoming-empty" hidden>No upcoming restrictions for this time.</p>
+      <div class="mapbox" id="map-traffic" role="img" aria-label="Map of selected traffic restriction" hidden></div>
     </div>
-    <p id="check-summary" class="muted" role="status" aria-live="polite"></p>
-    <p id="restr-cache-note" class="banner banner-warn" hidden></p>
-
-    <h3 id="rs-active-h">Currently scheduled <span class="count" id="rs-active-n"></span></h3>
-    <p class="muted small">Verified notices whose published schedule includes the time being checked.</p>
-    <ul id="rs-active" class="cards" aria-labelledby="rs-active-h"></ul>
-
-    <h3 id="rs-upcoming-h">Upcoming <span class="count" id="rs-upcoming-n"></span></h3>
-    <p class="muted small">Verified notices that start after the time being checked.</p>
-    <ul id="rs-upcoming" class="cards" aria-labelledby="rs-upcoming-h"></ul>
-
-    <h3 id="rs-other-h">Unverified, cancelled &amp; past <span class="count" id="rs-other-n"></span></h3>
-    <p class="muted small">Not confirmed information. Sample records, unverified reports, cancelled notices and schedules that have ended appear here.</p>
-    <ul id="rs-other" class="cards sample" aria-labelledby="rs-other-h"></ul>
-
-    <h3>Map of notice locations</h3>
-    <p class="muted small">Pins show approximate points only. Road lines are drawn only when a notice has verified road geometry.</p>
-    <div class="map-frame"><div id="map-traffic" class="map" role="region" aria-label="Map of restriction locations and diversion points. All notices are also listed as text above." tabindex="-1"></div>
-      <p class="banner banner-warn map-fallback" data-map-fallback hidden>The map could not be loaded. Notices are still listed above.</p></div>
-    <p class="banner banner-warn tile-msg" data-tile-msg role="status" hidden>Map tiles unavailable – you may be offline. Pins and lists still work.</p>
   </section>
 
-  <!-- ============ HELP ============ -->
-  <section id="view-help" class="view" data-view="help" aria-labelledby="help-h" hidden>
-    <h2 id="help-h" tabindex="-1">Help &amp; facilities</h2>
-    <nav class="subnav" aria-label="Traffic and help"><a href="#/traffic">Traffic updates</a><a href="#/help" aria-current="page">Help &amp; facilities</a></nav>
-    <div class="emergency"><strong>Emergency?</strong> Dial <a href="tel:112">112</a>. This app is not an emergency service.</div>
-    <div class="disclaimer" data-disclaimer role="note"></div>
-    <fieldset class="seg" id="ftype">
-      <legend>Show</legend>
-      <label class="chip"><input type="radio" name="ftype" value="all" checked><span>All</span></label>
-      <label class="chip"><input type="radio" name="ftype" value="toilet"><span>Toilets</span></label>
-      <label class="chip"><input type="radio" name="ftype" value="drinking-water"><span>Drinking water</span></label>
-      <label class="chip"><input type="radio" name="ftype" value="first-aid"><span>First aid</span></label>
-      <label class="chip"><input type="radio" name="ftype" value="hospital"><span>Hospitals</span></label>
-      <label class="chip"><input type="radio" name="ftype" value="police-booth"><span>Police assistance booths</span></label>
-    </fieldset>
-    <label class="check"><input type="checkbox" id="help-show-map"><span>Show these on the map</span></label>
-    <button type="button" id="help-clear-map" class="btn btn-ghost btn-sm" hidden>Clear map pins</button>
-    <div class="map-frame"><div id="map-help" class="map" role="region" aria-label="Map of facilities. Facilities appear only when you choose to show them. All are listed as text below." tabindex="-1"></div>
-      <p class="banner banner-warn map-fallback" data-map-fallback hidden>The map could not be loaded. Facilities are still listed below.</p></div>
-    <p class="banner banner-warn tile-msg" data-tile-msg role="status" hidden>Map tiles unavailable – you may be offline. Pins and lists still work.</p>
-    <p id="help-map-note" class="muted small">The map starts empty. Tick “Show these on the map”, or tap “Show on map” on one facility.</p>
-    <h3 id="fac-h">Facilities <span id="fac-count" class="count"></span></h3>
-    <ul id="fac-list" class="cards"></ul>
+  <!-- FACILITIES (from SOS) -->
+  <section id="view-facilities" class="view" data-view="facilities" hidden>
+    <header class="view-head">
+      <a class="back" href="#/" id="fac-back">← Home</a>
+      <h1 id="fac-title">Facilities</h1>
+      <p class="lede" id="fac-lede"></p>
+    </header>
+    <div class="mapbox" id="map-facilities" role="img" aria-label="Map of facilities"></div>
+    <ul class="card-list" id="fac-list"></ul>
+    <p class="empty" id="fac-empty" hidden>Locations will be published after 2026 field verification.</p>
   </section>
 
-  <!-- ============ INFO ============ -->
-  <section id="view-info" class="view" data-view="info" aria-labelledby="info-h" hidden>
-    <h2 id="info-h" tabindex="-1">Safety notice &amp; information</h2>
-    <div class="disclaimer" data-disclaimer role="note"></div>
-    <p class="banner banner-permanent safety-bar" role="note"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-warning"/></svg><span class="safety-div" aria-hidden="true"></span><strong>Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.</strong></p>
-    <div class="emergency"><strong>Emergency?</strong> Dial <a href="tel:112">112</a>. This app is not an emergency service.</div>
-    <h3>Data freshness</h3>
-    <div id="freshness" class="freshness" role="status"></div>
-    <div class="row"><button type="button" class="btn btn-ghost" data-action="refresh">Refresh data now</button></div>
-    <h3>What the labels mean</h3>
-    <ul class="plain">
-      <li><strong>Official</strong> – taken from an official order or notice.</li>
-      <li><strong>Admin-verified</strong> – checked by the maintainers against a named source.</li>
-      <li><strong>Unconfirmed / Unverified</strong> – not checked. Do not rely on it.</li>
-      <li><strong>Demo</strong> – sample placeholder, not real.</li>
-      <li><strong>Active / Upcoming / Expired</strong> – whether a <em>published schedule</em> includes the time being checked. It is not proof about the road right now.</li>
-    </ul>
-    <h3 id="info-safety">Disclaimer</h3>
-    <p>Siliguri Puja Guide gathers published visitor and traffic information in one place. Information may be incomplete, late or wrong, and it can change on the ground at any time. This app does not control traffic and does not show live road conditions. Always follow on-ground directions from traffic police.</p>
-    <h3 id="info-privacy">Privacy policy</h3>
-    <p>No analytics, no tracking, no accounts. Your location is requested only when you tap a button for it; it stays in memory on your device and is never stored or sent by this app. The map is drawn from OpenStreetMap tile servers, which receive your IP address and the map area you view. If you tap a directions link, Google Maps opens and receives the destination. The app saves in your browser one timestamp (when data last refreshed), your day/night choice, and its own files so it can work offline.</p>
-    <h3 id="info-terms">Terms of use</h3>
-    <p>Use at your own risk. The app is provided “as is” without warranty. Map data © OpenStreetMap contributors. Maps by Leaflet.</p>
-    <details class="install-help">
-      <summary>How to install on your phone</summary>
-      <ul>
-        <li><strong>Android (Chrome):</strong> menu (⋮) → “Install app” or “Add to Home screen”.</li>
-        <li><strong>iPhone (Safari):</strong> Share → “Add to Home Screen”.</li>
-      </ul>
-    </details>
+  <!-- INFO (footer links) -->
+  <section id="view-info" class="view" data-view="info" hidden>
+    <header class="view-head">
+      <a class="back" href="#/">← Home</a>
+      <h1 id="info-title">Information</h1>
+    </header>
+    <div id="info-body" class="prose"></div>
   </section>
-
-</div>
 </main>
 
-<nav class="footlinks" aria-label="Safety, privacy and terms"><a href="#/info/safety">Safety notice</a><span aria-hidden="true">|</span><a href="#/info/privacy">Privacy policy</a><span aria-hidden="true">|</span><a href="#/info/terms">Terms of use</a></nav>
+<nav class="footlinks" aria-label="Safety, privacy and terms">
+  <a href="#/info/safety">Safety notice</a><span aria-hidden="true">|</span>
+  <a href="#/info/privacy">Privacy policy</a><span aria-hidden="true">|</span>
+  <a href="#/info/terms">Terms of use</a>
+</nav>
 <footer class="foot"><div class="wrap"><p id="foot-line">Siliguri Puja Guide · Durga Puja 2026 · Demo version</p></div></footer>
 
 <nav class="tabbar" id="tabbar" aria-label="Sections" hidden>
   <a href="#/" data-tab="home"><span class="ti" aria-hidden="true">&#8962;</span><span>Home</span></a>
-  <a href="#/find" data-tab="find"><span class="ti" aria-hidden="true">&#9906;</span><span>Pandals</span></a>
-  <a href="#/parking" data-tab="parking"><span class="ti" aria-hidden="true">P</span><span>Parking</span></a>
-  <a href="#/traffic" data-tab="traffic"><span class="ti" aria-hidden="true">&#8856;</span><span>Traffic</span></a>
-  <a href="#/help" data-tab="help"><span class="ti" aria-hidden="true">+</span><span>Help</span></a>
-  <a href="#/info" data-tab="info"><span class="ti" aria-hidden="true">i</span><span>Safety</span></a>
+  <a href="#/pandals" data-tab="pandals"><span class="ti" aria-hidden="true">&#128205;</span><span>Pandals</span></a>
+  <a href="#/parking" data-tab="parking"><span class="ti" aria-hidden="true">P</span><span>Parking &amp; Traffic</span></a>
 </nav>
+
+<button type="button" class="sos-fab" id="sos-fab" aria-haspopup="dialog" aria-controls="sos-sheet" aria-expanded="false" title="Need help?" hidden>
+  <span aria-hidden="true">&#128680;</span><span class="sr-only">Need help? Emergency and police assistance</span>
+</button>
+
+<dialog class="sheet" id="sos-sheet" aria-labelledby="sos-title">
+  <form method="dialog" class="sheet-inner">
+    <header class="sheet-head">
+      <h2 id="sos-title">Need help?</h2>
+      <button type="submit" class="sheet-close" value="close" aria-label="Close">×</button>
+    </header>
+    <ul class="sos-list" id="sos-list"></ul>
+  </form>
+</dialog>
+
+<dialog class="sheet" id="nav-sheet" aria-labelledby="nav-title">
+  <form method="dialog" class="sheet-inner">
+    <header class="sheet-head">
+      <h2 id="nav-title">Open directions?</h2>
+      <button type="submit" class="sheet-close" value="close" aria-label="Close">×</button>
+    </header>
+    <p class="sheet-warn">Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements. Follow Police directions and posted signs.</p>
+    <div class="sheet-actions">
+      <a class="btn btn-primary" id="nav-go" href="#" target="_blank" rel="noopener">Open Google Maps</a>
+      <button type="submit" class="btn" value="cancel">Cancel</button>
+    </div>
+  </form>
+</dialog>
 
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="vendor/markercluster/leaflet.markercluster.js"></script>

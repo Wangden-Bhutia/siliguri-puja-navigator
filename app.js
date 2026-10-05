@@ -1,592 +1,692 @@
-/* Siliguri Puja Guide - UI. All dynamic text is inserted with textContent / setAttribute
-   (never innerHTML with data). Pure logic lives in logic.js. */
+/* Siliguri Puja Guide — visitor UI (schema v2). All dynamic text uses textContent / setAttribute. */
 (function () {
   'use strict';
   var P = window.PujaLogic;
   var BR = window.PUJA_BRANDING || { appName: 'Siliguri Puja Guide', institutionalBranding: { enabled: false } };
   var DATA_URL = 'data/puja-data.json';
   var SILIGURI = [26.7271, 88.3953];
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var LS_REFRESH = 'spn.lastRefresh', LS_THEME = 'spn.theme';
-  var DISCLAIMER = 'Google Maps may not reflect temporary Puja traffic restrictions, diversions or pedestrian arrangements. Follow on-ground traffic police directions and posted signs. Use only designated parking and drop-off points.';
-  var AUTO_MIN_MS = 30000, MANUAL_MIN_MS = 3000, PERIODIC_MS = 5 * 60000, TICK_MS = 60000, FETCH_TIMEOUT_MS = 15000;
-  var TITLES = { home: 'Home', find: 'Find a Pandal', parking: 'Parking & Walking Routes', traffic: 'Traffic Updates & Help', help: 'Help & facilities', info: 'Safety notice & information' };
+  var AUTO_MIN_MS = 30000, MANUAL_MIN_MS = 3000, PERIODIC_MS = 5 * 60000, FETCH_TIMEOUT_MS = 15000;
+  var OSM = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  var OSM_ATTR = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
   var S = {
     data: null, raw: '', renderKey: '',
     load: { status: 'loading', source: '', stale: false, reason: '', lastRefresh: null },
-    q: '', locality: '', checkAt: null, user: null,
-    route: '', selected: '', ptype: 'all', ftype: 'all', helpShow: false, helpPins: {}, selectedRoute: ''
+    q: '', route: 'home', nhoodId: '', pandalId: '', parkingSub: 'parking',
+    facType: '', infoPage: '', checkAt: null, pendingNav: null
   };
   var R = { inFlight: null, lastAttempt: 0, started: 0, skipped: 0, completed: 0 };
+  var maps = {};
   var deferredInstall = null;
 
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null && text !== '') e.textContent = text; return e; }
-  function attrs(e, a) { Object.keys(a).forEach(function (k) { e.setAttribute(k, a[k]); }); return e; }
+  function attrs(e, a) { Object.keys(a).forEach(function (k) { if (a[k] === null || a[k] === undefined) e.removeAttribute(k); else e.setAttribute(k, a[k]); }); return e; }
   function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); return node; }
   function add(parent) { for (var i = 1; i < arguments.length; i++) if (arguments[i]) parent.appendChild(arguments[i]); return parent; }
   function nowMs() { return Date.now(); }
   function refMs() { return S.checkAt != null ? S.checkAt : nowMs(); }
-  function sr(text) { return el('span', 'sr-only', text); }
-  function byId(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
-  function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+  function byId(list, id) { for (var i = 0; i < (list || []).length; i++) if (list[i].id === id) return list[i]; return null; }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
 
-  /* ---------- badges ---------- */
-  var BADGES = { official: ['\u2714', 'Official'], 'admin-verified': ['\u2714', 'Admin-verified'], unconfirmed: ['?', 'Unconfirmed'], demo: ['\u25C6', 'Demo'] };
-  function badge(kind) {
-    var b = BADGES[kind] || ['?', kind], s = el('span', 'badge badge-' + kind);
-    add(s, attrs(el('span', 'ic', b[0]), { 'aria-hidden': 'true' }), document.createTextNode(' ' + b[1])); return s;
-  }
-  function recBadges(r) {
-    var w = el('span', 'badges');
-    if (r.demo) w.appendChild(badge('demo'));
-    if (r.status === 'official' || r.status === 'admin-verified' || r.status === 'unconfirmed') w.appendChild(badge(r.status));
-    return w;
-  }
-  var STATE_ICON = { active: '\u25CF', upcoming: '\u25CB', expired: '\u25A0', cancelled: '\u2716', unconfirmed: '?' };
-  function stateBadge(state, verified) {
-    var shown = verified ? state : 'unconfirmed';
-    var s = el('span', 'state state-' + shown + (verified ? '' : ' is-sample'));
-    add(s, attrs(el('span', 'ic', STATE_ICON[shown]), { 'aria-hidden': 'true' }), document.createTextNode(' '), el('span', 'st-t', P.shortLabel(state, verified)));
-    return s;
-  }
-  var TYPE_LABEL = { 'no-entry': 'No entry', 'vehicle-restriction': 'Vehicle restriction', 'one-way': 'One-way', 'diversion': 'Diversion', 'parking-restriction': 'Parking restriction', 'pedestrian-zone': 'Pedestrian zone', 'other': 'Other' };
-  var FAC_LABEL = { toilet: 'Toilets', 'drinking-water': 'Drinking water', 'first-aid': 'First aid', hospital: 'Hospital', 'police-booth': 'Police assistance booth' };
-  var FAC_MARK = { toilet: 'T', 'drinking-water': 'W', 'first-aid': '+', hospital: 'H', 'police-booth': 'Pb' };
-
-  // "Approved"/"Designated" only when the record says so AND it is verified.
-  function designation(rec, base) {
-    var flagged = rec.kind === 'parking' ? rec.approved : rec.designated;
-    if (flagged && rec.verified) return rec.kind === 'parking' ? 'Approved parking' : 'Designated ' + base;
-    if (flagged) return cap(base) + ' (designation not verified)';
-    return cap(base) + ' (designation not stated)';
-  }
-  function pointLabel(r) {
-    if (r.kind === 'parking') return designation(r, 'parking');
-    return designation(r, { 'drop-off': 'drop-off', 'pick-up': 'pick-up', 'pedestrian-entrance': 'pedestrian entrance', 'pedestrian-exit': 'pedestrian exit' }[r.type] || r.type);
-  }
-
-  /* ---------- small building blocks ---------- */
-  function fact(label, value) { if (!value) return null; var p = el('p', 'fact'); add(p, el('span', 'fact-l', label + ': '), document.createTextNode(value)); return p; }
-  function factOr(label, value, fallback) { return fact(label, value || fallback); }
-  function provenance(r) {
-    var p = el('p', 'fact prov');
-    if (r.demo) { p.textContent = 'Sample record – not a real source or order.'; return p; }
-    var parts = [];
-    if (r.source) parts.push('Source: ' + r.source);
-    if (r.verifiedBy) parts.push('Verified by: ' + r.verifiedBy);
-    if (isFinite(r.verifiedAtMs)) parts.push('Verified: ' + P.fmtDateTime(r.verifiedAtMs));
-    if (!parts.length) parts.push('No source published – treat as unverified.');
-    p.textContent = parts.join(' · ');
-    if (r.sourceUrl) {
-      p.appendChild(document.createTextNode(' '));
-      var a = attrs(el('a', '', 'Source link'), { href: r.sourceUrl, target: '_blank', rel: 'noopener noreferrer' });
-      a.appendChild(sr(' (opens in a new tab)')); p.appendChild(a);
-    }
-    return p;
-  }
-  function extLink(url, label, cls) {
-    var a = attrs(el('a', cls || 'btn btn-primary', label), { href: url, target: '_blank', rel: 'noopener noreferrer' });
-    a.appendChild(sr(' (opens in a new tab)')); return a;
-  }
-  // One navigation button for any record that has coordinates and/or an address.
-  function navBlock(dir, label, cls) {
-    var wrap = el('div', 'nav-wrap');
-    if (dir && dir.url) {
-      wrap.appendChild(extLink(dir.url, label, cls));
-      if (dir.note) wrap.appendChild(el('p', 'muted small', dir.note));
+  /* ---------- branding / theme ---------- */
+  function applyBranding() {
+    var name = BR.appName || 'Siliguri Puja Guide';
+    $('#brand-name').textContent = name;
+    $('#brand-tag').textContent = BR.tagline || '';
+    $('#brand-descriptor').textContent = BR.descriptor || '';
+    $('#brand-dates').textContent = '';
+    add($('#brand-dates'), attrs(el('span', '', '\uD83D\uDCC5'), { 'aria-hidden': 'true' }), document.createTextNode(' ' + (BR.festivalDates || '')));
+    $('#foot-line').textContent = BR.officialBrandingApproved ? BR.footerApproved : BR.footerDemo;
+    var strip = $('#idstrip'), logos = $('#idstrip-logos'), cap = $('#idstrip-cap');
+    var ib = BR.institutionalBranding || {};
+    clear(logos);
+    if (ib.enabled && ib.logosPresent && ib.logos && ib.logos.length) {
+      strip.hidden = false;
+      cap.textContent = ib.caption || '';
+      (ib.names || []).forEach(function () {});
+      ib.logos.forEach(function (L) {
+        var img = attrs(el('img'), { src: L.src, alt: L.alt || '', width: '120', height: '40', loading: 'lazy' });
+        logos.appendChild(img);
+      });
+      if (ib.names && ib.names.length) {
+        cap.textContent = (ib.caption || '') + ' ' + ib.names.join(' & ');
+      }
     } else {
-      wrap.appendChild(attrs(el('button', cls || 'btn btn-primary', label), { type: 'button', disabled: 'disabled', 'aria-disabled': 'true' }));
-      wrap.appendChild(el('p', 'muted small', 'Directions unavailable: no location or address has been published for this place.'));
+      strip.hidden = true;
     }
-    return wrap;
   }
-  function plainDir(rec) {
-    var u = P.mapsDirUrl(rec); if (!u) return null;
-    var coords = P.validCoords(rec.lat, rec.lon);
-    return { url: u, note: coords ? (rec.approximateLocation ? 'The location is approximate.' : '') : 'Directions use the written address and may be approximate.' };
-  }
-
-  /* ---------- filtering ---------- */
-  function filteredPandals() {
-    if (!S.data) return [];
-    return S.data.pandals.filter(function (p) { return (!S.locality || p.locality === S.locality) && P.matches(S.q, P.pandalFields(p)); });
-  }
-  function distOf(p) { return (S.user && p.hasCoords) ? P.distanceKm(S.user.lat, S.user.lon, p.lat, p.lon) : null; }
-  function fmtKm(km) { return km < 1 ? Math.round(km * 100) * 10 + ' m' : km.toFixed(1) + ' km'; }
-  function dataMsg() { return S.load.status === 'loading' ? 'Loading…' : 'Data unavailable – nothing to show.'; }
-
-  /* ---------- maps (one lazily-created Leaflet map per screen) ---------- */
-  var maps = {};
-  function makeMap(name, elId) {
-    var c = { name: name, elId: elId, el: $('#' + elId), map: null, failed: false, g: {} };
-    c.frame = c.el.parentNode; c.msg = c.frame.nextElementSibling; c.fallback = $('[data-map-fallback]', c.frame);
-    c.ensure = function () {
-      if (c.map) { c.map.invalidateSize(); return c.map; }
-      if (c.failed) return null;
-      if (typeof L === 'undefined' || !L.markerClusterGroup) { c.failed = true; c.fallback.hidden = false; c.el.hidden = true; return null; }
-      c.map = L.map(c.elId, { center: SILIGURI, zoom: 13, minZoom: 9, maxZoom: 19, zoomAnimation: !reduce, fadeAnimation: !reduce, markerZoomAnimation: !reduce });
-      var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors' });
-      var errs = 0;
-      tiles.on('loading', function () { errs = 0; });
-      tiles.on('tileerror', function () { errs++; c.msg.hidden = false; });
-      tiles.on('load', function () { if (!errs && navigator.onLine !== false) c.msg.hidden = true; });
-      if (navigator.onLine === false) c.msg.hidden = false;
-      window.addEventListener('offline', function () { c.msg.hidden = false; });
-      window.addEventListener('online', function () { tiles.redraw(); });
-      tiles.addTo(c.map);
-      c.g.main = L.layerGroup().addTo(c.map);
-      return c.map;
-    };
-    c.clear = function () { Object.keys(c.g).forEach(function (k) { c.g[k].clearLayers(); }); };
-    maps[name] = c; return c;
-  }
-  function iconEl(cls, text, dashed) {
-    var d = el('div', 'mk-in ' + cls + (dashed ? ' mk-dashed' : ''));
-    if (text) d.appendChild(attrs(el('span', 'mk-t', text), { 'aria-hidden': 'true' })); return d;
-  }
-  function mkIcon(cls, text, dashed, size) {
-    var s = size || 44;
-    return L.divIcon({ className: 'mk', html: iconEl(cls, text, dashed), iconSize: [s, s], iconAnchor: [s / 2, s / 2], popupAnchor: [0, -20] });
-  }
-  function labelMarker(m, label) { m.on('add', function () { var e = m.getElement(); if (e) { e.setAttribute('aria-label', label); e.setAttribute('role', 'button'); } }); }
-  function fit(c, pts, maxZoom) { if (c.map && pts.length) c.map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: maxZoom || 16, animate: false }); }
-  function flyTo(c, latlng, z) {
-    if (!c.map) return;
-    var zoom = Math.max(c.map.getZoom(), z || 16);
-    if (reduce) c.map.setView(latlng, zoom, { animate: false }); else c.map.flyTo(latlng, zoom, { duration: 0.7 });
-  }
-  function popupBox(title, rec, lines, extra) {
-    var n = el('div', 'popup'); n.appendChild(el('strong', 'popup-t', title));
-    if (rec) n.appendChild(recBadges(rec));
-    (lines || []).forEach(function (l) { if (l) n.appendChild(el('p', 'small', l)); });
-    if (extra) n.appendChild(extra);
-    return n;
-  }
-
-  // ---- Find map: pandals (clustered), selection ring, entrances of the selected pandal, user position
-  var mf = makeMap('find', 'map-find');
-  function renderFindMap(doFit) {
-    if (!mf.ensure()) return;
-    if (!mf.g.pandals) { mf.g.pandals = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 45, animate: !reduce, spiderfyOnMaxZoom: true,
-      iconCreateFunction: function (cl) { return L.divIcon({ className: 'mk', html: iconEl('mk-cluster', String(cl.getChildCount())), iconSize: [44, 44], iconAnchor: [22, 22] }); } }); mf.map.addLayer(mf.g.pandals); mf.g.sel = L.layerGroup().addTo(mf.map); mf.g.user = L.layerGroup().addTo(mf.map); }
-    mf.g.pandals.clearLayers(); mf.g.sel.clearLayers(); mf.markers = {};
-    var ms = [], pts = [];
-    filteredPandals().forEach(function (p) {
-      if (!p.hasCoords) return;
-      var m = L.marker([p.lat, p.lon], { icon: mkIcon('mk-pandal', '', p.demo || p.status === 'unconfirmed'), title: p.name, alt: p.name, keyboard: true, riseOnHover: true });
-      m.on('click', function () { selectPandal(p.id); });
-      labelMarker(m, p.name + ' (pandal)' + (p.demo ? ', sample data' : ''));
-      mf.markers[p.id] = m; ms.push(m); pts.push([p.lat, p.lon]);
-    });
-    mf.g.pandals.addLayers(ms);
-    drawSelection();
-    if (doFit && pts.length && !S.selected) fit(mf, pts, 15);
-  }
-  function drawSelection() {
-    if (!mf.map || !mf.g.sel) return;
-    mf.g.sel.clearLayers();
-    var p = S.selected && S.data ? byId(S.data.pandals, S.selected) : null;
-    if (!p) return;
-    if (p.hasCoords) mf.g.sel.addLayer(L.circleMarker([p.lat, p.lon], { radius: 26, color: '#e3c36f', weight: 4, fill: false, interactive: false }));
-    p.entrances.forEach(function (e) {
-      var m = L.marker([e.lat, e.lon], { icon: mkIcon('mk-entr', 'E', !e.verified, 44), title: e.name + (e.verified ? ' (verified public entrance)' : ' (entrance not verified)'), keyboard: true });
-      labelMarker(m, e.name + (e.verified ? ', verified public entrance' : ', entrance not verified'));
-      m.bindPopup(function () { return popupBox(e.name, null, [e.verified ? 'Verified public entrance.' : 'Entrance location not verified.', e.description]); });
-      mf.g.sel.addLayer(m);
-    });
-  }
-
-  // ---- Parking map: parking + access points (+ verified walking route line for the selected route)
-  var mp = makeMap('parking', 'map-parking');
-  function visiblePoints() {
-    if (!S.data) return [];
-    var t = S.ptype, d = S.data, out = [];
-    if (t === 'all' || t === 'parking') out = out.concat(d.parking);
-    d.accessPoints.forEach(function (a) {
-      if (t === 'all' || t === a.type || (t === 'pedestrian' && /^pedestrian/.test(a.type))) out.push(a);
-    });
-    return out;
-  }
-  var POINT_MARK = { parking: 'P', 'drop-off': 'D', 'pick-up': 'U', 'pedestrian-entrance': 'E', 'pedestrian-exit': 'X' };
-  function renderParkingMap(doFit) {
-    if (!mp.ensure()) return;
-    mp.g.main.clearLayers(); mp.markers = {}; mp.lines = 0;
-    var pts = [];
-    visiblePoints().forEach(function (r) {
-      if (!r.hasCoords) return;
-      var m = L.marker([r.lat, r.lon], { icon: mkIcon(r.kind === 'parking' ? 'mk-park' : 'mk-acc', POINT_MARK[r.kind === 'parking' ? 'parking' : r.type], r.demo, 44), title: r.name, alt: r.name, keyboard: true });
-      m.bindPopup(function () { return popupBox(r.name, r, [pointLabel(r), r.locality, r.landmark], navBlock(plainDir(r), 'Directions', 'btn btn-primary')); }, { maxWidth: 270, maxHeight: 340, autoPanPaddingTopLeft: [16, 60], autoPanPaddingBottomRight: [16, 16] });
-      labelMarker(m, r.name + ' (' + pointLabel(r) + ')' + (r.demo ? ', sample data' : ''));
-      mp.g.main.addLayer(m); mp.markers[r.id] = m; pts.push([r.lat, r.lon]);
-    });
-    var route = S.selectedRoute && byId(S.data.walkingRoutes, S.selectedRoute);
-    if (route) {
-      var pd = byId(S.data.pandals, route.pandalId), ent = pd && route.entranceId ? byId(pd.entrances, route.entranceId) : null;
-      var tgt = ent || (pd && pd.hasCoords ? pd : null);
-      if (tgt) {
-        var m2 = L.marker([tgt.lat, tgt.lon], { icon: mkIcon(ent ? 'mk-entr' : 'mk-pandal', ent ? 'E' : '', ent ? !ent.verified : true, 44), title: ent ? ent.name : pd.name, keyboard: true });
-        labelMarker(m2, 'Walking route destination: ' + (ent ? ent.name : pd.name)); mp.g.main.addLayer(m2); pts.push([tgt.lat, tgt.lon]);
-      }
-      // A route line is drawn ONLY from verified waypoints - never a guessed or straight line.
-      if (route.routeVerified && route.waypoints.length >= 2) {
-        mp.g.main.addLayer(L.polyline(route.waypoints.map(function (w) { return [w.lat, w.lon]; }), { color: '#8c1c2c', weight: 6, opacity: 0.9 })); mp.lines = 1;
-        route.waypoints.forEach(function (w) { pts.push([w.lat, w.lon]); });
-      }
+  function initTheme() {
+    var t = 'light';
+    try { t = localStorage.getItem(LS_THEME) || t; } catch (e) {}
+    if (t !== 'dark' && t !== 'light') t = 'light';
+    document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    var btn = $('#theme-btn');
+    if (btn) {
+      btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+      btn.title = t === 'dark' ? 'Day mode' : 'Night mode';
+      var lbl = $('.theme-lbl', btn); if (lbl) lbl.textContent = t === 'dark' ? 'Day mode' : 'Night mode';
     }
-    if (doFit && pts.length) fit(mp, pts, 17);
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    var next = cur === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem(LS_THEME, next); } catch (e) {}
+    initTheme();
   }
 
-  // ---- Traffic map: restriction points, verified road lines, diversion points
-  var mt = makeMap('traffic', 'map-traffic');
-  function statesKey() { return S.data ? S.data.restrictions.map(function (r) { return P.evaluateRestriction(r, refMs()).state; }).join(',') : ''; }
-  function renderTrafficMap(doFit) {
-    if (!mt.ensure()) return;
-    mt.g.main.clearLayers(); mt.restr = 0; mt.div = 0; mt.lines = 0; mt.key = statesKey();
-    if (!S.data) return;
-    var pts = [];
-    S.data.restrictions.forEach(function (r) {
-      var ev = P.evaluateRestriction(r, refMs());
-      if (r.geometry) {
-        var line = L.polyline(r.geometry.coordinates.map(function (c) { return [c[1], c[0]]; }), { color: '#8c1c2c', weight: 5, opacity: 0.85, dashArray: ev.state === 'active' ? null : '8 8' });
-        line.bindPopup(function () { return restrPopup(r); }); mt.g.main.addLayer(line); mt.lines++;
+  /* ---------- status badges ---------- */
+  function statusBadge(rec) {
+    var label = P.statusLabel(rec);
+    var cls = 'badge ';
+    if (rec.demo) cls += 'badge-demo';
+    else if (rec.verificationStatus === 'approved') cls += 'badge-approved';
+    else if (rec.verificationStatus === 'fieldVerified') cls += 'badge-field';
+    else if (rec.verificationStatus === 'expired') cls += 'badge-expired';
+    else if (rec.verificationStatus === 'reference') cls += 'badge-reference';
+    else cls += 'badge-pending';
+    return el('span', cls, label);
+  }
+  function pendingNote() {
+    return el('p', 'meta', 'Location pending 2026 field verification');
+  }
+
+  /* ---------- maps ---------- */
+  function ensureMap(id) {
+    var node = $('#' + id);
+    if (!node) return null;
+    if (maps[id] && maps[id].map) {
+      setTimeout(function () { maps[id].map.invalidateSize(); }, 50);
+      return maps[id];
+    }
+    var map = L.map(node, { scrollWheelZoom: false, attributionControl: true });
+    L.tileLayer(OSM, { maxZoom: 19, attribution: OSM_ATTR }).addTo(map);
+    map.setView(SILIGURI, 12);
+    var layer = L.layerGroup().addTo(map);
+    maps[id] = { map: map, layer: layer };
+    setTimeout(function () { map.invalidateSize(); }, 80);
+    return maps[id];
+  }
+  function clearMap(id) {
+    var m = maps[id]; if (!m) return;
+    m.layer.clearLayers();
+  }
+  function divIcon(cls, letter) {
+    return L.divIcon({ className: '', html: '<div class="mk ' + cls + '">' + letter + '</div>', iconSize: [28, 28], iconAnchor: [14, 14] });
+  }
+  function addMarker(mapId, lat, lon, cls, letter, title) {
+    var m = ensureMap(mapId); if (!m || !P.validCoords(lat, lon)) return null;
+    var mk = L.marker([lat, lon], { icon: divIcon(cls, letter), title: title || '' });
+    m.layer.addLayer(mk);
+    return mk;
+  }
+  function fitLayer(mapId, pad) {
+    var m = maps[mapId]; if (!m) return;
+    var layers = m.layer.getLayers();
+    if (!layers.length) { m.map.setView(SILIGURI, 12); return; }
+    var g = L.featureGroup(layers);
+    try { m.map.fitBounds(g.getBounds().pad(pad || 0.25), { maxZoom: 15 }); } catch (e) { m.map.setView(SILIGURI, 12); }
+  }
+
+  /* ---------- directions via nav-sheet ---------- */
+  function openNav(rec, label) {
+    var url = P.mapsDirUrl(rec);
+    if (!url) return;
+    S.pendingNav = { url: url, label: label || 'Open Google Maps' };
+    var go = $('#nav-go');
+    go.setAttribute('href', url);
+    go.textContent = 'Open Google Maps';
+    var sheet = $('#nav-sheet');
+    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
+  }
+  function closeSheet(id) {
+    var s = $(id); if (!s) return;
+    if (s.open && s.close) s.close(); else s.removeAttribute('open');
+  }
+
+  /* ---------- SOS ---------- */
+  function renderSos() {
+    var list = clear($('#sos-list'));
+    var help = (S.data && S.data.help) || { emergencyNumber: '112', contacts: [] };
+    var em = el('li');
+    add(em, add(el('div'), el('div', 'sos-label', '112'), el('div', 'sos-sub', 'Emergency')));
+    add(em, attrs(el('a', 'btn btn-call', 'Call'), { href: 'tel:' + (help.emergencyNumber || '112') }));
+    list.appendChild(em);
+
+    (help.contacts || []).forEach(function (c) {
+      var li = el('li');
+      var left = el('div');
+      add(left, el('div', 'sos-label', c.name));
+      if (c.phone) {
+        add(left, el('div', 'sos-sub', c.phone));
+        add(li, left, attrs(el('a', 'btn btn-call', 'Call'), { href: 'tel:' + c.phone.replace(/\s+/g, '') }));
+      } else {
+        add(left, el('div', 'sos-sub', 'Number to be confirmed for 2026'));
+        add(li, left);
       }
-      if (!r.hasCoords) return;
-      var m = L.marker([r.lat, r.lon], { icon: mkIcon('mk-restr st-' + ev.state, '\u2297', !r.verified, 44), title: r.name + ' – ' + P.shortLabel(ev.state, r.verified), alt: r.name, keyboard: true });
-      m.bindPopup(function () { return restrPopup(r); }, { maxWidth: 270, maxHeight: 340, autoPanPaddingTopLeft: [16, 60], autoPanPaddingBottomRight: [16, 16] });
-      labelMarker(m, r.name + ' (restriction point, ' + P.shortLabel(ev.state, r.verified) + ')');
-      mt.g.main.addLayer(m); mt.restr++; pts.push([r.lat, r.lon]);
+      list.appendChild(li);
     });
-    S.data.diversionPoints.forEach(function (d) {
-      var m = L.marker([d.lat, d.lon], { icon: mkIcon('mk-div', '\u2192', d.demo, 44), title: d.name, alt: d.name, keyboard: true });
-      m.bindPopup(function () { return popupBox(d.name, d, [d.instruction, d.landmark]); }, { maxWidth: 270, maxHeight: 340 });
-      labelMarker(m, d.name + ' (diversion point)' + (d.demo ? ', sample data' : '')); mt.g.main.addLayer(m); mt.div++; pts.push([d.lat, d.lon]);
-    });
-    if (doFit && pts.length) fit(mt, pts, 15);
-  }
-  function restrPopup(r) {
-    var ev = P.evaluateRestriction(r, refMs());
-    var box = popupBox(r.name, r, [P.describeSchedule(r), 'Subject to official orders and on-ground changes. Follow traffic police directions.']);
-    box.insertBefore(stateBadge(ev.state, r.verified), box.children[2] || null);
-    return box;
-  }
 
-  // ---- Help map: only what the user asks to see
-  var mh = makeMap('help', 'map-help');
-  function filteredFacilities() {
-    if (!S.data) return [];
-    return S.data.facilities.filter(function (f) { return S.ftype === 'all' || f.type === S.ftype; });
-  }
-  function renderHelpMap(doFit) {
-    if (!mh.ensure()) return;
-    mh.g.main.clearLayers(); mh.markers = {}; mh.count = 0;
-    if (!S.data) return;
-    var pts = [];
-    filteredFacilities().concat(S.data.facilities.filter(function (f) { return S.helpPins[f.id] && S.ftype !== 'all' && f.type !== S.ftype; })).forEach(function (f) {
-      if (!f.hasCoords) return;
-      if (!(S.helpShow && (S.ftype === 'all' || f.type === S.ftype)) && !S.helpPins[f.id]) return;
-      var m = L.marker([f.lat, f.lon], { icon: mkIcon('mk-fac', FAC_MARK[f.type], f.demo, 44), title: f.name, alt: f.name, keyboard: true });
-      m.bindPopup(function () { return popupBox(f.name, f, [FAC_LABEL[f.type], f.landmark, f.hours ? 'Hours: ' + f.hours : 'Hours: not stated'], navBlock(plainDir(f), 'Directions', 'btn btn-primary')); }, { maxWidth: 270, maxHeight: 340, autoPanPaddingTopLeft: [16, 60], autoPanPaddingBottomRight: [16, 16] });
-      labelMarker(m, f.name + ' (' + FAC_LABEL[f.type] + ')' + (f.demo ? ', sample data' : ''));
-      mh.g.main.addLayer(m); mh.markers[f.id] = m; mh.count++; pts.push([f.lat, f.lon]);
-    });
-    if (doFit && pts.length) fit(mh, pts, 16);
-    $('#help-clear-map').hidden = !(Object.keys(S.helpPins).length);
-  }
+    var pab = el('li');
+    add(pab, add(el('div'), el('div', 'sos-label', 'Police Assistance Booths'), el('div', 'sos-sub', 'Find nearby booths')));
+    add(pab, attrs(el('a', 'btn', 'Find'), { href: '#/facilities/pab' }));
+    list.appendChild(pab);
 
-  function renderMapFor(route, doFit) {
-    if (route === 'find') renderFindMap(doFit); else if (route === 'parking') renderParkingMap(doFit);
-    else if (route === 'traffic') renderTrafficMap(doFit); else if (route === 'help') renderHelpMap(doFit);
+    var hosp = el('li');
+    add(hosp, add(el('div'), el('div', 'sos-label', 'Hospitals'), el('div', 'sos-sub', 'Find hospitals')));
+    add(hosp, attrs(el('a', 'btn', 'Find'), { href: '#/facilities/hospital' }));
+    list.appendChild(hosp);
   }
-
-  /* ---------- FIND A PANDAL ---------- */
-  function renderFind() {
-    var ul = clear($('#pandal-list')), empty = $('#pandal-empty'), rows = filteredPandals().map(function (p) { return { p: p, km: distOf(p) }; });
-    if (S.user) rows.sort(function (a, b) { return (a.km == null) - (b.km == null) || (a.km || 0) - (b.km || 0) || a.p.name.localeCompare(b.p.name); });
-    else rows.sort(function (a, b) { return a.p.name.localeCompare(b.p.name); });
-    rows.forEach(function (r) {
-      var p = r.p, li = el('li'), b = attrs(el('button', 'result' + (p.demo ? ' is-demo' : '') + (S.selected === p.id ? ' is-selected' : '')), { type: 'button', 'data-action': 'select', 'data-id': p.id });
-      if (S.selected === p.id) b.setAttribute('aria-current', 'true');
-      b.appendChild(el('span', 'r-name', p.name));
-      var sub = [p.locality, p.landmark].filter(Boolean).join(' · '); if (sub) b.appendChild(el('span', 'r-sub', sub));
-      if (p.demo) b.appendChild(add(el('span', 'badges'), badge('demo')));
-      if (r.km != null) b.appendChild(el('span', 'r-dist', fmtKm(r.km) + ' away (straight line)'));
-      li.appendChild(b); ul.appendChild(li);
-    });
-    $('#pandal-count').textContent = S.data ? '(' + rows.length + (rows.length !== S.data.pandals.length ? ' of ' + S.data.pandals.length : '') + ')' : '';
-    clear(empty);
-    if (!S.data) { empty.hidden = false; empty.textContent = dataMsg(); }
-    else if (!S.data.pandals.length) { empty.hidden = false; empty.textContent = 'No pandals have been published yet.'; }
-    else if (!rows.length) {
-      empty.hidden = false;
-      add(empty, document.createTextNode('No pandals match your search. Try fewer words or '), attrs(el('button', 'linklike', 'clear the search'), { type: 'button', 'data-action': 'clear-filters' }), document.createTextNode('.'));
-    } else empty.hidden = true;
-    var f = S.q || S.locality;
-    $('#filter-summary').textContent = S.data && f ? 'Showing ' + rows.length + ' of ' + S.data.pandals.length + ' pandals.' : '';
-    renderDetail();
+  function openSos() {
+    renderSos();
+    var fab = $('#sos-fab'); fab.setAttribute('aria-expanded', 'true');
+    var sheet = $('#sos-sheet');
+    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute('open', '');
   }
+  function onSosClose() { $('#sos-fab').setAttribute('aria-expanded', 'false'); }
 
-  function renderDetail() {
-    var box = clear($('#pandal-detail'));
-    if (!S.selected) { box.hidden = true; return; }
-    box.hidden = false;
-    var p = S.data ? byId(S.data.pandals, S.selected) : null;
-    if (!p) {
-      add(box, el('p', '', S.data ? 'That pandal is not in the current data.' : 'Data unavailable – cannot show this pandal.'), attrs(el('button', 'btn btn-ghost', 'Back to the list'), { type: 'button', 'data-action': 'close-detail' }));
+  /* ---------- banners / freshness ---------- */
+  function renderBanners() {
+    var box = clear($('#status-banners'));
+    var d = S.data, L0 = S.load;
+    if (L0.status === 'loading') {
+      box.appendChild(el('div', 'banner', 'Loading data\u2026'));
       return;
     }
-    var head = el('div', 'card-head');
-    add(head, el('h3', '', p.name), attrs(el('button', 'btn btn-ghost btn-sm', 'Close'), { type: 'button', 'data-action': 'close-detail', 'aria-label': 'Close details for ' + p.name }));
-    box.appendChild(head); box.appendChild(recBadges(p));
-    add(box, fact('Area', p.locality), fact('Landmark', p.landmark), fact('Address', p.address));
-    // public entrance, stated carefully
-    var ve = P.verifiedEntrance(p);
-    if (ve) add(box, fact('Public entrance', 'Verified – ' + ve.name + (ve.description ? '. ' + ve.description : '')));
-    else if (p.entrances.length) add(box, fact('Public entrance', 'Not verified. A sample or unconfirmed entrance point is shown on the map.'));
-    else add(box, fact('Public entrance', 'Not published.'));
-    add(box, fact('Entrance note', p.entrance), fact('Timings', p.timings));
-    if (p.approximateLocation) box.appendChild(el('p', 'fact', 'Map location is approximate.'));
-    if (p.demo) box.appendChild(el('p', 'sample-note', 'Sample data – not a real pandal.'));
-    var dir = P.directionsFor(p);
-    box.appendChild(navBlock(dir, 'Directions', 'btn btn-primary'));
-    var actions = el('div', 'actions');
-    if (p.hasCoords) actions.appendChild(attrs(el('button', 'btn btn-ghost', 'Show on map'), { type: 'button', 'data-action': 'show', 'data-id': p.id }));
-    else box.appendChild(el('p', 'muted small', 'Not drawn on the map: no coordinates published.'));
-    box.appendChild(actions);
-    var rel = (p.restrictionIds || []).map(function (id) { return byId(S.data.restrictions, id); }).filter(Boolean);
-    if (rel.length) {
-      var rp = el('div', 'fact'); rp.appendChild(el('span', 'fact-l', 'Traffic notices linked to this pandal:'));
-      var ul = el('ul', 'plain');
-      rel.forEach(function (r) { var ev = P.evaluateRestriction(r, refMs()), x = el('li'); add(x, document.createTextNode(r.name + ' – '), stateBadge(ev.state, r.verified)); ul.appendChild(x); });
-      add(rp, ul, el('a', 'textlink', 'See Traffic Updates')); rp.lastChild.setAttribute('href', '#/traffic'); box.appendChild(rp);
-    }
-    var det = el('details', 'more'); det.appendChild(el('summary', '', 'More details'));
-    add(det, p.description ? el('p', '', p.description) : null, fact('Nearest parking', p.nearestParking), fact('Accessibility', p.accessibility), provenance(p));
-    if (p.imageUrl) det.appendChild(attrs(el('img', 'thumb'), { src: p.imageUrl, alt: 'Photo of ' + p.name, loading: 'lazy', referrerpolicy: 'no-referrer', width: '320', height: '180' }));
-    box.appendChild(det);
-  }
-
-  function selectPandal(id) { location.hash = '#/find/' + encodeURIComponent(id); }
-  function focusSelectedOnMap() {
-    var p = S.selected && S.data ? byId(S.data.pandals, S.selected) : null;
-    if (!p || !p.hasCoords || !mf.map) return;
-    flyTo(mf, [p.lat, p.lon], 16); drawSelection();
-  }
-
-  /* ---------- PARKING & WALKING ---------- */
-  function pointCard(r) {
-    var li = attrs(el('li', 'card' + (r.demo ? ' is-demo' : '')), { 'data-id': r.id });
-    add(li, add(el('div', 'card-head'), el('h4', 'h3like', r.name), recBadges(r)));
-    li.appendChild(el('p', 'fact-l', pointLabel(r)));
-    var loc = [r.locality, r.landmark, r.address].filter(Boolean).join(' · '); if (loc) li.appendChild(el('p', 'muted', loc));
-    add(li, factOr('Hours', r.hours, 'not stated'), fact('Vehicles', (r.vehicleTypes || []).join(', ')), fact('Capacity', r.capacity != null ? String(r.capacity) : ''), fact('Notes', r.notes), provenance(r));
-    var actions = el('div', 'actions');
-    if (r.hasCoords) actions.appendChild(attrs(el('button', 'btn btn-ghost', 'Show on map'), { type: 'button', 'data-action': 'show-point', 'data-id': r.id, 'aria-label': 'Show ' + r.name + ' on map' }));
-    li.appendChild(actions); li.appendChild(navBlock(plainDir(r), 'Directions', 'btn btn-primary'));
-    return li;
-  }
-  function routeCard(rt) {
-    var from = byId(S.data.accessPoints, rt.fromId) || byId(S.data.parking, rt.fromId), pd = byId(S.data.pandals, rt.pandalId), ent = pd && rt.entranceId ? byId(pd.entrances, rt.entranceId) : null;
-    var li = attrs(el('li', 'card' + (rt.demo ? ' is-demo' : '') + (S.selectedRoute === rt.id ? ' is-selected' : '')), { 'data-id': rt.id });
-    add(li, add(el('div', 'card-head'), el('h4', 'h3like', rt.name), recBadges(rt)));
-    li.appendChild(fact('From', from ? from.name + ' (' + pointLabel(from) + ')' : ''));
-    li.appendChild(fact('To', pd ? pd.name + (ent ? ' – ' + ent.name + (ent.verified ? '' : ' (entrance not verified)') : ' (entrance not specified)') : ''));
-    var v = el('p', 'badges');
-    v.appendChild(rt.routeVerified ? el('span', 'badge badge-official', '\u2714 Walking route verified') : el('span', 'badge badge-no', '? Walking route not verified'));
-    li.appendChild(v);
-    if (rt.routeVerified) li.appendChild(el('p', 'fact-l', 'Walking distance about ' + rt.distanceM + ' m · about ' + rt.timeMin + ' min on foot'));
-    else li.appendChild(el('p', 'fact', 'Walking distance and time: not available (route not verified).'));
-    if (rt.instructions.length) {
-      li.appendChild(el('p', 'fact-l', rt.routeVerified ? 'Instructions' : 'Unverified instructions – do not rely on these'));
-      var ol = el('ol', 'steps'); rt.instructions.forEach(function (s) { ol.appendChild(el('li', '', s)); }); li.appendChild(ol);
-    } else li.appendChild(el('p', 'fact', 'Walking instructions: not published.'));
-    li.appendChild(el('p', 'muted small', rt.routeVerified && rt.waypoints.length >= 2 ? 'The route line can be shown on the map.' : (rt.waypoints.length ? 'Route line not drawn: the route is not verified.' : 'No route line published.')));
-    var actions = el('div', 'actions');
-    actions.appendChild(attrs(el('button', 'btn btn-ghost', S.selectedRoute === rt.id ? 'Hide on map' : 'Show on map'), { type: 'button', 'data-action': 'show-route', 'data-id': rt.id, 'aria-label': (S.selectedRoute === rt.id ? 'Hide ' : 'Show ') + rt.name + ' on map' }));
-    li.appendChild(actions);
-    if (pd) { li.appendChild(navBlock(P.directionsFor(pd), 'Directions to ' + pd.name, 'btn btn-primary')); li.appendChild(el('p', 'muted small', 'External navigation may not know local Puja restrictions.')); }
-    li.appendChild(provenance(rt));
-    return li;
-  }
-  function renderParking() {
-    var d = S.data, pl = clear($('#point-list')), rl = clear($('#route-list'));
-    var pts = visiblePoints();
-    pts.forEach(function (r) { pl.appendChild(pointCard(r)); });
-    if (!pts.length) pl.appendChild(el('li', 'empty', d ? 'No points of this kind have been published yet.' : dataMsg()));
-    $('#points-count').textContent = d ? '(' + pts.length + ')' : '';
-    var rts = d ? d.walkingRoutes : [];
-    rts.forEach(function (rt) { rl.appendChild(routeCard(rt)); });
-    if (!rts.length) rl.appendChild(el('li', 'empty', d ? 'No walking routes have been published yet.' : dataMsg()));
-    $('#routes-count').textContent = d ? '(' + rts.length + ')' : '';
-  }
-
-  /* ---------- TRAFFIC ---------- */
-  function restrictionCard(r, ev) {
-    var li = attrs(el('li', 'card restr-card' + (r.verified ? '' : ' is-sample')), { 'data-id': r.id });
-    add(li, add(el('div', 'card-head'), el('h4', 'h3like', r.name), recBadges(r)));
-    var line = el('p', 'badges');
-    add(line, stateBadge(ev.state, r.verified), el('span', 'badge badge-type', TYPE_LABEL[r.type] || r.type));
-    li.appendChild(line);
-    li.appendChild(el('p', 'state-detail', P.stateLabel(ev.state, r.verified)));
-    if (!r.verified) li.appendChild(el('p', 'sample-note', r.demo ? 'Sample data – not a real order. Do not rely on it.' : 'Unverified – do not rely on it.'));
-    var det = '';
-    if (ev.state === 'active' && ev.windowEnd) det = 'Current window ends ' + P.fmtDateTime(ev.windowEnd) + '.';
-    else if (ev.state === 'upcoming' && ev.windowStart) det = 'Next window: ' + P.fmtDateTime(ev.windowStart) + ' to ' + P.fmtDateTime(ev.windowEnd) + '.';
-    else if (ev.state === 'expired' && ev.windowEnd) det = 'Last window ended ' + P.fmtDateTime(ev.windowEnd) + '.';
-    if (det) li.appendChild(el('p', 'fact', det));
-    add(li, factOr('Road / stretch', r.roadStretch || (r.roads || []).join(', ') || r.locationText, 'not stated'), fact('Where', r.roadStretch ? r.locationText : ''),
-      factOr('Direction', r.direction, 'not stated'), factOr('Vehicles affected', (r.vehicleTypes || []).join(', '), 'not stated'),
-      fact('Published schedule (IST)', P.describeSchedule(r)));
-    if (r.description) li.appendChild(el('p', '', r.description));
-    // pedestrian access only when the record is verified
-    li.appendChild(fact('Pedestrian access', r.verified ? (r.pedestrianAccess || 'not stated') : 'not verified'));
-    add(li, fact('Alternative access', r.verified ? r.alternativeAccess : ''), fact('Authority', r.authority));
-    var dps = S.data.diversionPoints.filter(function (d) { return d.restrictionId === r.id; }).sort(function (a, b) { return a.order - b.order; });
-    var dv = el('div', 'fact'); dv.appendChild(el('span', 'fact-l', 'Diversion points:'));
-    if (dps.length) {
-      var ol = el('ol', 'steps');
-      dps.forEach(function (d) {
-        var x = el('li'); add(x, el('strong', '', d.name), document.createTextNode(': ' + d.instruction + (d.landmark ? ' (' + d.landmark + ')' : '')));
-        if (d.demo) x.appendChild(document.createTextNode(' [sample]'));
-        ol.appendChild(x);
-      });
-      dv.appendChild(ol);
-    } else dv.appendChild(document.createTextNode(' none published for this notice.'));
-    li.appendChild(dv);
-    li.appendChild(provenance(r));
-    return li;
-  }
-  var ORDER = { active: 0, upcoming: 1, unconfirmed: 2, cancelled: 3, expired: 4 };
-  function renderTraffic() {
-    var t = refMs(), rows = (S.data ? S.data.restrictions : []).map(function (r) { return { r: r, ev: P.evaluateRestriction(r, t) }; });
-    var act = rows.filter(function (x) { return x.r.verified && x.ev.state === 'active'; });
-    var up = rows.filter(function (x) { return x.r.verified && x.ev.state === 'upcoming'; });
-    var other = rows.filter(function (x) { return act.indexOf(x) < 0 && up.indexOf(x) < 0; });
-    function byStart(a, b) { return (a.ev.windowStart || 0) - (b.ev.windowStart || 0); }
-    act.sort(byStart); up.sort(byStart);
-    other.sort(function (a, b) { return ORDER[a.ev.state] - ORDER[b.ev.state] || byStart(a, b); });
-    function fill(sel, list, emptyText) {
-      var ul = clear($(sel)); list.forEach(function (x) { ul.appendChild(restrictionCard(x.r, x.ev)); });
-      if (!list.length) ul.appendChild(el('li', 'empty', emptyText));
-    }
-    var none = S.data ? '' : dataMsg();
-    fill('#rs-active', act, none || 'No verified restriction is scheduled for this time. This does not mean roads are unrestricted – follow police directions.');
-    fill('#rs-upcoming', up, none || 'No upcoming verified restrictions in the published data.');
-    fill('#rs-other', other, none || 'No sample, unverified, cancelled or ended records.');
-    $('#rs-active-n').textContent = S.data ? '(' + act.length + ')' : '';
-    $('#rs-upcoming-n').textContent = S.data ? '(' + up.length + ')' : '';
-    $('#rs-other-n').textContent = S.data ? '(' + other.length + ')' : '';
-    $('#check-summary').textContent = S.data ? (S.checkAt != null ? 'Showing the published schedule for ' + P.fmtDateTime(t) + ' (time you selected).' : 'Showing the published schedule for the current time: ' + P.fmtDateTime(t) + '.') : '';
-    var cn = $('#restr-cache-note'), old = S.load.source === 'cache' || S.load.stale;
-    cn.hidden = !(old && S.data);
-    if (!cn.hidden) cn.textContent = 'These statuses are calculated from saved data that may be outdated or replaced. Do not treat them as current.';
-  }
-
-  /* ---------- HELP & FACILITIES ---------- */
-  function facilityCard(f) {
-    var li = attrs(el('li', 'card' + (f.demo ? ' is-demo' : '')), { 'data-id': f.id });
-    add(li, add(el('div', 'card-head'), el('h4', 'h3like', f.name), recBadges(f)));
-    li.appendChild(add(el('p', 'badges'), el('span', 'badge badge-type', FAC_LABEL[f.type] || f.type)));
-    var loc = [f.landmark, f.address].filter(Boolean).join(' · '); li.appendChild(el('p', 'muted', loc || 'Location text: not stated'));
-    li.appendChild(fact('Hours', f.hours || 'not stated'));
-    if (isFinite(f.availableFromMs)) li.appendChild(fact('Available (IST)', P.fmtDateTime(f.availableFromMs) + ' to ' + P.fmtDateTime(f.availableToMs)));
-    if (f.type === 'hospital') {
-      li.appendChild(fact('Emergency department', f.emergencyCapable ? 'confirmed by the source below' : 'not verified – in an emergency dial 112'));
-      if (f.phone) { var p = el('p', 'fact'); add(p, el('span', 'fact-l', 'Phone: '), attrs(el('a', 'textlink', f.phone), { href: 'tel:' + f.phone.replace(/[^0-9+]/g, '') })); li.appendChild(p); }
-    }
-    li.appendChild(provenance(f));
-    var actions = el('div', 'actions');
-    if (f.hasCoords) actions.appendChild(attrs(el('button', 'btn btn-ghost', S.helpPins[f.id] ? 'Hide from map' : 'Show on map'), { type: 'button', 'data-action': 'show-fac', 'data-id': f.id, 'aria-label': (S.helpPins[f.id] ? 'Hide ' : 'Show ') + f.name + ' on map' }));
-    li.appendChild(actions); li.appendChild(navBlock(plainDir(f), 'Directions', 'btn btn-primary'));
-    return li;
-  }
-  function renderHelp() {
-    var ul = clear($('#fac-list')), list = filteredFacilities();
-    list.forEach(function (f) { ul.appendChild(facilityCard(f)); });
-    if (!list.length) ul.appendChild(el('li', 'empty', S.data ? (S.data.facilities.length ? 'No facilities of this kind have been published yet.' : 'No facilities have been published yet. In an emergency dial 112.') : dataMsg()));
-    $('#fac-count').textContent = S.data ? '(' + list.length + ')' : '';
-    $('#help-map-note').hidden = S.helpShow || Object.keys(S.helpPins).length > 0;
-  }
-
-  /* ---------- banners + freshness ---------- */
-  function setBanner(id, nodes) {
-    var b = $('#' + id); clear(b);
-    if (!nodes) { b.hidden = true; return; }
-    nodes.forEach(function (n) { b.appendChild(typeof n === 'string' ? document.createTextNode(n) : n); });
-    b.hidden = false;
-  }
-  function retryBtn() { return attrs(el('button', 'btn btn-ghost btn-sm', 'Retry loading data'), { type: 'button', 'data-action': 'refresh' }); }
-  function renderBanners() {
-    var d = S.data, L0 = S.load;
-    var demoOn = d && d.meta.isDemoDataset;
-    $('#bn-demo').hidden = !demoOn;
     if (L0.status === 'unavailable') {
-      var why = L0.reason === 'file' ? 'This page was opened as a local file, and browsers block loading data files that way. Please open the app from its web address.'
-        : L0.reason === 'invalid' ? 'The data file is damaged or invalid (' + (L0.detail || 'unknown problem') + ').'
-        : 'You may be offline, or the data file could not be reached, and there is no saved copy on this device.';
-      setBanner('bn-unavailable', [el('strong', '', '\u26A0 Data unavailable. '), 'Pandal and restriction information could not be loaded. ' + why + ' Road status is unknown – check official sources and follow the directions of traffic police. ', retryBtn()]);
-    } else setBanner('bn-unavailable', null);
-    if (L0.status === 'ok' && (L0.source === 'cache' || L0.stale)) {
-      var head = L0.source === 'cache' ? '\u26A0 Offline – showing saved (cached) data that may be outdated. Do not treat it as current. '
-        : '\u26A0 Could not refresh – showing the last data received, which may be outdated. Do not treat it as current. ';
-      setBanner('bn-offline', [el('strong', '', head), 'Data last updated: ' + P.fmtDateTime(d.meta.lastUpdatedMs) + '. Last successful refresh on this device: ' + (L0.lastRefresh ? P.fmtDateTime(L0.lastRefresh) : 'unknown') + '. ', retryBtn()]);
-    } else setBanner('bn-offline', null);
-    if (d && d.skipped.length) {
-      var det = el('details', 'quality-details'); det.appendChild(el('summary', '', 'Show which records were skipped'));
-      var ul = el('ul', 'plain'); d.skipped.forEach(function (s) { ul.appendChild(el('li', '', s.kind + ' "' + s.id + '": ' + s.reasons.join('; '))); }); det.appendChild(ul);
-      setBanner('bn-quality', [el('strong', '', '\u26A0 Data-quality warning: '), d.skipped.length + ' record(s) failed validation and are not shown (for example missing source, missing verification details, invalid coordinates or a broken reference). ', det]);
-    } else setBanner('bn-quality', null);
-    renderFreshness();
+      var b = el('div', 'banner banner-err');
+      add(b, el('strong', '', 'Data unavailable. '), document.createTextNode(L0.detail || 'Could not load the guide data.'));
+      var retry = attrs(el('button', 'btn btn-sm', 'Retry'), { type: 'button' });
+      retry.addEventListener('click', function () { refresh('manual'); });
+      b.appendChild(retry);
+      box.appendChild(b);
+      return;
+    }
+    if (d && d.meta && (d.meta.isDemoDataset || d.meta.containsDemoRecords)) {
+      var db = el('div', 'banner banner-demo');
+      add(db, el('strong', '', 'Demo / reference data. '), document.createTextNode('Pandal locations are pending 2026 field verification. DEMO parking and traffic cards are samples — not actual 2026 Police orders.'));
+      box.appendChild(db);
+    }
+    if (L0.source === 'cache' || L0.stale) {
+      var ob = el('div', 'banner banner-warn');
+      add(ob, el('strong', '', 'Data may be outdated. '), document.createTextNode('Showing the last copy saved on this device. '));
+      var r2 = attrs(el('button', 'btn btn-sm', 'Refresh'), { type: 'button' });
+      r2.addEventListener('click', function () { refresh('manual'); });
+      ob.appendChild(r2);
+      box.appendChild(ob);
+    }
   }
   function renderFreshness() {
-    var fr = P.freshness(S.load, nowMs());
-    $$('[data-fresh]').forEach(function (n) { n.textContent = fr.text; n.className = 'fresh-line lvl-' + fr.level; });
-    $$('[data-fresh-sub]').forEach(function (n) { n.textContent = fr.level === 'ok' ? 'Tap Refresh for the latest information.' : ''; });
-    var box = clear($('#freshness')), d = S.data;
-    if (d) {
-      add(box, el('p', '', 'Dataset ' + (d.meta.datasetVersion || '(no version)') + (d.meta.isDemoDataset ? ' (demo – sample data)' : '') + '. Data last updated by the maintainers: ' + P.fmtDateTime(d.meta.lastUpdatedMs) + '.'),
-        el('p', '', 'Last successful refresh on this device: ' + (S.load.lastRefresh ? P.fmtDateTime(S.load.lastRefresh) : 'unknown') + '.'),
-        el('p', S.load.source === 'cache' || S.load.stale ? 'sample-note' : 'muted small', S.load.source === 'cache' ? 'Showing saved data from this device – it may be outdated.' : S.load.stale ? 'The last refresh failed – the data shown may be outdated.' : 'Data is re-checked when you open the app, when you return to it, and about every 5 minutes while you keep the app on screen.'));
-    } else add(box, el('p', '', S.load.status === 'loading' ? 'Loading data…' : 'No data loaded. Nothing here should be treated as current information.'));
-    $$('[data-action="refresh"]').forEach(function (b) {
-      var busy = !!R.inFlight; b.setAttribute('aria-busy', busy ? 'true' : 'false');
-      var lb = b.querySelector('.lbl') || b;
-      if (!b.dataset.label) b.dataset.label = lb.textContent;
-      lb.textContent = busy ? 'Refreshing…' : b.dataset.label;
+    var node = $('#home-fresh');
+    if (!node) return;
+    var f = P.freshness(S.load, nowMs());
+    node.textContent = f.text;
+    node.setAttribute('data-level', f.level);
+    node.title = f.detail || '';
+  }
+
+  /* ---------- cards ---------- */
+  function pandalCard(p, opts) {
+    opts = opts || {};
+    var li = el('li', 'pandal-card');
+    li.dataset.id = p.id;
+    add(li, el('p', 'pc-name', p.name));
+    add(li, el('p', 'pc-loc', p.locality || 'Other areas'));
+    var row = el('p', 'badge-row');
+    row.appendChild(statusBadge(p));
+    if (!p.demo && p.verificationStatus === 'pendingVerification') row.appendChild(el('span', 'sr-only', 'Location pending 2026 field verification'));
+    li.appendChild(row);
+    var acts = el('div', 'pc-actions');
+    if (opts.showView !== false) {
+      acts.appendChild(attrs(el('a', 'btn btn-sm', 'View'), { href: '#/p/' + encodeURIComponent(p.id) }));
+    }
+    if (p.hasCoords) {
+      var dir = attrs(el('button', 'btn btn-sm btn-primary', 'Directions'), { type: 'button' });
+      dir.addEventListener('click', function () { openNav(p, p.name); });
+      acts.appendChild(dir);
+    }
+    li.appendChild(acts);
+    return li;
+  }
+
+  /* ---------- HOME ---------- */
+  function renderHome() {
+    renderFreshness();
+  }
+
+  /* ---------- PANDALS (neighbourhood browse + search) ---------- */
+  function renderPandals() {
+    var q = S.q.trim();
+    var nhoodList = $('#nhood-list');
+    var searchList = $('#pandal-search-list');
+    var sum = $('#filter-summary');
+    clear(nhoodList); clear(searchList);
+    if (!S.data) {
+      sum.textContent = '';
+      nhoodList.hidden = false; searchList.hidden = true;
+      return;
+    }
+    if (q) {
+      nhoodList.hidden = true; searchList.hidden = false;
+      var hits = S.data.pandals.filter(function (p) { return P.matches(q, P.pandalFields(p)); });
+      sum.textContent = hits.length + (hits.length === 1 ? ' pandal' : ' pandals') + ' matching \u201c' + q + '\u201d';
+      hits.forEach(function (p) { searchList.appendChild(pandalCard(p)); });
+      if (!hits.length) searchList.appendChild(el('li', 'empty', 'No pandals match that name.'));
+      return;
+    }
+    nhoodList.hidden = false; searchList.hidden = true;
+    var nhoods = S.data.neighbourhoods || [];
+    sum.textContent = nhoods.length + ' neighbourhoods · ' + S.data.pandals.length + ' pandals';
+    nhoods.forEach(function (n) {
+      var a = attrs(el('a', 'nhood-item'), { href: '#/n/' + encodeURIComponent(n.id) });
+      add(a, el('div', 'nh-name', n.name), el('div', 'nh-count', n.count + (n.count === 1 ? ' pandal' : ' pandals')));
+      var li = el('li'); li.appendChild(a); nhoodList.appendChild(li);
     });
   }
 
-  /* ---------- location (only on a tap; never stored or sent) ---------- */
-  function requestLocation() {
-    var m = $('#geo-msg');
-    if (!navigator.geolocation) { m.textContent = 'Location is not supported on this device or browser. You can still search and browse.'; return; }
-    m.textContent = 'Asking for your location… (your phone may show a permission prompt)';
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      var lat = pos.coords.latitude, lon = pos.coords.longitude;
-      if (!isFinite(lat) || !isFinite(lon)) { m.textContent = 'Could not read your location.'; return; }
-      S.user = { lat: lat, lon: lon };
-      m.textContent = P.validCoords(lat, lon) ? 'Sorted by straight-line distance from you. Used on this device only.' : 'You appear to be outside the Siliguri area. Distances are straight-line estimates from where you are.';
-      if (mf.map && mf.g.user) { mf.g.user.clearLayers(); mf.g.user.addLayer(L.marker([lat, lon], { icon: mkIcon('mk-me', '', false, 24), keyboard: false, interactive: false, zIndexOffset: -100 })); }
-      $('#nearby-clear').hidden = false; renderFind();
-    }, function (err) {
-      m.textContent = err && err.code === 1 ? 'Location permission was not granted, so nothing was shared. You can still search and browse everything.'
-        : err && err.code === 3 ? 'Finding your location took too long. Search by name or area instead.'
-        : 'Your location is not available right now. You can still search and browse.';
-    }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 0 });
-  }
-  function forgetLocation() {
-    S.user = null; if (mf.g.user) mf.g.user.clearLayers();
-    $('#geo-msg').textContent = 'Your location was forgotten.'; $('#nearby-clear').hidden = true; renderFind();
+  /* ---------- NEIGHBOURHOOD ---------- */
+  function renderNhood() {
+    var n = S.data && byId(S.data.neighbourhoods, S.nhoodId);
+    $('#nhood-title').textContent = n ? n.name : 'Neighbourhood';
+    $('#nhood-count').textContent = n ? (n.count + (n.count === 1 ? ' pandal' : ' pandals')) : '';
+    var list = clear($('#nhood-pandal-list'));
+    clearMap('map-nhood');
+    if (!n || !S.data) return;
+    var pandals = n.pandalIds.map(function (id) { return byId(S.data.pandals, id); }).filter(Boolean);
+    pandals.forEach(function (p) {
+      list.appendChild(pandalCard(p));
+      if (p.hasCoords) addMarker('map-nhood', p.lat, p.lon, 'mk-pandal', 'P', p.name);
+    });
+    fitLayer('map-nhood');
   }
 
-  /* ---------- data loading + refresh ---------- */
+  /* ---------- PANDAL DETAIL ---------- */
+  function renderPandal() {
+    var p = S.data && byId(S.data.pandals, S.pandalId);
+    $('#pandal-title').textContent = p ? p.name : 'Pandal';
+    $('#pandal-locality').textContent = p ? (p.locality || '') : '';
+    var st = clear($('#pandal-status'));
+    if (p) {
+      st.appendChild(statusBadge(p));
+      if (!p.demo && (p.verificationStatus === 'pendingVerification' || p.verificationStatus === 'reference')) {
+        st.appendChild(el('span', 'meta small', ' · Location pending 2026 field verification'));
+      }
+    }
+    var back = $('#pandal-back');
+    if (p && p.locality) {
+      back.setAttribute('href', '#/n/' + encodeURIComponent(P.slug(p.locality)));
+      back.textContent = '\u2190 ' + p.locality;
+    } else {
+      back.setAttribute('href', '#/pandals');
+      back.textContent = '\u2190 Pandals';
+    }
+
+    clearMap('map-pandal');
+    var acts = clear($('#pandal-actions'));
+    if (p && p.hasCoords) {
+      addMarker('map-pandal', p.lat, p.lon, 'mk-pandal', 'P', p.name);
+      fitLayer('map-pandal', 0.4);
+      var dir = attrs(el('button', 'btn btn-primary', 'Directions'), { type: 'button' });
+      dir.addEventListener('click', function () { openNav(p, p.name); });
+      acts.appendChild(dir);
+    } else if (p) {
+      acts.appendChild(el('p', 'meta', 'Map location pending 2026 field verification.'));
+    }
+
+    // Get there
+    var parkBox = clear($('#pandal-parking'));
+    if (p && S.data) {
+      var parks = P.parkingForPandal(S.data.parking, p.id);
+      if (!parks.length) {
+        parkBox.appendChild(el('p', 'empty', 'Parking and walking routes pending 2026 field verification.'));
+      } else {
+        parks.forEach(function (k) {
+          var card = el('div', 'info-card');
+          add(card, el('h3', '', k.name));
+          card.appendChild(statusBadge(k));
+          if (k.demo) card.appendChild(el('p', 'meta', 'Sample scenario — not real parking.'));
+          var walk = P.walkFor(k, p.id, S.data.walkingRoutes);
+          if (walk.distanceM != null) card.appendChild(el('p', '', 'Walking distance: about ' + walk.distanceM + ' m'));
+          if (walk.timeMin != null) card.appendChild(el('p', '', 'Walking time: about ' + walk.timeMin + ' min'));
+          if (walk.steps && walk.steps.length) {
+            var ul = el('ul'); walk.steps.forEach(function (s) { ul.appendChild(el('li', '', s)); });
+            card.appendChild(ul);
+          }
+          if (k.limitations) card.appendChild(el('p', 'meta', k.limitations));
+          if (k.hasCoords) {
+            var d2 = attrs(el('button', 'btn btn-sm btn-primary', 'Directions to parking'), { type: 'button' });
+            d2.addEventListener('click', function () { openNav(k, k.name); });
+            card.appendChild(d2);
+            addMarker('map-pandal', k.lat, k.lon, 'mk-park', 'P', k.name);
+          }
+          parkBox.appendChild(card);
+        });
+        fitLayer('map-pandal');
+      }
+    }
+
+    // Traffic (visitor feed only; only show if related or say none)
+    var tBox = clear($('#pandal-traffic'));
+    if (p && S.data) {
+      var feed = P.trafficFeed(S.data.traffic, refMs());
+      var related = [].concat(feed.active, feed.upcoming).filter(function (x) {
+        return (x.r.relatedPandalIds || []).indexOf(p.id) >= 0;
+      });
+      if (!related.length) {
+        tBox.appendChild(el('p', 'empty', 'No published restriction for this area.'));
+      } else {
+        related.forEach(function (x) { tBox.appendChild(trafficCard(x)); });
+      }
+    }
+
+    // Nearby help
+    var hBox = clear($('#pandal-help'));
+    if (S.data) {
+      var pabs = S.data.facilities.filter(function (f) { return f.type === 'police-booth'; });
+      if (!pabs.length) {
+        hBox.appendChild(el('p', 'empty', 'Police Assistance Booth locations pending 2026 field verification.'));
+      } else {
+        pabs.slice(0, 2).forEach(function (f) {
+          var c = el('div', 'info-card');
+          add(c, el('h3', '', f.name));
+          c.appendChild(statusBadge(f));
+          if (f.demo) c.appendChild(el('p', 'meta', 'DEMO sample location.'));
+          if (f.hasCoords) {
+            var b = attrs(el('button', 'btn btn-sm', 'Directions'), { type: 'button' });
+            b.addEventListener('click', function () { openNav(f, f.name); });
+            c.appendChild(b);
+          }
+          hBox.appendChild(c);
+        });
+      }
+    }
+  }
+
+  function trafficCard(item) {
+    var r = item.r, ev = item.ev;
+    var card = el('li', 'info-card');
+    card.dataset.id = r.id;
+    var place = r.place || r.affectedRoad || r.name;
+    add(card, el('h3', '', place));
+    card.appendChild(statusBadge(r));
+    var typeLabel = P.RTYPE_LABEL[r.restrictionType] || r.restrictionType || 'Restriction';
+    card.appendChild(el('p', '', typeLabel));
+    var when = P.describeTrafficTime(r, ev);
+    if (when) card.appendChild(el('p', 'meta', when));
+    if (r.visitorAction) card.appendChild(el('p', '', r.visitorAction));
+    if (r.demo) card.appendChild(el('p', 'meta', 'Sample scenario — not an actual 2026 traffic order.'));
+    if (r.mapGeometry || r.hasCoords) {
+      var btn = attrs(el('button', 'btn btn-sm', 'View map'), { type: 'button' });
+      btn.addEventListener('click', function () { showTrafficOnMap(r); });
+      card.appendChild(btn);
+    }
+    return card;
+  }
+
+  function showTrafficOnMap(r) {
+    var box = $('#map-traffic');
+    box.hidden = false;
+    clearMap('map-traffic');
+    ensureMap('map-traffic');
+    if (r.mapGeometry && r.mapGeometry.type === 'Point') {
+      var c = r.mapGeometry.coordinates;
+      addMarker('map-traffic', c[1], c[0], 'mk-traf', 'T', r.place || r.name);
+    } else if (r.mapGeometry && r.mapGeometry.type === 'LineString') {
+      var latlngs = r.mapGeometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+      var m = maps['map-traffic'];
+      var line = L.polyline(latlngs, { color: '#8c1c2c', weight: 4 });
+      m.layer.addLayer(line);
+    } else if (r.hasCoords) {
+      addMarker('map-traffic', r.lat, r.lon, 'mk-traf', 'T', r.place || r.name);
+    }
+    fitLayer('map-traffic');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ---------- PARKING & TRAFFIC ---------- */
+  function setParkingSub(sub) {
+    S.parkingSub = sub === 'traffic' ? 'traffic' : 'parking';
+    $('#sub-parking').setAttribute('aria-selected', S.parkingSub === 'parking' ? 'true' : 'false');
+    $('#sub-traffic').setAttribute('aria-selected', S.parkingSub === 'traffic' ? 'true' : 'false');
+    $('#panel-parking').hidden = S.parkingSub !== 'parking';
+    $('#panel-traffic').hidden = S.parkingSub !== 'traffic';
+    if (S.parkingSub === 'parking') renderParkingPanel();
+    else renderTrafficPanel();
+  }
+
+  function renderParkingPanel() {
+    var list = clear($('#parking-list'));
+    var empty = $('#parking-empty');
+    clearMap('map-parking');
+    if (!S.data || !S.data.parking.length) {
+      empty.hidden = false;
+      return;
+    }
+    empty.hidden = true;
+    S.data.parking.forEach(function (k) {
+      var card = el('li', 'info-card');
+      card.dataset.id = k.id;
+      add(card, el('h3', '', k.name));
+      card.appendChild(statusBadge(k));
+      if (k.demo) card.appendChild(el('p', 'meta', 'Sample scenario — not real parking.'));
+      var served = (k.servedPandalIds || []).map(function (id) {
+        var p = byId(S.data.pandals, id); return p ? p.name : id;
+      });
+      if (served.length) card.appendChild(el('p', '', 'Serves: ' + served.join(', ')));
+      if (k.walkingDistance != null) card.appendChild(el('p', '', 'Walking distance: about ' + k.walkingDistance + ' m'));
+      if (k.walkingTime != null) card.appendChild(el('p', '', 'Walking time: about ' + k.walkingTime + ' min'));
+      if (k.walkingRoute && k.walkingRoute.length) {
+        var ul = el('ul'); k.walkingRoute.forEach(function (s) { ul.appendChild(el('li', '', s)); });
+        card.appendChild(ul);
+      }
+      if (k.limitations) card.appendChild(el('p', 'meta', k.limitations));
+      if (k.hasCoords) {
+        addMarker('map-parking', k.lat, k.lon, 'mk-park', 'P', k.name);
+        var d = attrs(el('button', 'btn btn-sm btn-primary', 'Directions'), { type: 'button' });
+        d.addEventListener('click', function () { openNav(k, k.name); });
+        card.appendChild(d);
+      }
+      list.appendChild(card);
+    });
+    fitLayer('map-parking');
+  }
+
+  function syncTimeInputs() {
+    var t = refMs();
+    var parts = P.istParts(t);
+    var d = $('#t-date'), tm = $('#t-time');
+    if (d && !d.value) d.value = parts.y + '-' + pad(parts.mo) + '-' + pad(parts.d);
+    if (tm && !tm.value) tm.value = pad(parts.h) + ':' + pad(parts.mi);
+  }
+  function readCheckAt() {
+    var d = $('#t-date'), tm = $('#t-time');
+    if (!d || !tm) return nowMs();
+    var ms = P.fromDateTimeInputs(d.value, tm.value);
+    return isFinite(ms) ? ms : nowMs();
+  }
+  function renderTrafficPanel() {
+    syncTimeInputs();
+    S.checkAt = readCheckAt();
+    var active = clear($('#traffic-active'));
+    var upcoming = clear($('#traffic-upcoming'));
+    var ae = $('#traffic-active-empty'), ue = $('#traffic-upcoming-empty');
+    if (!S.data) { ae.hidden = false; ue.hidden = false; return; }
+    var feed = P.trafficFeed(S.data.traffic, S.checkAt);
+    ae.hidden = feed.active.length > 0;
+    ue.hidden = feed.upcoming.length > 0;
+    feed.active.forEach(function (x) { active.appendChild(trafficCard(x)); });
+    feed.upcoming.forEach(function (x) { upcoming.appendChild(trafficCard(x)); });
+  }
+
+  /* ---------- FACILITIES ---------- */
+  function renderFacilities() {
+    var type = S.facType === 'hospital' ? 'hospital' : 'police-booth';
+    $('#fac-title').textContent = type === 'hospital' ? 'Hospitals' : 'Police Assistance Booths';
+    $('#fac-lede').textContent = type === 'hospital'
+      ? 'Hospital locations for emergencies. Confirm details on the ground.'
+      : 'Police Assistance Booths. Confirm locations on the ground.';
+    var list = clear($('#fac-list'));
+    var empty = $('#fac-empty');
+    clearMap('map-facilities');
+    if (!S.data) { empty.hidden = false; return; }
+    var items = S.data.facilities.filter(function (f) { return f.type === type; });
+    empty.hidden = items.length > 0;
+    items.forEach(function (f) {
+      var card = el('li', 'info-card');
+      add(card, el('h3', '', f.name));
+      card.appendChild(statusBadge(f));
+      if (f.demo) card.appendChild(el('p', 'meta', 'DEMO sample location — not a verified 2026 booth/hospital listing.'));
+      if (f.landmark) card.appendChild(el('p', 'meta', f.landmark));
+      if (f.hasCoords) {
+        addMarker('map-facilities', f.lat, f.lon, 'mk-fac', type === 'hospital' ? 'H' : 'Pb', f.name);
+        var d = attrs(el('button', 'btn btn-sm btn-primary', 'Directions'), { type: 'button' });
+        d.addEventListener('click', function () { openNav(f, f.name); });
+        card.appendChild(d);
+      }
+      list.appendChild(card);
+    });
+    fitLayer('map-facilities');
+  }
+
+  /* ---------- INFO ---------- */
+  var INFO = {
+    safety: {
+      title: 'Safety notice',
+      body: [
+        'This guide helps visitors find pandals, parking and published traffic information for Durga Puja in Siliguri.',
+        'Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.',
+        'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements.',
+        'Pandal coordinates in this build are an independent 2026 geographic reference pending field verification. DEMO records are samples only.',
+        'In an emergency dial 112.'
+      ]
+    },
+    privacy: {
+      title: 'Privacy policy',
+      body: [
+        'Siliguri Puja Guide does not require an account and does not collect personal profiles.',
+        'The app may store a last-refresh timestamp and your day/night preference on this device only.',
+        'Map tiles are requested from OpenStreetMap. Directions open in Google Maps only after you confirm.',
+        'No precise location is required to browse the guide.'
+      ]
+    },
+    terms: {
+      title: 'Terms of use',
+      body: [
+        'This is a visitor information utility. Until formally authorised it is published as a demo / reference build.',
+        'Do not treat unverified or DEMO records as Police-approved operational orders.',
+        'Always follow on-ground Police directions. The publishers accept no liability for travel decisions made from this guide.',
+        'Data sources and field verification status are maintained for operators; visitor screens show only what is needed to travel safely.'
+      ]
+    }
+  };
+  function renderInfo() {
+    var page = INFO[S.infoPage] || INFO.safety;
+    $('#info-title').textContent = page.title;
+    var body = clear($('#info-body'));
+    page.body.forEach(function (para) { body.appendChild(el('p', '', para)); });
+  }
+
+  /* ---------- routing ---------- */
+  function parseHash() {
+    var h = location.hash;
+    if (!h || h === '#' || h === '#/') return { name: 'home' };
+    if (!/^#\//.test(h)) return { name: 'home' };
+    var parts = h.slice(2).split('/');
+    var a = parts[0] || 'home', b = '', c = '';
+    try { b = parts[1] ? decodeURIComponent(parts[1]) : ''; } catch (e) { b = ''; }
+    try { c = parts[2] ? decodeURIComponent(parts[2]) : ''; } catch (e2) { c = ''; }
+    function safe(s) { return /^[A-Za-z0-9._-]*$/.test(s) ? s : ''; }
+    b = safe(b); c = safe(c);
+    if (a === 'pandals') return { name: 'pandals' };
+    if (a === 'n' && b) return { name: 'nhood', id: b };
+    if (a === 'p' && b) return { name: 'pandal', id: b };
+    if (a === 'parking' && b === 'traffic') return { name: 'parking', sub: 'traffic' };
+    if (a === 'parking' || a === 'traffic') return { name: 'parking', sub: a === 'traffic' ? 'traffic' : 'parking' };
+    if (a === 'facilities' && (b === 'pab' || b === 'hospital')) return { name: 'facilities', type: b };
+    if (a === 'info' && (b === 'safety' || b === 'privacy' || b === 'terms')) return { name: 'info', page: b };
+    if (a === 'home' || a === '') return { name: 'home' };
+    return { name: 'home' };
+  }
+
+  function showChrome(on) {
+    $('#tabbar').hidden = !on;
+    $('#sos-fab').hidden = !on;
+    document.body.classList.toggle('has-chrome', on);
+  }
+
+  function show(r) {
+    S.route = r.name;
+    S.nhoodId = r.id || '';
+    S.pandalId = r.id || '';
+    if (r.name === 'nhood') { S.nhoodId = r.id; S.pandalId = ''; }
+    if (r.name === 'pandal') { S.pandalId = r.id; S.nhoodId = ''; }
+    if (r.name === 'parking') S.parkingSub = r.sub || 'parking';
+    if (r.name === 'facilities') S.facType = r.type || 'pab';
+    if (r.name === 'info') S.infoPage = r.page || 'safety';
+
+    var viewMap = { home: 'home', pandals: 'pandals', nhood: 'nhood', pandal: 'pandal', parking: 'parking', facilities: 'facilities', info: 'info' };
+    var view = viewMap[r.name] || 'home';
+    $$('.view').forEach(function (v) { v.hidden = v.dataset.view !== view; });
+    document.body.dataset.view = view;
+
+    var tab = 'home';
+    if (view === 'pandals' || view === 'nhood' || view === 'pandal') tab = 'pandals';
+    else if (view === 'parking') tab = 'parking';
+    $$('#tabbar a').forEach(function (a) {
+      if (a.dataset.tab === tab) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+
+    document.title = (view === 'home' ? '' : ($('#' + ({
+      pandals: 'view-pandals', nhood: 'nhood-title', pandal: 'pandal-title', parking: 'view-parking',
+      facilities: 'fac-title', info: 'info-title'
+    }[view] || '') + ' h1') && '') ) + BR.appName;
+    if (view === 'home') document.title = BR.appName;
+    else if (view === 'pandals') document.title = 'Pandals – ' + BR.appName;
+    else if (view === 'nhood') document.title = (r.id || 'Neighbourhood') + ' – ' + BR.appName;
+    else if (view === 'pandal') document.title = 'Pandal – ' + BR.appName;
+    else if (view === 'parking') document.title = 'Parking & Traffic – ' + BR.appName;
+    else if (view === 'facilities') document.title = 'Help – ' + BR.appName;
+    else if (view === 'info') document.title = 'Information – ' + BR.appName;
+
+    closeSheet('#sos-sheet');
+    onSosClose();
+
+    if (view === 'home') renderHome();
+    if (view === 'pandals') renderPandals();
+    if (view === 'nhood') renderNhood();
+    if (view === 'pandal') renderPandal();
+    if (view === 'parking') setParkingSub(S.parkingSub);
+    if (view === 'facilities') renderFacilities();
+    if (view === 'info') renderInfo();
+
+    window.scrollTo(0, 0);
+  }
+
+  function onRoute() { show(parseHash()); }
+
+  function renderAll() {
+    renderBanners();
+    renderFreshness();
+    renderSos();
+    if (S.route === 'home') renderHome();
+    else if (S.route === 'pandals') renderPandals();
+    else if (S.route === 'nhood') renderNhood();
+    else if (S.route === 'pandal') renderPandal();
+    else if (S.route === 'parking') setParkingSub(S.parkingSub);
+    else if (S.route === 'facilities') renderFacilities();
+    else if (S.route === 'info') renderInfo();
+  }
+
+  /* ---------- data load ---------- */
   function readLast() { try { var v = +localStorage.getItem(LS_REFRESH); return v > 0 ? v : null; } catch (e) { return null; } }
   function writeLast(v) { try { localStorage.setItem(LS_REFRESH, String(v)); } catch (e) {} }
   function fetchData() {
     if (location.protocol === 'file:') return Promise.resolve({ kind: 'file' });
-    var ctl = ('AbortController' in window) ? new AbortController() : null, timer = ctl ? setTimeout(function () { ctl.abort(); }, FETCH_TIMEOUT_MS) : 0;
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, FETCH_TIMEOUT_MS) : 0;
     return fetch(DATA_URL + '?cb=' + nowMs(), { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -595,13 +695,12 @@
       })
       .catch(function () { clearTimeout(timer); return { kind: 'network' }; });
   }
-  // Records the result. A failed refresh never throws away data we already have.
   function applyResult(r) {
     var had = !!S.data;
     if (r.kind === 'file') { S.data = null; S.raw = ''; S.load = { status: 'unavailable', reason: 'file', lastRefresh: readLast() }; return; }
     if (r.kind === 'network') {
-      if (had) { S.load = { status: 'ok', source: S.load.source, stale: true, lastRefresh: S.load.lastRefresh || readLast() }; }
-      else { S.load = { status: 'unavailable', reason: 'network', lastRefresh: readLast() }; }
+      if (had) S.load = { status: 'ok', source: S.load.source, stale: true, lastRefresh: S.load.lastRefresh || readLast() };
+      else S.load = { status: 'unavailable', reason: 'network', lastRefresh: readLast() };
       return;
     }
     var raw, detail = '';
@@ -613,7 +712,6 @@
       else { S.data = null; S.raw = ''; S.load = { status: 'unavailable', reason: 'invalid', detail: detail, lastRefresh: readLast() }; }
       return;
     }
-    // Only a real network success updates the "last successful refresh" time (never a cached copy).
     var now = nowMs();
     if (!r.fromCache) writeLast(now);
     S.data = v; S.raw = r.text;
@@ -627,157 +725,100 @@
     R.lastAttempt = t; R.started++;
     R.inFlight = fetchData().then(function (r) { applyResult(r); }).catch(function () {}).then(function () {
       R.inFlight = null; R.completed++;
+      showChrome(true);
       var key = [S.load.status, S.load.source, S.load.stale, S.raw].join('|');
-      if (key !== S.renderKey) { S.renderKey = key; renderAll(true); } else renderBanners();
+      if (key !== S.renderKey) { S.renderKey = key; renderAll(); } else { renderBanners(); renderFreshness(); }
     });
     renderFreshness();
     return R.inFlight;
   }
 
-  /* ---------- routing + rendering ---------- */
-  function parseHash() {
-    var h = location.hash; if (h === '' || h === '#') return { name: 'home', arg: '' }; if (!/^#\//.test(h)) return null;
-    var parts = h.slice(2).split('/'), name = parts[0] || 'home';
-    if (!TITLES[name]) return { name: 'home', arg: '' };
-    var arg = ''; try { arg = parts[1] ? decodeURIComponent(parts[1]) : ''; } catch (e) {}
-    return { name: name, arg: /^[A-Za-z0-9._-]*$/.test(arg) ? arg : '' };
-  }
-  var firstShow = true;
-  function show(r) {
-    var changed = S.route !== r.name;
-    S.route = r.name; S.selected = r.name === 'find' ? r.arg : '';
-    $$('.view').forEach(function (v) { v.hidden = v.dataset.view !== r.name; });
-    document.body.dataset.view = r.name;
-    var bar = $('#tabbar'); bar.hidden = r.name === 'home'; document.body.classList.toggle('has-tabbar', r.name !== 'home');
-    $$('a', bar).forEach(function (a) { var on = a.dataset.tab === r.name; if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-    document.title = (r.name === 'home' ? '' : TITLES[r.name] + ' – ') + BR.appName;
-    if (r.name === 'find') { renderFind(); renderMapFor('find', true); if (S.selected) { focusSelectedOnMap(); } }
-    else { renderMapFor(r.name, true); }
-    if (r.name === 'traffic') renderTraffic();
-    if (!firstShow && changed) { window.scrollTo(0, 0); var h = $('#' + { home: 'home-h', find: 'find-h', parking: 'parking-h', traffic: 'traffic-h', help: 'help-h', info: 'info-h' }[r.name]); if (h) h.focus({ preventScroll: true }); }
-    if (r.name === 'info' && r.arg) { var ia = $({ safety: '#info-safety', privacy: '#info-privacy', terms: '#info-terms' }[r.arg] || '#info-h'); if (ia) { ia.setAttribute('tabindex', '-1'); ia.scrollIntoView({ behavior: 'auto', block: 'start' }); ia.focus({ preventScroll: true }); } }
-    if (!firstShow && r.name === 'find' && S.selected) { var d = $('#pandal-detail'); if (!d.hidden) d.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'nearest' }); }
-    firstShow = false;
-  }
-  function onRoute() {
-    var r = parseHash();
-    if (!r) { if (S.route) return; r = { name: 'home', arg: '' }; }
-    show(r);
-  }
-  function renderAll(doFit) {
-    fillLocalities(); renderFind(); renderParking(); renderTraffic(); renderHelp(); renderBanners();
-    if (S.route) renderMapFor(S.route, !!doFit);
-    if (S.route === 'find' && S.selected) focusSelectedOnMap();
-  }
-  function fillLocalities() {
-    var sel = $('#locality'), cur = S.locality, seen = {}, list = [];
-    if (S.data) S.data.pandals.forEach(function (r) { if (r.locality && !seen[r.locality]) { seen[r.locality] = 1; list.push(r.locality); } });
-    list.sort(); while (sel.options.length > 1) sel.remove(1);
-    list.forEach(function (l) { var o = el('option', '', l); o.value = l; sel.appendChild(o); });
-    sel.value = list.indexOf(cur) >= 0 ? cur : ''; S.locality = sel.value;
-  }
-
-  /* ---------- theme ---------- */
-  function applyTheme(t) {
-    document.documentElement.setAttribute('data-theme', t);
-    var b = $('#theme-btn'); b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false'); (b.querySelector('.lbl') || b).textContent = t === 'dark' ? 'Day mode' : 'Night mode';
-    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', t === 'dark' ? '#24060c' : '#5a0f1e');
-  }
-  function initTheme() {
-    var t = null; try { t = localStorage.getItem(LS_THEME); } catch (e) {}
-    if (t !== 'dark' && t !== 'light') t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-    applyTheme(t);
-  }
-
-  /* ---------- branding (all words come from branding.js) ---------- */
-  function applyBranding() {
-    var t = function (sel, v) { var n = $(sel); if (n && v) n.textContent = v; };
-    t('#tagline', BR.tagline); t('#descriptor', BR.descriptor); t('#festival-dates', BR.festivalDates);
-    t('#foot-line', BR.officialBrandingApproved ? BR.footerApproved : BR.footerDemo);
-    var ib = BR.institutionalBranding || {}, strip = $('#idstrip');
-    if (!strip || !ib.enabled || !ib.logosPresent || !ib.logos || ib.logos.length < 2) return;   // never requests the files otherwise
-    var imgs = [$('#logo-a'), $('#logo-b')], ok = 0, bad = false;
-    function done() { if (!bad && ok === 2) strip.hidden = false; }
-    imgs.forEach(function (im, i) {
-      im.alt = ib.logos[i].alt;
-      im.addEventListener('load', function () { if (im.naturalWidth > 0) { ok++; done(); } else bad = true; });
-      im.addEventListener('error', function () { bad = true; strip.hidden = true; });
-      im.src = ib.logos[i].src;
-    });
-    t('#id-caption', ib.caption);
-  }
-
-  /* ---------- events ---------- */
+  /* ---------- bind ---------- */
   function bind() {
-    $$('[data-disclaimer]').forEach(function (n) { add(n, el('strong', '', 'Before you travel: '), document.createTextNode(DISCLAIMER)); });
-    var q = $('#q');
-    $('#filters').addEventListener('submit', function (e) { e.preventDefault(); });
-    q.addEventListener('input', function () { S.q = q.value; renderFind(); renderFindMap(true); });
-    $('#locality').addEventListener('change', function (e) { S.locality = e.target.value; renderFind(); renderFindMap(true); });
-    function clearFilters() { S.q = ''; S.locality = ''; q.value = ''; $('#locality').value = ''; renderFind(); renderFindMap(true); }
-    $('#clear-filters').addEventListener('click', clearFilters);
-    $('#nearby-btn').addEventListener('click', requestLocation);
-    $('#nearby-clear').addEventListener('click', forgetLocation);
-    $$('input[name="ptype"]').forEach(function (i) { i.addEventListener('change', function () { S.ptype = i.value; renderParking(); renderParkingMap(true); }); });
-    $$('input[name="ftype"]').forEach(function (i) { i.addEventListener('change', function () { S.ftype = i.value; renderHelp(); renderHelpMap(true); }); });
-    $('#help-show-map').addEventListener('change', function (e) { S.helpShow = e.target.checked; renderHelp(); renderHelpMap(true); });
-    $('#help-clear-map').addEventListener('click', function () { S.helpPins = {}; S.helpShow = false; $('#help-show-map').checked = false; renderHelp(); renderHelpMap(false); });
-    $('#check-at').addEventListener('change', function (e) { var v = P.fromLocalInputValue(e.target.value); S.checkAt = isFinite(v) ? v : null; renderTraffic(); renderTrafficMap(false); renderDetail(); });
-    $('#check-now').addEventListener('click', function () { S.checkAt = null; $('#check-at').value = ''; renderTraffic(); renderTrafficMap(false); renderDetail(); });
-    $('#theme-btn').addEventListener('click', function () {
-      var t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; applyTheme(t); try { localStorage.setItem(LS_THEME, t); } catch (e) {}
-    });
-    $('#skip').addEventListener('click', function (e) { e.preventDefault(); $('#main').focus(); });
-    document.addEventListener('click', function (e) {
-      var t = e.target.closest ? e.target.closest('[data-action]') : null; if (!t) return;
-      var id = t.getAttribute('data-id'), a = t.getAttribute('data-action');
-      if (a === 'clear-filters') clearFilters();
-      else if (a === 'refresh') refresh('manual');
-      else if (a === 'select') selectPandal(id);
-      else if (a === 'close-detail') location.hash = '#/find';
-      else if (a === 'show') focusSelectedOnMap();
-      else if (a === 'show-point') { var m = mp.markers && mp.markers[id]; if (m) { $('#map-parking').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); flyTo(mp, m.getLatLng(), 17); setTimeout(function () { m.openPopup(); }, reduce ? 0 : 800); } }
-      else if (a === 'show-route') { S.selectedRoute = S.selectedRoute === id ? '' : id; renderParking(); renderParkingMap(true); if (S.selectedRoute) $('#map-parking').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); }
-      else if (a === 'show-fac') { if (S.helpPins[id]) delete S.helpPins[id]; else S.helpPins[id] = true; renderHelp(); renderHelpMap(false); var fm = mh.markers && mh.markers[id]; if (fm) { $('#map-help').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' }); flyTo(mh, fm.getLatLng(), 17); setTimeout(function () { fm.openPopup(); }, reduce ? 0 : 800); } }
-    });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') Object.keys(maps).forEach(function (k) { if (maps[k].map) maps[k].map.closePopup(); }); });
     window.addEventListener('hashchange', onRoute);
-    // freshness: on return to the app, when the network returns, and every ~5 min while visible
+    $('#theme-btn').addEventListener('click', toggleTheme);
+    $('#sos-fab').addEventListener('click', function () {
+      var sheet = $('#sos-sheet');
+      if (sheet.open) { closeSheet('#sos-sheet'); onSosClose(); }
+      else openSos();
+    });
+    $('#sos-sheet').addEventListener('close', onSosClose);
+    ['#sos-sheet', '#nav-sheet'].forEach(function (id) {
+      $(id).addEventListener('click', function (e) { if (e.target === e.currentTarget) closeSheet(id); });
+    });
+    $('#nav-go').addEventListener('click', function () { closeSheet('#nav-sheet'); });
+
+    var q = $('#q');
+    if (q) {
+      q.addEventListener('input', function () { S.q = q.value; renderPandals(); });
+      q.addEventListener('search', function () { S.q = q.value; renderPandals(); });
+    }
+    $('#sub-parking').addEventListener('click', function () {
+      if (location.hash !== '#/parking') location.hash = '#/parking';
+      else setParkingSub('parking');
+    });
+    $('#sub-traffic').addEventListener('click', function () {
+      if (location.hash !== '#/parking/traffic') location.hash = '#/parking/traffic';
+      else setParkingSub('traffic');
+    });
+    $('#t-now').addEventListener('click', function () {
+      S.checkAt = nowMs();
+      var parts = P.istParts(S.checkAt);
+      $('#t-date').value = parts.y + '-' + pad(parts.mo) + '-' + pad(parts.d);
+      $('#t-time').value = pad(parts.h) + ':' + pad(parts.mi);
+      renderTrafficPanel();
+    });
+    ['t-date', 't-time'].forEach(function (id) {
+      var n = $('#' + id); if (n) n.addEventListener('change', function () { renderTrafficPanel(); });
+    });
+
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') refresh('foreground'); });
     window.addEventListener('online', function () { refresh('online'); });
     setInterval(function () { if (document.visibilityState === 'visible') refresh('periodic'); }, PERIODIC_MS);
-    // 1-minute tick keeps "current time" schedule states and the "x min ago" text honest
-    setInterval(function () {
-      if (!S.data) return; renderFreshness();
-      if (S.checkAt == null) { renderTraffic(); if (S.route === 'traffic' && mt.map && mt.key !== statesKey()) renderTrafficMap(false); }
-    }, TICK_MS);
-    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredInstall = e; $('#install-btn').hidden = false; });
-    $('#install-btn').addEventListener('click', function () {
-      if (!deferredInstall) return; deferredInstall.prompt();
-      deferredInstall.userChoice.then(function () { deferredInstall = null; $('#install-btn').hidden = true; });
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault(); deferredInstall = e;
     });
-    window.addEventListener('appinstalled', function () { $('#install-btn').hidden = true; });
   }
 
   function registerSW() {
     if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('service-worker.js', { scope: './' }).then(function (reg) { reg.update(); }).catch(function () {});
-    });
+    navigator.serviceWorker.register('service-worker.js', { scope: './' }).then(function (reg) { reg.update(); }).catch(function () {});
   }
 
-  initTheme(); applyBranding(); bind(); registerSW(); S.load.lastRefresh = readLast(); onRoute(); renderAll(false); refresh('open');
-
-  // Read-only helpers for automated tests (they do not change behaviour).
+  /* ---------- test hooks ---------- */
   window.PujaApp = {
     counts: function () {
-      return { pandalMarkers: mf.markers ? Object.keys(mf.markers).length : 0, pandalCards: $$('#pandal-list > li').length,
-        pointMarkers: mp.markers ? Object.keys(mp.markers).length : 0, pointCards: $$('#point-list > .card').length, routeLines: mp.lines || 0,
-        restrictionMarkers: mt.restr || 0, diversionMarkers: mt.div || 0, roadLines: mt.lines || 0, facilityMarkers: mh.count || 0, facilityCards: $$('#fac-list > .card').length };
+      var d = S.data;
+      if (!d) return { pandals: 0, neighbourhoods: 0, parking: 0, traffic: 0, trafficVisitor: 0, facilities: 0 };
+      var vis = (d.traffic || []).filter(P.isVisitorTraffic).length;
+      return {
+        pandals: d.pandals.length,
+        neighbourhoods: d.neighbourhoods.length,
+        parking: d.parking.length,
+        walkingRoutes: d.walkingRoutes.length,
+        traffic: d.traffic.length,
+        trafficVisitor: vis,
+        facilities: d.facilities.length
+      };
     },
-    info: function () { return { status: S.load.status, source: S.load.source, stale: S.load.stale, user: !!S.user, route: S.route, selected: S.selected }; },
+    info: function () {
+      return {
+        route: S.route, nhoodId: S.nhoodId, pandalId: S.pandalId, parkingSub: S.parkingSub,
+        q: S.q, load: S.load, checkAt: S.checkAt,
+        meta: S.data ? S.data.meta : null
+      };
+    },
     refresh: function (reason) { return refresh(reason); },
     refreshStats: function () { return { started: R.started, skipped: R.skipped, completed: R.completed, inFlight: !!R.inFlight }; },
-    map: function (name) { return maps[name || S.route] ? maps[name || S.route].map : null; }
+    map: function (id) { return maps[id] || null; },
+    openNav: openNav,
+    state: function () { return S; }
   };
+
+  initTheme(); applyBranding(); bind(); registerSW();
+  S.load.lastRefresh = readLast();
+  onRoute();
+  renderBanners();
+  refresh('open');
 })();

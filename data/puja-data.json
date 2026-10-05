@@ -1,556 +1,1614 @@
 {
   "meta": {
-    "datasetVersion": "demo-0.2.0",
-    "lastUpdated": "2026-10-05T07:00:00+05:30",
+    "schemaVersion": 2,
+    "datasetVersion": "2026-ref-0.1.0",
+    "lastUpdated": "2026-10-05T10:50:00+05:30",
     "isDemoDataset": true,
+    "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
     "festival": {
       "name": "Durga Puja 2026",
       "startDate": "2026-10-16",
-      "endDate": "2026-10-21",
-      "note": ""
+      "endDate": "2026-10-21"
     },
-    "notice": ""
+    "notice": "Pandal locations are an independent 2026 geographic reference (Pujo Songi) pending 2026 field verification. DEMO parking, traffic and facility records are samples only. Not Police-approved 2026 operational data.",
+    "pandalDataStatus": "pendingVerification"
   },
   "pandals": [
     {
-      "id": "demo-pandal-a",
-      "name": "DEMO – Sample Pandal A",
-      "locality": "Sample Locality One (demo)",
-      "address": "Sample address A, near Siliguri centre (demo, approximate)",
-      "lat": 26.7271,
-      "lon": 88.3953,
-      "approximateLocation": true,
-      "description": "Placeholder entry that shows how a pandal card looks. This is not a real pandal.",
-      "timings": "Sample timings: 10:00 AM to 10:00 PM (demo)",
-      "entrance": "Sample entrance note (demo)",
-      "nearestParking": "DEMO – Sample Parking One",
-      "accessibility": "Sample accessibility note (demo)",
-      "restrictionIds": [
-        "demo-restr-night-recurring",
-        "demo-restr-multiday"
-      ],
-      "source": "DEMO data - not a real source",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "status": "demo",
-      "demo": true,
-      "landmark": "Sample landmark A – near the sample fountain (demo)",
-      "entrances": [
-        {
-          "id": "demo-entrance-a1",
-          "name": "DEMO – Sample public entrance A (not verified)",
-          "lat": 26.7274,
-          "lon": 88.3958,
-          "description": "Sample entrance gate on the sample side road (demo; not a real entrance).",
-          "verified": false
-        }
+      "id": "SG26-001",
+      "name": "Dada Bhai Sporting Club",
+      "locality": "Deshbandhupara",
+      "latitude": 26.7118,
+      "longitude": 88.4237,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Dada Bhai Sporting Club"
+    },
+    {
+      "id": "SG26-002",
+      "name": "Shaktigarh Sarbajanin Durga Utsav",
+      "locality": "Shaktigarh",
+      "latitude": 26.7025,
+      "longitude": 88.4285,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-003",
+      "name": "Central Colony Durga Puja Committee",
+      "locality": "Central Colony",
+      "latitude": 26.6828,
+      "longitude": 88.4243,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-004",
+      "name": "Subrata Sangha Durgapuja Committee",
+      "locality": "Deshbandhupara",
+      "latitude": 26.7065,
+      "longitude": 88.427,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Subrata Sangha Durgapuja Committee"
+    },
+    {
+      "id": "SG26-005",
+      "name": "Haiderpara Sporting Club",
+      "locality": "Haiderpara",
+      "latitude": 26.7285,
+      "longitude": 88.4385,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Haiderpara Sporting Club"
+    },
+    {
+      "id": "SG26-006",
+      "name": "Hakimpara Yuvak Sangha",
+      "locality": "Hakimpara",
+      "latitude": 26.7185,
+      "longitude": 88.4281,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-007",
+      "name": "Maya Devi Club",
+      "locality": "Matigara",
+      "latitude": 26.718,
+      "longitude": 88.384,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-008",
+      "name": "Jatiya Tarun Sangha",
+      "locality": "Ashrampara",
+      "latitude": 26.7208,
+      "longitude": 88.4294,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Jatiyo Tarun Sangha"
+    },
+    {
+      "id": "SG26-009",
+      "name": "Rabindra Sangha",
+      "locality": "Hakimpara",
+      "latitude": 26.7162,
+      "longitude": 88.4279,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Rabindra Sangha"
+    },
+    {
+      "id": "SG26-010",
+      "name": "Ujjwal Sangha",
+      "locality": "Shaktigarh",
+      "latitude": 26.7011,
+      "longitude": 88.4312,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Ujjal Sangha"
+    },
+    {
+      "id": "SG26-011",
+      "name": "Uttarayon Durga Puja",
+      "locality": "Uttarayon",
+      "latitude": 26.7255,
+      "longitude": 88.375,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-012",
+      "name": "Babupara Sarbojanin Durga Puja",
+      "locality": "Babupara",
+      "latitude": 26.715,
+      "longitude": 88.425,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-013",
+      "name": "Jatiya Shakti Sangha & Pathagar",
+      "locality": "Champasari",
+      "latitude": 26.741,
+      "longitude": 88.4125,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-014",
+      "name": "Swastika Yubak Sangha",
+      "locality": "Mahananda Para",
+      "latitude": 26.7082,
+      "longitude": 88.4291,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Swastika Yubak Sangha"
+    },
+    {
+      "id": "SG26-015",
+      "name": "Babupara YMA Club",
+      "locality": "Babupara",
+      "latitude": 26.7142,
+      "longitude": 88.4245,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-016",
+      "name": "Baghajatin Park Durgotsab Committee",
+      "locality": "Subhas Pally",
+      "latitude": 26.7084,
+      "longitude": 88.4319,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-017",
+      "name": "Jewels Athletic Club",
+      "locality": "Punjabi Para",
+      "latitude": 26.724,
+      "longitude": 88.436,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Jewel Athletic Club"
+    },
+    {
+      "id": "SG26-018",
+      "name": "Shiv Mandir Durga Puja Committee",
+      "locality": "Matigara",
+      "latitude": 26.7225,
+      "longitude": 88.3824,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Shiv Mandir Durga Puja Committee"
+    },
+    {
+      "id": "SG26-019",
+      "name": "Surya Nagar Friends Union",
+      "locality": "Surya Nagar",
+      "latitude": 26.719,
+      "longitude": 88.452,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Suryanagar Friends Union"
+    },
+    {
+      "id": "SG26-020",
+      "name": "Tarun Tirtha Club",
+      "locality": "Bharat Nagar",
+      "latitude": 26.7155,
+      "longitude": 88.448,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Tarun Tirtha"
+    },
+    {
+      "id": "SG26-021",
+      "name": "Champasari Milan Sangha",
+      "locality": "Champasari",
+      "latitude": 26.738,
+      "longitude": 88.411,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-022",
+      "name": "Pradhannagar Durga Puja",
+      "locality": "Pradhannagar",
+      "latitude": 26.7295,
+      "longitude": 88.4175,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-023",
+      "name": "Sanghashree Club",
+      "locality": "Subhas Pally",
+      "latitude": 26.7121,
+      "longitude": 88.4255,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Siliguri Sanghashree"
+    },
+    {
+      "id": "SG26-024",
+      "name": "Uttar Mallaguri Sarbojanin Durga Puja Committee",
+      "locality": "Pradhannagar",
+      "latitude": 26.7335,
+      "longitude": 88.414,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Uttar Mallaguri Sarbojanin Durga Puja Committee"
+    },
+    {
+      "id": "SG26-025",
+      "name": "Rathkhola Sporting Club",
+      "locality": "Rathkhola",
+      "latitude": 26.7078,
+      "longitude": 88.4288,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Rathkhola Sporting Club"
+    },
+    {
+      "id": "SG26-026",
+      "name": "Bharat Sevashram Sangha",
+      "locality": "Milanpally",
+      "latitude": 26.7028,
+      "longitude": 88.4196,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Bharat Sevashram Sangha"
+    },
+    {
+      "id": "SG26-027",
+      "name": "Fulbari Battala Durga Puja Committee",
+      "locality": "Fulbari",
+      "latitude": 26.6548,
+      "longitude": 88.4361,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-028",
+      "name": "Mansarovar Club",
+      "locality": "Sevoke Road",
+      "latitude": 26.7395,
+      "longitude": 88.441,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Manas Rover Club"
+    },
+    {
+      "id": "SG26-029",
+      "name": "Milanpally Sarbojanin Durga Puja Committee",
+      "locality": "Milanpally",
+      "latitude": 26.7018,
+      "longitude": 88.4275,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Milanpally Sarbojanin Durga Puja Committee"
+    },
+    {
+      "id": "SG26-030",
+      "name": "Arunoday Sangha",
+      "locality": "Hakimpara",
+      "latitude": 26.7172,
+      "longitude": 88.4268,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Arunoday Sangha"
+    },
+    {
+      "id": "SG26-031",
+      "name": "Mahananda Sporting Club",
+      "locality": "Mahananda Para",
+      "latitude": 26.7145,
+      "longitude": 88.418,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Mahananda Sporting Club"
+    },
+    {
+      "id": "SG26-032",
+      "name": "Mallaguri Athletic Club",
+      "locality": "Pradhannagar",
+      "latitude": 26.732,
+      "longitude": 88.415,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Mallaguri Athletic Club"
+    },
+    {
+      "id": "SG26-033",
+      "name": "Amtala Yuba Samity",
+      "locality": "Ashrampara",
+      "latitude": 26.7198,
+      "longitude": 88.4285,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Amtala Yuba Samity"
+    },
+    {
+      "id": "SG26-034",
+      "name": "Bandhab Sangha",
+      "locality": "College Para",
+      "latitude": 26.7107,
+      "longitude": 88.4325,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Bandhab Sangha"
+    },
+    {
+      "id": "SG26-035",
+      "name": "Deshbandhupara Friends Union",
+      "locality": "Deshbandhupara",
+      "latitude": 26.7052,
+      "longitude": 88.4313,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-036",
+      "name": "Kabi Sukanta Sisu Uddyan",
+      "locality": "Deshbandhupara",
+      "latitude": 26.704,
+      "longitude": 88.4325,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Kabi Sukanta Sisu Uddyan (Purbanchal Club)"
+    },
+    {
+      "id": "SG26-037",
+      "name": "Milanpally Yubak Brinda",
+      "locality": "Milanpally",
+      "latitude": 26.7005,
+      "longitude": 88.4295,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-038",
+      "name": "Netaji Yuba Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7192,
+      "longitude": 88.4202,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Netaji Yuba Sangha"
+    },
+    {
+      "id": "SG26-039",
+      "name": "Ramkrishna Byam Siksha Samiti",
+      "locality": "Hakimpara",
+      "latitude": 26.7215,
+      "longitude": 88.426,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Ramkrishna Byam Siksha Sangha"
+    },
+    {
+      "id": "SG26-040",
+      "name": "Salugara Durga Puja Committee",
+      "locality": "Salugara",
+      "latitude": 26.7585,
+      "longitude": 88.4485,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Salugara Durga Puja Committee"
+    },
+    {
+      "id": "SG26-041",
+      "name": "Sarada Sevok Sangha",
+      "locality": "Sevoke Road",
+      "latitude": 26.735,
+      "longitude": 88.438,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Sarada Sevok Sangha"
+    },
+    {
+      "id": "SG26-042",
+      "name": "Shreepally Nagarik Committee",
+      "locality": "Shreepally",
+      "latitude": 26.721,
+      "longitude": 88.446,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Shreepally Nagarik Committee"
+    },
+    {
+      "id": "SG26-043",
+      "name": "South Colony Sporting Club",
+      "locality": "South Colony",
+      "latitude": 26.678,
+      "longitude": 88.431,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "South Colony Sporting Club"
+    },
+    {
+      "id": "SG26-044",
+      "name": "Surja Sikha Samiti",
+      "locality": "Haiderpara",
+      "latitude": 26.731,
+      "longitude": 88.442,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-045",
+      "name": "College Para Puja Committee",
+      "locality": "College Para",
+      "latitude": 26.7112,
+      "longitude": 88.433,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-046",
+      "name": "Janashree Club",
+      "locality": "Ghogomali",
+      "latitude": 26.7035,
+      "longitude": 88.438,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Janashree Club"
+    },
+    {
+      "id": "SG26-047",
+      "name": "Kachari Road Yubak Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7172,
+      "longitude": 88.4252,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Kachari Road Yubak Sangha"
+    },
+    {
+      "id": "SG26-048",
+      "name": "Nava Jagriti Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7185,
+      "longitude": 88.4218,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Nava Jagriti Sangha"
+    },
+    {
+      "id": "SG26-049",
+      "name": "Saktigarh Pathagar",
+      "locality": "Shaktigarh",
+      "latitude": 26.7015,
+      "longitude": 88.4295,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-050",
+      "name": "Saktisong Club",
+      "locality": "Shaktigarh",
+      "latitude": 26.703,
+      "longitude": 88.427,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Saktisong Club"
+    },
+    {
+      "id": "SG26-051",
+      "name": "Shanti Nagar Sporting Club",
+      "locality": "Shanti Nagar",
+      "latitude": 26.726,
+      "longitude": 88.451,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Shanti Nagar Sporting Club"
+    },
+    {
+      "id": "SG26-052",
+      "name": "Sukanta Sporting Union Club",
+      "locality": "Siliguri Town",
+      "latitude": 26.7095,
+      "longitude": 88.4215,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Sukanta Sporting Union Club"
+    },
+    {
+      "id": "SG26-053",
+      "name": "Udayan Samiti",
+      "locality": "Hakimpara",
+      "latitude": 26.719,
+      "longitude": 88.431,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-054",
+      "name": "Agragami Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7152,
+      "longitude": 88.4208,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Agragami Sangha"
+    },
+    {
+      "id": "SG26-055",
+      "name": "Agrani Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7178,
+      "longitude": 88.4232,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Agrani Sangha"
+    },
+    {
+      "id": "SG26-056",
+      "name": "Balaka Club",
+      "locality": "Siliguri Town",
+      "latitude": 26.7182,
+      "longitude": 88.4225,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Balaka Club"
+    },
+    {
+      "id": "SG26-057",
+      "name": "Desh Bandhu Sporting Union",
+      "locality": "Deshbandhupara",
+      "latitude": 26.706,
+      "longitude": 88.429,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Deshbandhu Sporting Union"
+    },
+    {
+      "id": "SG26-058",
+      "name": "Himachal Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.72,
+      "longitude": 88.421,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Himachal Sangha"
+    },
+    {
+      "id": "SG26-059",
+      "name": "Jagriti Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7165,
+      "longitude": 88.424,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Jagriti Sangha"
+    },
+    {
+      "id": "SG26-060",
+      "name": "Nabankur Sangha",
+      "locality": "Pradhannagar",
+      "latitude": 26.728,
+      "longitude": 88.419,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Nabankur Sangha"
+    },
+    {
+      "id": "SG26-061",
+      "name": "Renaissance Club",
+      "locality": "Siliguri Town",
+      "latitude": 26.7152,
+      "longitude": 88.4248,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Renaissance Club"
+    },
+    {
+      "id": "SG26-062",
+      "name": "Shilpanchal Durga Puja Committee",
+      "locality": "Dabgram",
+      "latitude": 26.718,
+      "longitude": 88.455,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Shilpanchal Durga Puja Committee"
+    },
+    {
+      "id": "SG26-063",
+      "name": "Sunrise Club",
+      "locality": "Babupara",
+      "latitude": 26.7135,
+      "longitude": 88.4238,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Sunrise Club"
+    },
+    {
+      "id": "SG26-064",
+      "name": "Winners Club",
+      "locality": "Babupara",
+      "latitude": 26.7128,
+      "longitude": 88.4252,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Winners Club"
+    },
+    {
+      "id": "SG26-065",
+      "name": "Abahani Chakra Sports & Cultural Club",
+      "locality": "Siliguri Town",
+      "latitude": 26.7165,
+      "longitude": 88.4215,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Abahani Chakra Sports & Cultural Club"
+    },
+    {
+      "id": "SG26-066",
+      "name": "Aurobinda Yubak Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7126,
+      "longitude": 88.4208,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Aurobinda Yubak Sangha"
+    },
+    {
+      "id": "SG26-067",
+      "name": "Ganesh Ghosh Colony",
+      "locality": "Champasari",
+      "latitude": 26.7435,
+      "longitude": 88.414,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-068",
+      "name": "G.T.S. Club",
+      "locality": "Siliguri Town",
+      "latitude": 26.714,
+      "longitude": 88.4215,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "G.T.S. Club"
+    },
+    {
+      "id": "SG26-069",
+      "name": "Hotel Mainak",
+      "locality": "Pradhannagar",
+      "latitude": 26.727,
+      "longitude": 88.4165,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Hotel Mainak"
+    },
+    {
+      "id": "SG26-070",
+      "name": "Mitra Samilani",
+      "locality": "Siliguri Town",
+      "latitude": 26.7168,
+      "longitude": 88.4208,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Mitra Samilani"
+    },
+    {
+      "id": "SG26-071",
+      "name": "Sabyasachi Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7162,
+      "longitude": 88.4212,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Sabyasachi Sangha"
+    },
+    {
+      "id": "SG26-072",
+      "name": "Siliguri Jatiyo Yubak Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7178,
+      "longitude": 88.4198,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Siliguri Jatiyo Yubak Sangha"
+    },
+    {
+      "id": "SG26-073",
+      "name": "S.N.N.A.Y. Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7188,
+      "longitude": 88.4232,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "S.N.N.A.Y. Sangha"
+    },
+    {
+      "id": "SG26-074",
+      "name": "Surabhi Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7158,
+      "longitude": 88.42,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Surabhi Sangha"
+    },
+    {
+      "id": "SG26-075",
+      "name": "Aurobinda Inter Union",
+      "locality": "Siliguri Town",
+      "latitude": 26.7132,
+      "longitude": 88.4202,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Aurobinda Inter Union"
+    },
+    {
+      "id": "SG26-076",
+      "name": "Central Colony (Rly. Inst.)",
+      "locality": "Central Colony",
+      "latitude": 26.6845,
+      "longitude": 88.426,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Central Colony (Rly. Inst.)"
+    },
+    {
+      "id": "SG26-077",
+      "name": "Gitalpara Sporting Club",
+      "locality": "Siliguri Town",
+      "latitude": 26.711,
+      "longitude": 88.419,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Gitalpara Sporting Club"
+    },
+    {
+      "id": "SG26-078",
+      "name": "Himalayan Kanya Housing Society",
+      "locality": "Matigara",
+      "latitude": 26.721,
+      "longitude": 88.379,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Himalayan Kanya Housing Society"
+    },
+    {
+      "id": "SG26-079",
+      "name": "Jogajog Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7155,
+      "longitude": 88.4195,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Jogajog Sangha"
+    },
+    {
+      "id": "SG26-080",
+      "name": "Mayer Ichcha Durga Puja Committee",
+      "locality": "Siliguri Town",
+      "latitude": 26.7138,
+      "longitude": 88.4228,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Mayer Ichcha Durga Puja Committee"
+    },
+    {
+      "id": "SG26-081",
+      "name": "Nabin Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7148,
+      "longitude": 88.4235,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Nabin Sangha"
+    },
+    {
+      "id": "SG26-082",
+      "name": "Sanghati Durgotsab Committee",
+      "locality": "Siliguri Town",
+      "latitude": 26.7145,
+      "longitude": 88.4222,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+    },
+    {
+      "id": "SG26-083",
+      "name": "Siliguri Kishore Sangha",
+      "locality": "Siliguri Town",
+      "latitude": 26.7132,
+      "longitude": 88.4218,
+      "verificationStatus": "pendingVerification",
+      "source": "Pujo Songi 2026",
+      "sourceType": "independent geographic reference",
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "police2024Name": "Siliguri Kishore Sangha"
+    }
+  ],
+  "neighbourhoods": [
+    {
+      "id": "ashrampara",
+      "name": "Ashrampara",
+      "pandalIds": [
+        "SG26-008",
+        "SG26-033"
       ]
     },
     {
-      "id": "demo-pandal-b",
-      "name": "DEMO – Sample Pandal B",
-      "locality": "Sample Locality Two (demo)",
-      "address": "Sample address B, near Siliguri centre (demo, approximate)",
-      "lat": 26.7345,
-      "lon": 88.401,
-      "approximateLocation": true,
-      "description": "Placeholder entry. Not a real pandal.",
-      "timings": "Sample timings: 9:00 AM to 11:00 PM (demo)",
-      "entrance": "Sample entrance note (demo)",
-      "nearestParking": "DEMO – Sample Parking Two",
-      "accessibility": "Sample accessibility note (demo)",
-      "restrictionIds": [
-        "demo-restr-daytime-pedestrian"
-      ],
-      "source": "DEMO data - not a real source",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "status": "demo",
-      "demo": true,
-      "landmark": "Sample landmark B – opposite the sample bus stand (demo)",
-      "entrances": [
-        {
-          "id": "demo-entrance-b1",
-          "name": "DEMO – Sample public entrance B (not verified)",
-          "lat": 26.7348,
-          "lon": 88.4013,
-          "description": "Sample entrance (demo; not a real entrance).",
-          "verified": false
-        }
+      "id": "babupara",
+      "name": "Babupara",
+      "pandalIds": [
+        "SG26-012",
+        "SG26-015",
+        "SG26-063",
+        "SG26-064"
       ]
     },
     {
-      "id": "demo-pandal-c",
-      "name": "DEMO – Sample Pandal C",
-      "locality": "Sample Locality One (demo)",
-      "address": "Sample address C, near Siliguri centre (demo, approximate)",
-      "lat": 26.719,
-      "lon": 88.388,
-      "approximateLocation": true,
-      "description": "Placeholder entry. Not a real pandal.",
-      "timings": "Sample timings (demo)",
-      "restrictionIds": [
-        "demo-restr-future-procession"
-      ],
-      "source": "DEMO data - not a real source",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "status": "demo",
-      "demo": true,
-      "landmark": "Sample landmark C (demo)"
+      "id": "bharat-nagar",
+      "name": "Bharat Nagar",
+      "pandalIds": [
+        "SG26-020"
+      ]
     },
     {
-      "id": "demo-pandal-d",
-      "name": "DEMO – Sample Pandal D",
-      "locality": "Sample Locality Three (demo)",
-      "address": "Sample address D, near Siliguri centre (demo, approximate)",
-      "lat": 26.741,
-      "lon": 88.382,
-      "approximateLocation": true,
-      "description": "Placeholder entry. Not a real pandal.",
-      "timings": "Sample timings (demo)",
-      "source": "DEMO data - not a real source",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "status": "demo",
-      "demo": true,
-      "landmark": "Sample landmark D (demo)"
+      "id": "central-colony",
+      "name": "Central Colony",
+      "pandalIds": [
+        "SG26-003",
+        "SG26-076"
+      ]
     },
     {
-      "id": "demo-pandal-e",
-      "name": "DEMO – Sample Pandal E (address only, no map point)",
-      "locality": "Sample Locality Three (demo)",
-      "address": "Sample address E, Siliguri, West Bengal (demo - address only)",
-      "description": "Placeholder showing a record that has an address but no coordinates: it is listed but not drawn on the map.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true,
-      "landmark": "Sample landmark E (demo)"
+      "id": "champasari",
+      "name": "Champasari",
+      "pandalIds": [
+        "SG26-013",
+        "SG26-021",
+        "SG26-067"
+      ]
     },
     {
-      "id": "demo-pandal-f",
-      "name": "DEMO – Sample Pandal F (location not available)",
-      "locality": "Sample Locality Four (demo)",
-      "description": "Placeholder showing a record with no address and no coordinates: the Navigate button is disabled with an explanation.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true,
-      "landmark": "Sample landmark F (demo)"
+      "id": "college-para",
+      "name": "College Para",
+      "pandalIds": [
+        "SG26-034",
+        "SG26-045"
+      ]
+    },
+    {
+      "id": "dabgram",
+      "name": "Dabgram",
+      "pandalIds": [
+        "SG26-062"
+      ]
+    },
+    {
+      "id": "deshbandhupara",
+      "name": "Deshbandhupara",
+      "pandalIds": [
+        "SG26-001",
+        "SG26-004",
+        "SG26-035",
+        "SG26-036",
+        "SG26-057"
+      ]
+    },
+    {
+      "id": "fulbari",
+      "name": "Fulbari",
+      "pandalIds": [
+        "SG26-027"
+      ]
+    },
+    {
+      "id": "ghogomali",
+      "name": "Ghogomali",
+      "pandalIds": [
+        "SG26-046"
+      ]
+    },
+    {
+      "id": "haiderpara",
+      "name": "Haiderpara",
+      "pandalIds": [
+        "SG26-005",
+        "SG26-044"
+      ]
+    },
+    {
+      "id": "hakimpara",
+      "name": "Hakimpara",
+      "pandalIds": [
+        "SG26-006",
+        "SG26-009",
+        "SG26-030",
+        "SG26-039",
+        "SG26-053"
+      ]
+    },
+    {
+      "id": "mahananda-para",
+      "name": "Mahananda Para",
+      "pandalIds": [
+        "SG26-014",
+        "SG26-031"
+      ]
+    },
+    {
+      "id": "matigara",
+      "name": "Matigara",
+      "pandalIds": [
+        "SG26-007",
+        "SG26-018",
+        "SG26-078"
+      ]
+    },
+    {
+      "id": "milanpally",
+      "name": "Milanpally",
+      "pandalIds": [
+        "SG26-026",
+        "SG26-029",
+        "SG26-037"
+      ]
+    },
+    {
+      "id": "pradhannagar",
+      "name": "Pradhannagar",
+      "pandalIds": [
+        "SG26-022",
+        "SG26-024",
+        "SG26-032",
+        "SG26-060",
+        "SG26-069"
+      ]
+    },
+    {
+      "id": "punjabi-para",
+      "name": "Punjabi Para",
+      "pandalIds": [
+        "SG26-017"
+      ]
+    },
+    {
+      "id": "rathkhola",
+      "name": "Rathkhola",
+      "pandalIds": [
+        "SG26-025"
+      ]
+    },
+    {
+      "id": "salugara",
+      "name": "Salugara",
+      "pandalIds": [
+        "SG26-040"
+      ]
+    },
+    {
+      "id": "sevoke-road",
+      "name": "Sevoke Road",
+      "pandalIds": [
+        "SG26-028",
+        "SG26-041"
+      ]
+    },
+    {
+      "id": "shaktigarh",
+      "name": "Shaktigarh",
+      "pandalIds": [
+        "SG26-002",
+        "SG26-010",
+        "SG26-049",
+        "SG26-050"
+      ]
+    },
+    {
+      "id": "shanti-nagar",
+      "name": "Shanti Nagar",
+      "pandalIds": [
+        "SG26-051"
+      ]
+    },
+    {
+      "id": "shreepally",
+      "name": "Shreepally",
+      "pandalIds": [
+        "SG26-042"
+      ]
+    },
+    {
+      "id": "siliguri-town",
+      "name": "Siliguri Town",
+      "pandalIds": [
+        "SG26-038",
+        "SG26-047",
+        "SG26-048",
+        "SG26-052",
+        "SG26-054",
+        "SG26-055",
+        "SG26-056",
+        "SG26-058",
+        "SG26-059",
+        "SG26-061",
+        "SG26-065",
+        "SG26-066",
+        "SG26-068",
+        "SG26-070",
+        "SG26-071",
+        "SG26-072",
+        "SG26-073",
+        "SG26-074",
+        "SG26-075",
+        "SG26-077",
+        "SG26-079",
+        "SG26-080",
+        "SG26-081",
+        "SG26-082",
+        "SG26-083"
+      ]
+    },
+    {
+      "id": "south-colony",
+      "name": "South Colony",
+      "pandalIds": [
+        "SG26-043"
+      ]
+    },
+    {
+      "id": "subhas-pally",
+      "name": "Subhas Pally",
+      "pandalIds": [
+        "SG26-016",
+        "SG26-023"
+      ]
+    },
+    {
+      "id": "surya-nagar",
+      "name": "Surya Nagar",
+      "pandalIds": [
+        "SG26-019"
+      ]
+    },
+    {
+      "id": "uttarayon",
+      "name": "Uttarayon",
+      "pandalIds": [
+        "SG26-011"
+      ]
     }
   ],
   "parking": [
     {
-      "id": "demo-parking-1",
-      "name": "DEMO – Sample Parking One",
-      "locality": "Sample Locality One (demo)",
-      "address": "Sample parking address 1 (demo, approximate)",
-      "lat": 26.7255,
-      "lon": 88.3925,
-      "approximateLocation": true,
-      "capacity": 50,
-      "vehicleTypes": [
-        "Two-wheelers",
-        "Cars"
+      "id": "demo-park-deshbandhupara",
+      "name": "DEMO – Sample drop point near Deshbandhupara",
+      "type": "parking-drop",
+      "latitude": 26.7079,
+      "longitude": 88.4277,
+      "servedPandalIds": [
+        "SG26-001",
+        "SG26-004",
+        "SG26-035",
+        "SG26-036",
+        "SG26-057"
       ],
-      "notes": "Sample parking record. Not a real parking area.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
+      "walkingDistance": 450,
+      "walkingTime": 8,
+      "walkingRoute": [
+        "Sample walk: leave the drop point and follow the marked side lane toward the pandal cluster.",
+        "Sample only — not a verified walking route."
+      ],
+      "limitations": "Sample scenario — not real parking. Capacity and access not verified.",
+      "verificationStatus": "pendingVerification",
       "demo": true,
-      "landmark": "Sample parking landmark (demo)",
-      "hours": "Sample hours (demo)"
+      "source": "DEMO sample for UI testing"
     },
     {
-      "id": "demo-parking-2",
-      "name": "DEMO – Sample Parking Two",
-      "locality": "Sample Locality Two (demo)",
-      "address": "Sample parking address 2 (demo, approximate)",
-      "lat": 26.7365,
-      "lon": 88.4035,
-      "approximateLocation": true,
-      "vehicleTypes": [
-        "Two-wheelers"
+      "id": "demo-park-hakimpara",
+      "name": "DEMO – Sample drop point near Hakimpara",
+      "type": "parking-drop",
+      "latitude": 26.71758,
+      "longitude": 88.42906,
+      "servedPandalIds": [
+        "SG26-006",
+        "SG26-009",
+        "SG26-030",
+        "SG26-039",
+        "SG26-053"
       ],
-      "notes": "Sample parking record. Not a real parking area.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
+      "walkingDistance": 380,
+      "walkingTime": 7,
+      "walkingRoute": [
+        "Sample walk: use the footpath toward the pandal area.",
+        "Sample only — not a verified walking route."
+      ],
+      "limitations": "Sample scenario — not real parking. Capacity and access not verified.",
+      "verificationStatus": "pendingVerification",
       "demo": true,
-      "landmark": "Sample parking landmark (demo)",
-      "hours": "Sample hours (demo)"
-    }
-  ],
-  "accessPoints": [
-    {
-      "id": "demo-dropoff-1",
-      "name": "DEMO – Sample drop-off point 1",
-      "type": "drop-off",
-      "locality": "Sample Locality One (demo)",
-      "landmark": "Sample landmark near Sample Pandal A (demo)",
-      "lat": 26.7262,
-      "lon": 88.394,
-      "approximateLocation": true,
-      "hours": "Sample hours (demo)",
-      "vehicleTypes": [
-        "Cars (sample)"
-      ],
-      "notes": "Sample record. Not a real drop-off point.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-pickup-1",
-      "name": "DEMO – Sample pick-up point 1",
-      "type": "pick-up",
-      "locality": "Sample Locality One (demo)",
-      "landmark": "Sample landmark near Sample Pandal A (demo)",
-      "lat": 26.7258,
-      "lon": 88.3962,
-      "approximateLocation": true,
-      "hours": "Sample hours (demo)",
-      "vehicleTypes": [
-        "Cars (sample)"
-      ],
-      "notes": "Sample record. Not a real pick-up point.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-walkin-1",
-      "name": "DEMO – Sample pedestrian entrance point 1",
-      "type": "pedestrian-entrance",
-      "locality": "Sample Locality Two (demo)",
-      "landmark": "Sample landmark near Sample Pandal B (demo)",
-      "lat": 26.7338,
-      "lon": 88.4003,
-      "approximateLocation": true,
-      "notes": "Sample record. Not a real pedestrian entrance.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-walkout-1",
-      "name": "DEMO – Sample pedestrian exit point 1",
-      "type": "pedestrian-exit",
-      "locality": "Sample Locality Two (demo)",
-      "landmark": "Sample landmark near Sample Pandal B (demo)",
-      "lat": 26.7352,
-      "lon": 88.4022,
-      "approximateLocation": true,
-      "notes": "Sample record. Not a real pedestrian exit.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
+      "source": "DEMO sample for UI testing"
     }
   ],
   "walkingRoutes": [
     {
-      "id": "demo-route-1",
-      "name": "DEMO – Sample walk: Sample Parking One to Sample Pandal A",
-      "fromId": "demo-parking-1",
-      "pandalId": "demo-pandal-a",
-      "entranceId": "demo-entrance-a1",
-      "waypoints": [
-        {
-          "lat": 26.7255,
-          "lon": 88.3925,
-          "label": "Sample parking exit"
-        },
-        {
-          "lat": 26.7263,
-          "lon": 88.394,
-          "label": "Sample corner"
-        },
-        {
-          "lat": 26.7274,
-          "lon": 88.3958,
-          "label": "Sample entrance"
-        }
+      "id": "demo-walk-SG26-001",
+      "parkingId": "demo-park-deshbandhupara",
+      "pandalId": "SG26-001",
+      "walkingDistance": 785,
+      "walkingTime": 13,
+      "walkingRoute": [
+        "Sample route toward Dada Bhai Sporting Club.",
+        "Sample scenario — not a verified walking route."
       ],
-      "instructions": [
-        "Sample step: leave the sample parking area by its sample exit (demo).",
-        "Sample step: walk along the sample lane to the sample corner (demo).",
-        "Sample step: the sample entrance is on your left (demo)."
-      ],
-      "routeVerified": false,
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing"
     },
     {
-      "id": "demo-route-2",
-      "name": "DEMO – Sample walk: Sample drop-off point 1 to Sample Pandal A (no route details)",
-      "fromId": "demo-dropoff-1",
-      "pandalId": "demo-pandal-a",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
+      "id": "demo-walk-SG26-004",
+      "parkingId": "demo-park-deshbandhupara",
+      "pandalId": "SG26-004",
+      "walkingDistance": 262,
+      "walkingTime": 5,
+      "walkingRoute": [
+        "Sample route toward Subrata Sangha Durgapuja Committee.",
+        "Sample scenario — not a verified walking route."
+      ],
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing"
+    },
+    {
+      "id": "demo-walk-SG26-006",
+      "parkingId": "demo-park-hakimpara",
+      "pandalId": "SG26-006",
+      "walkingDistance": 224,
+      "walkingTime": 5,
+      "walkingRoute": [
+        "Sample route toward Hakimpara Yuvak Sangha.",
+        "Sample scenario — not a verified walking route."
+      ],
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing"
+    },
+    {
+      "id": "demo-walk-SG26-009",
+      "parkingId": "demo-park-hakimpara",
+      "pandalId": "SG26-009",
+      "walkingDistance": 289,
+      "walkingTime": 5,
+      "walkingRoute": [
+        "Sample route toward Rabindra Sangha.",
+        "Sample scenario — not a verified walking route."
+      ],
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing"
     }
   ],
-  "restrictions": [
+  "traffic": [
     {
-      "id": "demo-restr-night-recurring",
-      "name": "DEMO – Sample night vehicle restriction (recurring, crosses midnight)",
-      "type": "no-entry",
-      "description": "Illustrates a recurring daily window that crosses midnight (10:00 PM to 5:00 AM) for several days.",
-      "locationText": "Sample road near Sample Pandal A (demo, approximate point)",
-      "roads": [
-        "Sample Road One (demo)"
+      "id": "TP25-01",
+      "name": "Junction side → Airview More",
+      "origin": "Junction side",
+      "destination": "Airview More",
+      "affectedRoad": "Nabin Sen Road / Church Road",
+      "affectedSegment": "Nabin Sen Road / Church Road",
+      "vehicleTypes": [
+        "Small vehicles"
       ],
-      "lat": 26.73,
-      "lon": 88.399,
-      "approximateLocation": true,
-      "recurring": {
-        "dateStart": "2026-10-17",
-        "dateEnd": "2026-10-21",
-        "dailyStart": "22:00",
-        "dailyEnd": "05:00"
+      "restrictionType": "controlledMovement",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Diversion/exit via Nabin Sen Road toward Gurdwara",
+      "visitorAction": "Diversion/exit via Nabin Sen Road toward Gurdwara",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Airview More"
+    },
+    {
+      "id": "TP25-02",
+      "name": "Junction side → Airview More",
+      "origin": "Junction side",
+      "destination": "Airview More",
+      "affectedRoad": "Hill Cart Road approaches",
+      "affectedSegment": "Hill Cart Road approaches",
+      "vehicleTypes": [
+        "Vehicles approaching Airview More"
+      ],
+      "restrictionType": "noEntry",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Follow Police diversion",
+      "visitorAction": "Follow Police diversion",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Airview More"
+    },
+    {
+      "id": "TP25-03",
+      "name": "Tikia Para / Thana More / Mahabirsthan → Venus More",
+      "origin": "Tikia Para / Thana More / Mahabirsthan",
+      "destination": "Venus More",
+      "affectedRoad": "Approach corridor",
+      "affectedSegment": "Approach corridor",
+      "vehicleTypes": [
+        "All vehicles"
+      ],
+      "restrictionType": "noEntry",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Follow Police diversion",
+      "visitorAction": "Follow Police diversion",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Venus More"
+    },
+    {
+      "id": "TP25-04",
+      "name": "Junction side → Airview More",
+      "origin": "Junction side",
+      "destination": "Airview More",
+      "affectedRoad": "Junction approach",
+      "affectedSegment": "Junction approach",
+      "vehicleTypes": [
+        "Buses and goods vehicles"
+      ],
+      "restrictionType": "vehicleClassRestriction",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Do not proceed toward Airview More",
+      "visitorAction": "Do not proceed toward Airview More",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Airview More"
+    },
+    {
+      "id": "TP25-05",
+      "name": "Checkpost → Panitanki More",
+      "origin": "Checkpost",
+      "destination": "Panitanki More",
+      "affectedRoad": "Approach corridor",
+      "affectedSegment": "Approach corridor",
+      "vehicleTypes": [
+        "Four-wheelers"
+      ],
+      "restrictionType": "diversion",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Use ISKCON Mandir Road",
+      "visitorAction": "Use ISKCON Mandir Road",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Panitanki More"
+    },
+    {
+      "id": "TP25-06",
+      "name": "Naukaghat → Airview More",
+      "origin": "Naukaghat",
+      "destination": "Airview More",
+      "affectedRoad": "Naukaghat → Jhankar More → Thakar Bridge → Matigara corridor",
+      "affectedSegment": "Naukaghat → Jhankar More → Thakar Bridge → Matigara corridor",
+      "vehicleTypes": [
+        "Vehicles"
+      ],
+      "restrictionType": "diversion",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Follow Police diversion via Jhankar More / Thakar Bridge / Matigara",
+      "visitorAction": "Follow Police diversion via Jhankar More / Thakar Bridge / Matigara",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Airview More"
+    },
+    {
+      "id": "TP25-07",
+      "name": "Matigara → Jhankar More",
+      "origin": "Matigara",
+      "destination": "Jhankar More",
+      "affectedRoad": "Matigara approach",
+      "affectedSegment": "Matigara approach",
+      "vehicleTypes": [
+        "Vehicles"
+      ],
+      "restrictionType": "controlledMovement",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Do not proceed toward Jhankar More",
+      "visitorAction": "Do not proceed toward Jhankar More",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Jhankar More"
+    },
+    {
+      "id": "TP25-08",
+      "name": "Siliguri → Naukaghat",
+      "origin": "Siliguri",
+      "destination": "Naukaghat",
+      "affectedRoad": "Bus operating point",
+      "affectedSegment": "Bus operating point",
+      "vehicleTypes": [
+        "Buses to Jalpaiguri / Cooch Behar / Alipurduar / Assam"
+      ],
+      "restrictionType": "routeRelocation",
+      "plannedStart": "2025-10-04T16:00:00+05:30",
+      "plannedEnd": "2025-10-05T02:00:00+05:30",
+      "diversionRoute": "Operate from Naukaghat",
+      "visitorAction": "Operate from Naukaghat",
+      "status": "expired",
+      "verificationStatus": "reference",
+      "source": "C.O. 3193, 04.10.2025",
+      "sourceType": "2025 Siliguri Police traffic order",
+      "dateContext": "04 Oct 2025 carnival order",
+      "orderDate": "2025-10-04",
+      "place": "Naukaghat"
+    },
+    {
+      "id": "demo-traffic-sevoke",
+      "name": "DEMO – Sample vehicle restriction at Sevoke More",
+      "origin": "Hill Cart Road approaches",
+      "destination": "Sevoke More",
+      "affectedRoad": "Sevoke More / Hill Cart Road",
+      "affectedSegment": "Approaches to Sevoke More",
+      "vehicleTypes": [
+        "Four-wheelers"
+      ],
+      "restrictionType": "vehicleClassRestriction",
+      "plannedStart": "2026-10-16T00:00:00+05:30",
+      "plannedEnd": "2026-10-21T23:59:00+05:30",
+      "dailyStart": "18:00",
+      "dailyEnd": "01:00",
+      "diversionRoute": "Sample diversion — follow marked Police signs.",
+      "visitorAction": "Follow the marked Police diversion. Sample scenario — not an actual 2026 traffic order.",
+      "status": "scheduled",
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing",
+      "place": "Sevoke More",
+      "mapGeometry": {
+        "type": "Point",
+        "coordinates": [
+          88.4227672,
+          26.7156251
+        ]
       },
-      "vehicleTypes": [
-        "Heavy vehicles (sample)"
-      ],
-      "pedestrianAccess": "Sample note: pedestrians allowed (demo)",
-      "alternativeAccess": "Sample alternative route text (demo)",
-      "authority": "DEMO - no real authority",
-      "source": "DEMO data - not a real order",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "verifiedBy": "DEMO - not verified",
-      "adminNotes": "demo",
-      "status": "demo",
-      "demo": true,
-      "roadStretch": "Sample Road One, between Sample Junction X and Sample Junction Y (demo)",
-      "direction": "Both directions (sample)"
-    },
-    {
-      "id": "demo-restr-multiday",
-      "name": "DEMO – Sample multi-day diversion (single window across dates)",
-      "type": "diversion",
-      "description": "Illustrates one continuous window that spans several dates (6:00 PM on 18 Oct to 11:59 PM on 20 Oct).",
-      "locationText": "Sample area around Sample Pandal A (demo, text only)",
-      "roads": [
-        "Sample Road Two (demo)"
-      ],
-      "start": "2026-10-18T18:00:00+05:30",
-      "end": "2026-10-20T23:59:00+05:30",
-      "vehicleTypes": [
-        "All motor vehicles (sample)"
-      ],
-      "pedestrianAccess": "Sample note (demo)",
-      "alternativeAccess": "Sample alternative route text (demo)",
-      "authority": "DEMO - no real authority",
-      "source": "DEMO data - not a real order",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "verifiedBy": "DEMO - not verified",
-      "status": "demo",
-      "demo": true,
-      "roadStretch": "Sample Road Two, around Sample Pandal A (demo)",
-      "direction": "Sample: towards the sample market (demo)"
-    },
-    {
-      "id": "demo-restr-expired",
-      "name": "DEMO – Sample expired notice",
-      "type": "vehicle-restriction",
-      "description": "Illustrates a notice whose schedule has already ended.",
-      "locationText": "Sample junction (demo, text only)",
-      "start": "2026-10-12T00:00:00+05:30",
-      "end": "2026-10-13T12:00:00+05:30",
-      "vehicleTypes": [
-        "Sample vehicles"
-      ],
-      "authority": "DEMO - no real authority",
-      "source": "DEMO data - not a real order",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "verifiedBy": "DEMO - not verified",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-restr-cancelled",
-      "name": "DEMO – Sample cancelled notice",
-      "type": "no-entry",
-      "description": "Illustrates a notice that has been cancelled.",
-      "locationText": "Sample road section (demo, text only)",
-      "start": "2026-10-19T10:00:00+05:30",
-      "end": "2026-10-19T18:00:00+05:30",
-      "cancelled": true,
-      "authority": "DEMO - no real authority",
-      "source": "DEMO data - not a real order",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "verifiedBy": "DEMO - not verified",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-restr-unconfirmed",
-      "name": "DEMO – Sample unconfirmed report (awaiting verification)",
-      "type": "one-way",
-      "description": "Illustrates a report that has not yet been checked against an official source.",
-      "locationText": "Sample lane (demo, approximate point)",
-      "lat": 26.7225,
-      "lon": 88.3985,
-      "approximateLocation": true,
-      "start": "2026-10-18T09:00:00+05:30",
-      "end": "2026-10-18T21:00:00+05:30",
-      "status": "unconfirmed",
-      "demo": true
-    },
-    {
-      "id": "demo-restr-future-procession",
-      "name": "DEMO – Sample scheduled-future restriction (procession day)",
-      "type": "no-entry",
-      "description": "Illustrates a restriction that starts later than the other samples (4:00 PM on 21 Oct to 2:00 AM on 22 Oct).",
-      "locationText": "Sample main road (demo, approximate point)",
-      "roads": [
-        "Sample Main Road (demo)"
-      ],
-      "lat": 26.7205,
-      "lon": 88.3905,
-      "approximateLocation": true,
-      "start": "2026-10-21T16:00:00+05:30",
-      "end": "2026-10-22T02:00:00+05:30",
-      "vehicleTypes": [
-        "All motor vehicles (sample)"
-      ],
-      "pedestrianAccess": "Sample note (demo)",
-      "authority": "DEMO - no real authority",
-      "source": "DEMO data - not a real order",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "verifiedBy": "DEMO - not verified",
-      "status": "demo",
-      "demo": true,
-      "roadStretch": "Sample Main Road, full length (demo)",
-      "direction": "Both directions (sample)"
-    },
-    {
-      "id": "demo-restr-daytime-pedestrian",
-      "name": "DEMO – Sample daytime pedestrian zone (recurring)",
-      "type": "pedestrian-zone",
-      "description": "Illustrates a recurring window that does not cross midnight (4:00 PM to 10:00 PM daily).",
-      "locationText": "Sample street near Sample Pandal B (demo, text only)",
-      "recurring": {
-        "dateStart": "2026-10-17",
-        "dateEnd": "2026-10-21",
-        "dailyStart": "16:00",
-        "dailyEnd": "22:00"
-      },
-      "pedestrianAccess": "Sample note (demo)",
-      "authority": "DEMO - no real authority",
-      "source": "DEMO data - not a real order",
-      "verifiedAt": "2026-10-04T20:00:00+05:30",
-      "verifiedBy": "DEMO - not verified",
-      "status": "demo",
-      "demo": true
-    }
-  ],
-  "diversionPoints": [
-    {
-      "id": "demo-div-1",
-      "restrictionId": "demo-restr-night-recurring",
-      "name": "DEMO – Sample diversion point 1",
-      "order": 1,
-      "lat": 26.7312,
-      "lon": 88.4005,
-      "landmark": "Sample Junction X (demo)",
-      "instruction": "Sample instruction: at the sample junction turn left onto the sample bypass (demo - not a real diversion).",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-div-2",
-      "restrictionId": "demo-restr-night-recurring",
-      "name": "DEMO – Sample diversion point 2",
-      "order": 2,
-      "lat": 26.7335,
-      "lon": 88.404,
-      "landmark": "Sample Junction Y (demo)",
-      "instruction": "Sample instruction: rejoin the sample road after the sample bridge (demo - not a real diversion).",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-div-3",
-      "restrictionId": "demo-restr-multiday",
-      "name": "DEMO – Sample diversion point 3",
-      "order": 1,
-      "lat": 26.723,
-      "lon": 88.392,
-      "landmark": "Sample landmark (demo)",
-      "instruction": "Sample instruction: keep right at the sample fork (demo - not a real diversion).",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
+      "approximateLocation": true
     }
   ],
   "facilities": [
     {
-      "id": "demo-toilet-1",
-      "type": "toilet",
-      "name": "DEMO – Sample toilets 1",
+      "id": "demo-pab-1",
+      "name": "DEMO – Sample Police Assistance Booth",
+      "type": "police-booth",
+      "latitude": 26.7271,
+      "longitude": 88.3953,
       "landmark": "Sample landmark (demo)",
-      "lat": 26.728,
-      "lon": 88.3935,
-      "approximateLocation": true,
       "hours": "Sample hours (demo)",
-      "notes": "Sample record. Not a real facility.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-water-1",
-      "type": "drinking-water",
-      "name": "DEMO – Sample drinking water point 1",
-      "landmark": "Sample landmark (demo)",
-      "lat": 26.7268,
-      "lon": 88.397,
-      "approximateLocation": true,
-      "hours": "Sample hours (demo)",
-      "notes": "Sample record. Not a real facility.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-firstaid-1",
-      "type": "first-aid",
-      "name": "DEMO – Sample first-aid post 1",
-      "landmark": "Sample landmark (demo)",
-      "lat": 26.7285,
-      "lon": 88.3965,
-      "approximateLocation": true,
-      "hours": "Sample hours (demo)",
-      "notes": "Sample record. Not a real facility.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing"
     },
     {
       "id": "demo-hospital-1",
+      "name": "DEMO – Sample hospital",
       "type": "hospital",
-      "name": "DEMO – Sample hospital 1",
+      "latitude": 26.733,
+      "longitude": 88.389,
       "landmark": "Sample landmark (demo)",
-      "lat": 26.733,
-      "lon": 88.389,
-      "approximateLocation": true,
       "hours": "Sample: hours not stated (demo)",
-      "notes": "Sample record. Not a real facility.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
-    },
-    {
-      "id": "demo-police-1",
-      "type": "police-booth",
-      "name": "DEMO – Sample police assistance booth 1",
-      "landmark": "Sample landmark (demo)",
-      "lat": 26.7295,
-      "lon": 88.3975,
-      "approximateLocation": true,
-      "hours": "Sample hours (demo)",
-      "notes": "Sample record. Not a real facility.",
-      "source": "DEMO data - not a real source",
-      "status": "demo",
-      "demo": true
+      "verificationStatus": "pendingVerification",
+      "demo": true,
+      "source": "DEMO sample for UI testing"
     }
-  ]
+  ],
+  "help": {
+    "emergencyNumber": "112",
+    "contacts": [
+      {
+        "id": "pcr",
+        "name": "Police Control Room",
+        "verificationStatus": "pendingVerification"
+      },
+      {
+        "id": "tcr",
+        "name": "Traffic Control Room",
+        "verificationStatus": "pendingVerification"
+      }
+    ]
+  }
 }
