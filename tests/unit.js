@@ -55,7 +55,7 @@ const feed = L.trafficFeed([
   Object.assign({}, night, { id: 'hist', demo: false, verificationStatus: 'reference', status: 'expired', name: '2025 baseline' }),
   Object.assign({}, night, { id: 'pend', demo: false, verificationStatus: 'pendingVerification', name: 'Pending 2026' })
 ], ms('2026-10-16T19:00:00+05:30'));
-t('feed only shows visitor-eligible', feed.active.length === 1 && feed.active[0].r.id === 't-night');
+t('feed only shows visitor-eligible', feed.active.length === 1 && feed.active[0].r.id === 't-night' && Array.isArray(feed.planned) && feed.planned.length === 0);
 t('describeTrafficTime has range', /PM/.test(L.describeTrafficTime(night, feed.active[0].ev)));
 
 // --- status labels — never claim verified for pending
@@ -149,6 +149,14 @@ t('facility confirmed rejected; DEMO mapped rejected', v.facilities.find(f=>f.id
 t('FACILITY_LSTATUSES is unconfirmed,mapped', L.FACILITY_LSTATUSES.join() === 'unconfirmed,mapped');
 t('demo file: only DEMO traffic is visitor-visible', dv.traffic.filter(L.isVisitorTraffic).every(r => r.demo) && dv.traffic.filter(L.isVisitorTraffic).length >= 1);
 t('demo file: 2025 baseline never visitor-visible', dv.traffic.filter(r => r.verificationStatus === 'reference' || r.verificationStatus === 'expired' || r.status === 'expired').every(r => !L.isVisitorTraffic(r)));
+t('traffic layer: 29 nodes with valid coords + locationStatus', dv.trafficNodes.length === 29 && dv.trafficNodes.every(n => n.hasCoords && (n.locationStatus === 'mapped' || n.locationStatus === 'landmarkAnchor') && n.verificationStatus === 'pendingVerification'), dv.trafficNodes.length);
+t('traffic layer: 13 restrictions pendingVerification, none confirmed2026', dv.trafficRestrictions.length === 13 && dv.trafficRestrictions.every(r => r.verificationStatus === 'pendingVerification' && !r.confirmed2026 && r.verificationStatus !== 'approved'));
+t('traffic layer: no orphan from/to/alt/anchor refs', dv.trafficRestrictions.every(r => r.zone ? r.anchorNodes.every(id => dv.trafficNodes.some(n => n.id === id)) : (dv.trafficNodes.some(n => n.id === r.fromNode) && dv.trafficNodes.some(n => n.id === r.toNode) && (r.altToNodes || []).every(id => dv.trafficNodes.some(n => n.id === id)))));
+t('traffic layer: 5 goods controls + 1 diversion', dv.trafficControls.length === 5 && dv.trafficDiversions.length === 1 && dv.trafficControls.every(c => c.vehicleScope.indexOf('goodsVehicles') >= 0 && c.controlType === 'noEntryBeyondControlPoint' && !c.confirmed2026));
+t('traffic layer: diversion via/avoid nodes valid', (()=>{const d=dv.trafficDiversions[0]; const ids=new Set(dv.trafficNodes.map(n=>n.id)); return d.id==='diversion-njp-small' && d.viaNodes.every(id=>ids.has(id)) && d.avoidNodes.every(id=>ids.has(id)) && d.viaNodes.length>=2;})());
+t('trafficFeed planned bucket for restrictions; DEMO still only visitor-active', (()=>{const f=L.trafficFeed(dv.traffic, L.parseIST('2026-10-17T19:30:00+05:30'), dv.trafficRestrictions); return f.planned.length===13 && f.active.every(x=>x.r.demo) && f.planned.every(x=>x.r.verificationStatus==='pendingVerification');})());
+t('PAB count unchanged at 18 mapped', dv.facilities.filter(f => f.type === 'police-booth' && !f.demo).length === 18);
+t('83 pandals still location confirmed', dv.pandals.length === 83 && dv.pandals.every(p => p.locationStatus === 'confirmed'));
 t('demo file: no approved phones', dv.help.contacts.every(c => !c.phone));
 t('demo file: schema 2 + demo flags', dv.meta.schemaVersion === 2 && dv.meta.isDemoDataset === true && dv.meta.containsDemoRecords === true);
 

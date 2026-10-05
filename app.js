@@ -386,24 +386,115 @@
     if (!noMap && (r.mapGeometry || r.hasCoords)) card.appendChild(btn('View map', '', function () { showTrafficOnMap(r); }));
     return card;
   }
+  function nodeById(id) {
+    if (!S.data || !S.data.trafficNodes) return null;
+    for (var i = 0; i < S.data.trafficNodes.length; i++) if (S.data.trafficNodes[i].id === id) return S.data.trafficNodes[i];
+    return null;
+  }
+  function scopeLabel(scopes) {
+    var map = { allVehicles: 'All vehicles', smallVehicles: 'Small vehicles', fourWheelers: 'Four-wheelers', goodsVehicles: 'Goods vehicles', twoWheelers: 'Two-wheelers', buses: 'Buses' };
+    return (scopes || []).map(function (s) { return map[s] || s; }).join(', ') || 'Vehicles';
+  }
+  function pendingTrafficBadge() {
+    return el('span', 'badge badge-pending', '2026 traffic arrangement pending verification');
+  }
+  function mappedLocBadge(node) {
+    var label = (node && node.locationStatus === 'landmarkAnchor') ? 'Landmark anchor' : 'Mapped location';
+    return el('span', 'badge badge-mapped', label);
+  }
   function showTrafficOnMap(r) {
     var box = $('#map-traffic');
     box.hidden = false;
     clearMap('map-traffic');
     ensureMap('map-traffic');
+    var m = maps['map-traffic'];
     if (r.mapGeometry && r.mapGeometry.type === 'Point') {
       var c = r.mapGeometry.coordinates;
       addMarker('map-traffic', c[1], c[0], 'mk-traf', '', r.place || r.name);
     } else if (r.mapGeometry && r.mapGeometry.type === 'LineString') {
       var latlngs = r.mapGeometry.coordinates.map(function (c) { return [c[1], c[0]]; });
-      var m = maps['map-traffic'];
-      var line = L.polyline(latlngs, { color: '#8c1c2c', weight: 4 });
-      m.layer.addLayer(line);
+      m.layer.addLayer(L.polyline(latlngs, { color: '#8c1c2c', weight: 4 }));
     } else if (r.hasCoords) {
       addMarker('map-traffic', r.lat, r.lon, 'mk-traf', '', r.place || r.name);
     }
     fitLayer('map-traffic');
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function showRestrictionOnMap(tr) {
+    var box = $('#map-traffic');
+    box.hidden = false;
+    clearMap('map-traffic');
+    ensureMap('map-traffic');
+    var m = maps['map-traffic'];
+    if (tr.zone) {
+      (tr.anchorNodes || []).forEach(function (nid) {
+        var n = nodeById(nid);
+        if (n && n.hasCoords) addMarker('map-traffic', n.lat, n.lon, 'mk-traf', '', n.name);
+      });
+    } else {
+      var a = nodeById(tr.fromNode), b = nodeById(tr.toNode);
+      if (a && a.hasCoords && b && b.hasCoords) {
+        m.layer.addLayer(L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#8c1c2c', weight: 4, dashArray: '6 6' }));
+        addMarker('map-traffic', a.lat, a.lon, 'mk-traf', '', a.name);
+        addMarker('map-traffic', b.lat, b.lon, 'mk-traf', '', b.name);
+        (tr.altToNodes || []).forEach(function (nid) {
+          var n = nodeById(nid);
+          if (n && n.hasCoords) {
+            m.layer.addLayer(L.polyline([[a.lat, a.lon], [n.lat, n.lon]], { color: '#8c1c2c', weight: 3, dashArray: '4 8', opacity: 0.7 }));
+            addMarker('map-traffic', n.lat, n.lon, 'mk-traf', '', n.name);
+          }
+        });
+      }
+    }
+    fitLayer('map-traffic');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function showDiversionOnMap(div) {
+    var box = $('#map-traffic');
+    box.hidden = false;
+    clearMap('map-traffic');
+    ensureMap('map-traffic');
+    var m = maps['map-traffic'], pts = [];
+    (div.viaNodes || []).forEach(function (nid) {
+      var n = nodeById(nid);
+      if (n && n.hasCoords) { pts.push([n.lat, n.lon]); addMarker('map-traffic', n.lat, n.lon, 'mk-traf', '', n.name); }
+    });
+    if (pts.length >= 2) m.layer.addLayer(L.polyline(pts, { color: '#2f5a43', weight: 4, dashArray: '8 6' }));
+    (div.avoidNodes || []).forEach(function (nid) {
+      var n = nodeById(nid);
+      if (n && n.hasCoords) addMarker('map-traffic', n.lat, n.lon, 'mk-traf', '', 'Avoid: ' + n.name);
+    });
+    fitLayer('map-traffic');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function showControlOnMap(ctrl) {
+    var box = $('#map-traffic');
+    box.hidden = false;
+    clearMap('map-traffic');
+    ensureMap('map-traffic');
+    if (ctrl.hasCoords) addMarker('map-traffic', ctrl.lat, ctrl.lon, 'mk-ctrl', '', ctrl.nodeName || ctrl.name);
+    // also draw other controls faintly? only selected for clarity
+    fitLayer('map-traffic');
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function paintTrafficOverviewMap() {
+    var box = $('#map-traffic');
+    if (!box || box.hidden) return;
+    clearMap('map-traffic');
+    ensureMap('map-traffic');
+    var m = maps['map-traffic'];
+    if (!S.data) return;
+    (S.data.trafficRestrictions || []).forEach(function (tr) {
+      if (tr.zone) return;
+      var a = nodeById(tr.fromNode), b = nodeById(tr.toNode);
+      if (a && a.hasCoords && b && b.hasCoords) {
+        m.layer.addLayer(L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#8c1c2c', weight: 3, dashArray: '6 6', opacity: 0.85 }));
+      }
+    });
+    (S.data.trafficControls || []).forEach(function (c) {
+      if (c.hasCoords) addMarker('map-traffic', c.lat, c.lon, 'mk-ctrl', '', c.nodeName || c.name);
+    });
+    fitLayer('map-traffic');
   }
 
   /* ---------- PARKING & TRAFFIC ---------- */
@@ -465,16 +556,81 @@
     var ms = P.fromDateTimeInputs(d.value, tm.value);
     return isFinite(ms) ? ms : nowMs();
   }
+  function restrictionCard(tr) {
+    var card = el('li', 'info-card');
+    card.dataset.id = tr.id;
+    card.appendChild(pendingTrafficBadge());
+    var fromN = nodeById(tr.fromNode), toN = nodeById(tr.toNode);
+    var title = tr.zone ? (tr.zoneLabel || tr.name) : ((fromN ? fromN.name : tr.fromNode) + ' \u2192 ' + (toN ? toN.name : tr.toNode));
+    add(card, el('h3', '', title));
+    if (tr.affectedRoad) card.appendChild(el('p', 'rtype', tr.affectedRoad));
+    card.appendChild(el('p', 'meta', scopeLabel(tr.vehicleScope)));
+    if (tr.note) card.appendChild(el('p', 'meta', tr.note));
+    if (tr.approximateGeometry && !tr.zone) card.appendChild(el('p', 'meta', 'Map shows approximate straight-line segment between junctions — not a surveyed road polyline.'));
+    card.appendChild(el('p', 'meta', tr.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    if (fromN) card.appendChild(mappedLocBadge(fromN));
+    else if (tr.zone) card.appendChild(el('span', 'badge badge-mapped', 'Mapped location'));
+    card.appendChild(btn('View on Map', 'btn-primary', function () { showRestrictionOnMap(tr); }));
+    return card;
+  }
+  function diversionCard(div) {
+    var card = el('li', 'info-card');
+    card.dataset.id = div.id;
+    card.appendChild(pendingTrafficBadge());
+    add(card, el('h3', '', div.name));
+    card.appendChild(el('p', 'meta', scopeLabel(div.vehicleScope)));
+    if (div.instruction) card.appendChild(el('p', '', div.instruction));
+    var via = (div.viaNodes || []).map(function (id) { var n = nodeById(id); return n ? n.name : id; }).join(' \u2192 ');
+    var avoid = (div.avoidNodes || []).map(function (id) { var n = nodeById(id); return n ? n.name : id; }).join(', ');
+    if (via) card.appendChild(line('Via', via));
+    if (avoid) card.appendChild(line('Avoid', avoid));
+    card.appendChild(el('p', 'meta', div.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    card.appendChild(btn('View on Map', 'btn-primary', function () { showDiversionOnMap(div); }));
+    return card;
+  }
+  function controlCard(ctrl) {
+    var card = el('li', 'info-card info-card-compact');
+    card.dataset.id = ctrl.id;
+    card.appendChild(pendingTrafficBadge());
+    add(card, el('h3', '', ctrl.nodeName || ctrl.name));
+    card.appendChild(el('p', 'meta', 'Goods vehicles \u2014 no entry beyond control point'));
+    card.appendChild(el('p', 'meta', ctrl.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    var n = nodeById(ctrl.nodeId);
+    if (n) card.appendChild(mappedLocBadge(n));
+    card.appendChild(btn('View on Map', '', function () { showControlOnMap(ctrl); }));
+    return card;
+  }
   function renderTrafficPanel() {
     syncTimeInputs();
     S.checkAt = readCheckAt();
+    var planned = clear($('#traffic-planned'));
+    var diversions = clear($('#traffic-diversions'));
+    var controls = clear($('#traffic-controls'));
     var active = clear($('#traffic-active')), upcoming = clear($('#traffic-upcoming'));
-    var feed = S.data ? P.trafficFeed(S.data.traffic, S.checkAt) : { active: [], upcoming: [] };
-    $('#traffic-active-empty').hidden = feed.active.length > 0;
-    $('#traffic-upcoming-wrap').hidden = feed.upcoming.length === 0;   // empty Upcoming is hidden entirely
-    feed.active.forEach(function (x) { active.appendChild(trafficCard(x)); });
-    feed.upcoming.forEach(function (x) { upcoming.appendChild(trafficCard(x)); });
-    $('#map-traffic').hidden = true;
+    var trList = S.data ? (S.data.trafficRestrictions || []) : [];
+    var feed = S.data ? P.trafficFeed(S.data.traffic, S.checkAt, trList) : { active: [], upcoming: [], planned: [] };
+    // Section A — planned restrictions (pendingVerification working basis)
+    trList.forEach(function (tr) { planned.appendChild(restrictionCard(tr)); });
+    $('#traffic-planned-empty').hidden = trList.length > 0;
+    // Section B — diversions
+    var divs = S.data ? (S.data.trafficDiversions || []) : [];
+    divs.forEach(function (d) { diversions.appendChild(diversionCard(d)); });
+    $('#traffic-diversions-empty').hidden = divs.length > 0;
+    // Section C — control points
+    var ctrls = S.data ? (S.data.trafficControls || []) : [];
+    ctrls.forEach(function (c) { controls.appendChild(controlCard(c)); });
+    $('#traffic-controls-empty').hidden = ctrls.length > 0;
+    // DEMO sample feed only (approved would also appear here)
+    var demoActive = feed.active.filter(function (x) { return x.r.demo; });
+    var demoUpcoming = feed.upcoming.filter(function (x) { return x.r.demo; });
+    var approvedActive = feed.active.filter(function (x) { return !x.r.demo; });
+    var approvedUpcoming = feed.upcoming.filter(function (x) { return !x.r.demo; });
+    approvedActive.concat(demoActive).forEach(function (x) { active.appendChild(trafficCard(x)); });
+    approvedUpcoming.concat(demoUpcoming).forEach(function (x) { upcoming.appendChild(trafficCard(x)); });
+    $('#traffic-active-empty').hidden = (approvedActive.length + demoActive.length) > 0;
+    $('#traffic-upcoming-wrap').hidden = (approvedUpcoming.length + demoUpcoming.length) === 0;
+    $('#map-traffic').hidden = false;
+    paintTrafficOverviewMap();
   }
 
   /* ---------- FACILITIES ---------- */
