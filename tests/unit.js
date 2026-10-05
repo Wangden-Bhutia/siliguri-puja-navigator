@@ -190,5 +190,17 @@ t('no "Official" claim in visitor HTML/manifest while not approved', BR.official
 t('app.js uses approval flag for descriptor (not hardcoded)', /approved \? \(BR\.descriptor/.test(rd('app.js')) && /BR\.descriptorDefault/.test(rd('app.js')));
 t('no "P" text or emoji used as nav/home icons', !/<span class="(bi|ti)"[^>]*>[^<]+<\/span>/.test(html) && (html.match(/<use href="#i-/g) || []).length >= 7);
 
+
+// Safety notice must state locations confirmed + parking/traffic still being finalised (not pending field verification).
+(function () {
+  const app = rd('app.js');
+  const m = app.match(/safety:\s*\{[\s\S]*?body:\s*\[([\s\S]*?)\]/);
+  t('Safety notice block present', !!m);
+  const body = m ? m[1] : '';
+  t('Safety notice: locations confirmed wording', /Pandal locations in this build are confirmed and usable for directions/.test(body));
+  t('Safety notice: parking/traffic still being finalised', /Parking and traffic arrangements for 2026 are still being finalised/.test(body));
+  t('Safety notice: no pending-field-verification claim for locations', !/pending field verification/i.test(body) && !/independent 2026 geographic reference/i.test(body));
+})();
+
 console.log(pass + ' passed, ' + fail + ' failed');
 if (fail) process.exit(1);
