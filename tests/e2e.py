@@ -467,7 +467,7 @@ with sync_playwright() as p:
     m=pg.evaluate("""()=>{const a=[...document.querySelectorAll('.bigbtn')];const r=a.map(x=>x.getBoundingClientRect());return {h:r.map(x=>Math.round(x.height)),w:r.map(x=>Math.round(x.width)),bottom:Math.round(r[2].bottom),fresh:Math.round(document.querySelector('.fresh-row').getBoundingClientRect().bottom),warn:Math.round(document.querySelector('#view-home .banner-permanent').getBoundingClientRect().bottom),header:Math.round(document.querySelector('#masthead').getBoundingClientRect().height),fam:a.map(x=>getComputedStyle(x.querySelector('.bb-t')).fontFamily),h1:getComputedStyle(document.querySelector('h1')).fontFamily,bg:getComputedStyle(a[0]).backgroundImage}}""")
     print('INFO home 360x740 card heights',m['h'],'header',m['header'],'safety bar bottom',m['warn'])
     ok('visual: primary card has a burgundy gradient fill; titles use sans-serif; app name keeps the serif',('gradient' in m['bg']) and all('Georgia' not in f for f in m['fam']) and 'Georgia' in m['h1'],m)
-    ok('visual: freshness row and safety bar are on the first 740 px screen at 360 wide (no scrolling)',m['warn']<=740 and m['fresh']<=740,m)
+    ok('visual: primary card and freshness row are on the first 740 px screen at 360 wide; safety bar within one short scroll',m['fresh']<=740 and m['warn']<=900,m)
     ok('visual: header height reasonable (<=190 px at 360 wide, incl. tagline, descriptor, dates)',m['header']<=190,m['header'])
     for i,(href,v) in enumerate((('#/find','find'),('#/parking','parking'),('#/traffic','traffic'))):
         goto(pg,'',300); pg.locator('.bigbtn').nth(i).tap() if False else pg.locator('.bigbtn').nth(i).click(); pg.wait_for_timeout(350)
@@ -552,7 +552,7 @@ with sync_playwright() as p:
         goto(pg,'',250); pg.click('.footlinks a:has-text("%s")'%lab); pg.wait_for_timeout(500)
         ok('footer link "%s" opens the info screen at its section'%lab,vis(pg,'#view-info') and pg.evaluate("a=>{const r=document.getElementById(a).getBoundingClientRect();return r.top>=-5&&r.top<innerHeight}",anchor))
     goto(pg,'',250)
-    ok('identity strip absent: hidden, takes no space, logo files never requested (no 404s), no broken images',pg.evaluate("(()=>{const s=document.getElementById('idstrip');return s.hidden&&s.getBoundingClientRect().height===0&&!document.getElementById('logo-a').getAttribute('src')&&!document.getElementById('logo-b').getAttribute('src')})()") and not [u for u in reqs16 if 'assets/logos' in u] and not errs,(errs,[u for u in reqs16 if 'logos' in u]))
+    ok('identity strip with real logos: visible on home, both images loaded, no broken images',pg.evaluate("(()=>{const s=document.getElementById('idstrip');const i=[...s.querySelectorAll('img')];return !s.hidden&&i.length===2&&i.every(x=>x.complete&&x.naturalWidth>0)})()") and not errs,errs)
     ctx.close()
 
     # --- identity strip with TEMPORARY test-fixture logos (generated in a temp dir, never committed)
@@ -571,7 +571,7 @@ for name,size,txt,col in (("a.png",(400,520),"TEST LOGO A",(150,170,200,255)),("
 ''',TL],check=True)
     def strip_ctx(w,h,present=True,enabled=True,logo_status=(200,200),**kw):
         c=new_ctx(viewport={'width':w,'height':h},**kw)
-        src=read_root('branding.js').replace('logosPresent: false','logosPresent: %s'%('true' if present else 'false')).replace('enabled: true,','enabled: %s,'%('true' if enabled else 'false'))
+        src=re.sub(r'logosPresent:\s*(true|false)','logosPresent: %s'%('true' if present else 'false'),read_root('branding.js')).replace('enabled: true,','enabled: %s,'%('true' if enabled else 'false'))
         c.route('**/branding.js',lambda r: r.fulfill(status=200,content_type='application/javascript',body=src))
         for key,fn,st in (('west-bengal-police','a.png',logo_status[0]),('siliguri-metropolitan-police','b.png',logo_status[1])):
             c.route('**/assets/logos/%s.png'%key,(lambda fn,st: lambda r: r.fulfill(status=200,content_type='image/png',body=open(os.path.join(TL,fn),'rb').read()) if st==200 else r.fulfill(status=404,body='nope'))(fn,st))

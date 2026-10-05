@@ -30,7 +30,7 @@
       ],
       // Maintained by tools/build-sw.js: true only when BOTH files above exist in the repo at build time.
       // While false the app never requests the logo files (no 404s, no empty gap).
-      logosPresent: false /*AUTO*/
+      logosPresent: true /*AUTO*/
     }
   };
   if (typeof module === 'object' && module.exports) module.exports = BRANDING; else root.PUJA_BRANDING = BRANDING;
