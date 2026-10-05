@@ -505,7 +505,7 @@
         'This guide helps visitors find pandals, parking and published traffic information for Durga Puja in Siliguri.',
         'Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.',
         'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements.',
-        'Pandal coordinates in this build are an independent 2026 geographic reference pending field verification. DEMO records are samples only.',
+        'Pandal locations in this build are confirmed and usable for directions. Parking and traffic arrangements for 2026 are still being finalised. DEMO records are samples only.',
         'In an emergency dial 112.'
       ]
     },
