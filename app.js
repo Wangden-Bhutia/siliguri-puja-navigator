@@ -197,7 +197,11 @@
     }
     if (d && d.meta && (d.meta.isDemoDataset || d.meta.containsDemoRecords)) {
       var db = el('div', 'banner banner-demo');
-      add(db, el('strong', '', 'Demo build. '), document.createTextNode('Pandal locations are confirmed. 2026 parking and traffic are being finalised. DEMO items are samples, not actual 2026 orders.'));
+      // Compact status strip: DEMO kept; locations confirmed; parking/traffic NOT confirmed.
+      var main = el('p', 'banner-demo-main');
+      add(main, el('strong', '', 'DEMO'), document.createTextNode(' Pandal locations are confirmed \u00B7 Parking and traffic being finalised'));
+      db.appendChild(main);
+      db.appendChild(el('p', 'banner-demo-sub', 'Demo items are samples, not actual 2026 orders.'));
       box.appendChild(db);
     }
     if (L0.source === 'cache' || L0.stale) {
