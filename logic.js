@@ -17,6 +17,10 @@
   var BBOX = { latMin: 26.5, latMax: 27.0, lonMin: 88.2, lonMax: 88.7 };
   // Section 23 data-status values. Only "approved" (and, for locations, "fieldVerified") ever count as checked.
   var VSTATUSES = ['reference', 'pendingVerification', 'fieldVerified', 'approved', 'expired'];
+  // Location confirmation is SEPARATE from operational verification.
+  // confirmed = coordinates are correct and usable for directions NOW.
+  // It must NEVER imply fieldVerified or approved (parking/traffic/ops still pending).
+  var LSTATUSES = ['unconfirmed', 'confirmed'];
   var TSTATUSES = ['scheduled', 'cancelled', 'expired'];
   var RTYPES = ['noEntry', 'controlledMovement', 'diversion', 'routeRelocation', 'oneWay', 'vehicleClassRestriction'];
   var RTYPE_LABEL = { noEntry: 'No entry', controlledMovement: 'Controlled movement', diversion: 'Diversion', routeRelocation: 'Route relocation', oneWay: 'One-way', vehicleClassRestriction: 'Vehicle restriction' };
@@ -129,12 +133,15 @@
 
   /* ---------- statuses ---------- */
   function isCheckedLocation(v) { return v === 'fieldVerified' || v === 'approved'; }
-  // Short visitor label for a record's data status. Never says "verified" for unchecked data.
+  function isLocationConfirmed(rec) { return !!(rec && rec.locationStatus === 'confirmed' && rec.hasCoords && !rec.demo); }
+  // Short visitor label. Location-confirmed pandals say so without claiming field-check or approval.
   function statusLabel(rec) {
     if (rec.demo) return 'DEMO';
+    // Operational statuses win when they actually mean field-check / approval.
+    if (rec.verificationStatus === 'approved') return 'Approved';
+    if (rec.verificationStatus === 'fieldVerified') return 'Field-checked 2026';
+    if (rec.kind === 'pandal' && isLocationConfirmed(rec)) return 'Location confirmed';
     switch (rec.verificationStatus) {
-      case 'approved': return 'Approved';
-      case 'fieldVerified': return 'Field-checked 2026';
       case 'pendingVerification': return 'Pending 2026 verification';
       case 'reference': return 'Reference only';
       case 'expired': return 'Expired';
@@ -301,6 +308,12 @@
       o.locality = str(rec.locality, 120);
       if (!o.locality) err('pandal', o.id, 'missing neighbourhood/locality \u2013 listed under "Other areas"');
       o.police2024Name = str(rec.police2024Name, 200);
+      // locationStatus: confirmed | unconfirmed (default). Confirmed coords ≠ fieldVerified ≠ approved.
+      var ls = str(rec.locationStatus, 20) || 'unconfirmed';
+      if (LSTATUSES.indexOf(ls) < 0) { err('pandal', o.id, 'invalid locationStatus "' + ls + '" (use ' + LSTATUSES.join(', ') + '); treated as unconfirmed'); ls = 'unconfirmed'; }
+      if (ls === 'confirmed' && !o.hasCoords) { err('pandal', o.id, 'locationStatus confirmed requires valid coordinates; treated as unconfirmed'); ls = 'unconfirmed'; }
+      if (o.demo && ls === 'confirmed') { err('pandal', o.id, 'a DEMO pandal cannot have locationStatus confirmed; treated as unconfirmed'); ls = 'unconfirmed'; }
+      o.locationStatus = ls;
       var nk = normName(o.name);
       if (byName[nk]) warn('pandal', o.id, 'duplicate pandal name (same as ' + byName[nk] + ')'); else byName[nk] = o.id;
       if (o.hasCoords) {
@@ -450,13 +463,13 @@
   function pandalFields(p) { return [p.name, p.locality, p.police2024Name]; }
 
   return {
-    IST_MS: IST_MS, BBOX: BBOX, VSTATUSES: VSTATUSES, TSTATUSES: TSTATUSES, RTYPES: RTYPES, RTYPE_LABEL: RTYPE_LABEL, PARKING_TYPES: PARKING_TYPES, FACILITY_TYPES: FACILITY_TYPES,
+    IST_MS: IST_MS, BBOX: BBOX, VSTATUSES: VSTATUSES, LSTATUSES: LSTATUSES, TSTATUSES: TSTATUSES, RTYPES: RTYPES, RTYPE_LABEL: RTYPE_LABEL, PARKING_TYPES: PARKING_TYPES, FACILITY_TYPES: FACILITY_TYPES,
     parseIST: parseIST, parseISTDate: parseISTDate, parseHM: parseHM, istParts: istParts, dayStart: dayStart,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtDateTime: fmtDateTime, fmtClock: fmtClock, fmtTimeRange: fmtTimeRange, fmtDayRange: fmtDayRange,
     fmtShort: fmtShort, fmtAge: fmtAge, freshness: freshness,
     toLocalInputValue: toLocalInputValue, fromLocalInputValue: fromLocalInputValue, fromDateTimeInputs: fromDateTimeInputs,
     validCoords: validCoords, mapsDirUrl: mapsDirUrl, distanceKm: distanceKm, safeHttpUrl: safeHttpUrl, slug: slug,
-    isCheckedLocation: isCheckedLocation, statusLabel: statusLabel,
+    isCheckedLocation: isCheckedLocation, isLocationConfirmed: isLocationConfirmed, statusLabel: statusLabel,
     windowsOf: windowsOf, evaluateTraffic: evaluateTraffic, isVisitorTraffic: isVisitorTraffic, trafficFeed: trafficFeed, describeTrafficTime: describeTrafficTime,
     walkFor: walkFor, parkingForPandal: parkingForPandal, groupNeighbourhoods: groupNeighbourhoods,
     validateDataset: validateDataset, matches: matches, pandalFields: pandalFields

@@ -1,8 +1,8 @@
 {
   "meta": {
     "schemaVersion": 2,
-    "datasetVersion": "2026-ref-0.1.0",
-    "lastUpdated": "2026-10-05T10:50:00+05:30",
+    "datasetVersion": "2026-ref-0.2.0",
+    "lastUpdated": "2026-10-05T11:55:00+05:30",
     "isDemoDataset": true,
     "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
@@ -11,8 +11,8 @@
       "startDate": "2026-10-16",
       "endDate": "2026-10-21"
     },
-    "notice": "Pandal locations are an independent 2026 geographic reference (Pujo Songi) pending 2026 field verification. DEMO parking, traffic and facility records are samples only. Not Police-approved 2026 operational data.",
-    "pandalDataStatus": "pendingVerification"
+    "notice": "Pandal locations are confirmed and usable for directions. 2026 parking and traffic arrangements are not finalised. DEMO parking/traffic/facility records are samples only. Official branding is disabled until written approval.",
+    "pandalDataStatus": "locationConfirmed"
   },
   "pandals": [
     {
@@ -25,7 +25,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Dada Bhai Sporting Club"
+      "police2024Name": "Dada Bhai Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-002",
@@ -36,7 +37,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-003",
@@ -47,7 +49,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-004",
@@ -59,7 +62,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Subrata Sangha Durgapuja Committee"
+      "police2024Name": "Subrata Sangha Durgapuja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-005",
@@ -71,7 +75,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Haiderpara Sporting Club"
+      "police2024Name": "Haiderpara Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-006",
@@ -82,7 +87,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-007",
@@ -93,7 +99,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-008",
@@ -105,7 +112,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Jatiyo Tarun Sangha"
+      "police2024Name": "Jatiyo Tarun Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-009",
@@ -117,7 +125,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Rabindra Sangha"
+      "police2024Name": "Rabindra Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-010",
@@ -129,7 +138,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Ujjal Sangha"
+      "police2024Name": "Ujjal Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-011",
@@ -140,7 +150,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-012",
@@ -151,7 +162,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-013",
@@ -162,7 +174,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-014",
@@ -174,7 +187,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Swastika Yubak Sangha"
+      "police2024Name": "Swastika Yubak Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-015",
@@ -185,7 +199,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-016",
@@ -196,7 +211,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-017",
@@ -208,7 +224,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Jewel Athletic Club"
+      "police2024Name": "Jewel Athletic Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-018",
@@ -220,7 +237,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Shiv Mandir Durga Puja Committee"
+      "police2024Name": "Shiv Mandir Durga Puja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-019",
@@ -232,7 +250,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Suryanagar Friends Union"
+      "police2024Name": "Suryanagar Friends Union",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-020",
@@ -244,7 +263,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Tarun Tirtha"
+      "police2024Name": "Tarun Tirtha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-021",
@@ -255,7 +275,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-022",
@@ -266,7 +287,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-023",
@@ -278,7 +300,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Siliguri Sanghashree"
+      "police2024Name": "Siliguri Sanghashree",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-024",
@@ -290,7 +313,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Uttar Mallaguri Sarbojanin Durga Puja Committee"
+      "police2024Name": "Uttar Mallaguri Sarbojanin Durga Puja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-025",
@@ -302,7 +326,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Rathkhola Sporting Club"
+      "police2024Name": "Rathkhola Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-026",
@@ -314,7 +339,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Bharat Sevashram Sangha"
+      "police2024Name": "Bharat Sevashram Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-027",
@@ -325,7 +351,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-028",
@@ -337,7 +364,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Manas Rover Club"
+      "police2024Name": "Manas Rover Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-029",
@@ -349,7 +377,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Milanpally Sarbojanin Durga Puja Committee"
+      "police2024Name": "Milanpally Sarbojanin Durga Puja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-030",
@@ -361,7 +390,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Arunoday Sangha"
+      "police2024Name": "Arunoday Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-031",
@@ -373,7 +403,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Mahananda Sporting Club"
+      "police2024Name": "Mahananda Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-032",
@@ -385,7 +416,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Mallaguri Athletic Club"
+      "police2024Name": "Mallaguri Athletic Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-033",
@@ -397,7 +429,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Amtala Yuba Samity"
+      "police2024Name": "Amtala Yuba Samity",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-034",
@@ -409,7 +442,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Bandhab Sangha"
+      "police2024Name": "Bandhab Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-035",
@@ -420,7 +454,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-036",
@@ -432,7 +467,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Kabi Sukanta Sisu Uddyan (Purbanchal Club)"
+      "police2024Name": "Kabi Sukanta Sisu Uddyan (Purbanchal Club)",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-037",
@@ -443,7 +479,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-038",
@@ -455,7 +492,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Netaji Yuba Sangha"
+      "police2024Name": "Netaji Yuba Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-039",
@@ -467,7 +505,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Ramkrishna Byam Siksha Sangha"
+      "police2024Name": "Ramkrishna Byam Siksha Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-040",
@@ -479,7 +518,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Salugara Durga Puja Committee"
+      "police2024Name": "Salugara Durga Puja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-041",
@@ -491,7 +531,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Sarada Sevok Sangha"
+      "police2024Name": "Sarada Sevok Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-042",
@@ -503,7 +544,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Shreepally Nagarik Committee"
+      "police2024Name": "Shreepally Nagarik Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-043",
@@ -515,7 +557,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "South Colony Sporting Club"
+      "police2024Name": "South Colony Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-044",
@@ -526,7 +569,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-045",
@@ -537,7 +581,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-046",
@@ -549,7 +594,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Janashree Club"
+      "police2024Name": "Janashree Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-047",
@@ -561,7 +607,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Kachari Road Yubak Sangha"
+      "police2024Name": "Kachari Road Yubak Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-048",
@@ -573,7 +620,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Nava Jagriti Sangha"
+      "police2024Name": "Nava Jagriti Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-049",
@@ -584,7 +632,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-050",
@@ -596,7 +645,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Saktisong Club"
+      "police2024Name": "Saktisong Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-051",
@@ -608,7 +658,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Shanti Nagar Sporting Club"
+      "police2024Name": "Shanti Nagar Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-052",
@@ -620,7 +671,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Sukanta Sporting Union Club"
+      "police2024Name": "Sukanta Sporting Union Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-053",
@@ -631,7 +683,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-054",
@@ -643,7 +696,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Agragami Sangha"
+      "police2024Name": "Agragami Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-055",
@@ -655,7 +709,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Agrani Sangha"
+      "police2024Name": "Agrani Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-056",
@@ -667,7 +722,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Balaka Club"
+      "police2024Name": "Balaka Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-057",
@@ -679,7 +735,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Deshbandhu Sporting Union"
+      "police2024Name": "Deshbandhu Sporting Union",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-058",
@@ -691,7 +748,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Himachal Sangha"
+      "police2024Name": "Himachal Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-059",
@@ -703,7 +761,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Jagriti Sangha"
+      "police2024Name": "Jagriti Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-060",
@@ -715,7 +774,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Nabankur Sangha"
+      "police2024Name": "Nabankur Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-061",
@@ -727,7 +787,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Renaissance Club"
+      "police2024Name": "Renaissance Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-062",
@@ -739,7 +800,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Shilpanchal Durga Puja Committee"
+      "police2024Name": "Shilpanchal Durga Puja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-063",
@@ -751,7 +813,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Sunrise Club"
+      "police2024Name": "Sunrise Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-064",
@@ -763,7 +826,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Winners Club"
+      "police2024Name": "Winners Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-065",
@@ -775,7 +839,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Abahani Chakra Sports & Cultural Club"
+      "police2024Name": "Abahani Chakra Sports & Cultural Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-066",
@@ -787,7 +852,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Aurobinda Yubak Sangha"
+      "police2024Name": "Aurobinda Yubak Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-067",
@@ -798,7 +864,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-068",
@@ -810,7 +877,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "G.T.S. Club"
+      "police2024Name": "G.T.S. Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-069",
@@ -822,7 +890,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Hotel Mainak"
+      "police2024Name": "Hotel Mainak",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-070",
@@ -834,7 +903,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Mitra Samilani"
+      "police2024Name": "Mitra Samilani",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-071",
@@ -846,7 +916,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Sabyasachi Sangha"
+      "police2024Name": "Sabyasachi Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-072",
@@ -858,7 +929,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Siliguri Jatiyo Yubak Sangha"
+      "police2024Name": "Siliguri Jatiyo Yubak Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-073",
@@ -870,7 +942,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "S.N.N.A.Y. Sangha"
+      "police2024Name": "S.N.N.A.Y. Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-074",
@@ -882,7 +955,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Surabhi Sangha"
+      "police2024Name": "Surabhi Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-075",
@@ -894,7 +968,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Aurobinda Inter Union"
+      "police2024Name": "Aurobinda Inter Union",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-076",
@@ -906,7 +981,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Central Colony (Rly. Inst.)"
+      "police2024Name": "Central Colony (Rly. Inst.)",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-077",
@@ -918,7 +994,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Gitalpara Sporting Club"
+      "police2024Name": "Gitalpara Sporting Club",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-078",
@@ -930,7 +1007,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Himalayan Kanya Housing Society"
+      "police2024Name": "Himalayan Kanya Housing Society",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-079",
@@ -942,7 +1020,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Jogajog Sangha"
+      "police2024Name": "Jogajog Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-080",
@@ -954,7 +1033,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Mayer Ichcha Durga Puja Committee"
+      "police2024Name": "Mayer Ichcha Durga Puja Committee",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-081",
@@ -966,7 +1046,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Nabin Sangha"
+      "police2024Name": "Nabin Sangha",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-082",
@@ -977,7 +1058,8 @@
       "verificationStatus": "pendingVerification",
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/"
+      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "locationStatus": "confirmed"
     },
     {
       "id": "SG26-083",
@@ -989,7 +1071,8 @@
       "source": "Pujo Songi 2026",
       "sourceType": "independent geographic reference",
       "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
-      "police2024Name": "Siliguri Kishore Sangha"
+      "police2024Name": "Siliguri Kishore Sangha",
+      "locationStatus": "confirmed"
     }
   ],
   "neighbourhoods": [

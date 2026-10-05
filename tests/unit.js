@@ -60,7 +60,9 @@ t('describeTrafficTime has range', /PM/.test(L.describeTrafficTime(night, feed.a
 
 // --- status labels — never claim verified for pending
 t('statusLabel DEMO', L.statusLabel({ demo: true }) === 'DEMO');
-t('statusLabel pending', L.statusLabel({ verificationStatus: 'pendingVerification' }) === 'Pending 2026 verification');
+t('statusLabel pending (non-pandal)', L.statusLabel({ verificationStatus: 'pendingVerification' }) === 'Pending 2026 verification');
+t('statusLabel location confirmed pandal', L.statusLabel({ kind: 'pandal', locationStatus: 'confirmed', hasCoords: true, verificationStatus: 'pendingVerification' }) === 'Location confirmed');
+t('statusLabel fieldVerified still wins over location confirmed', L.statusLabel({ kind: 'pandal', locationStatus: 'confirmed', hasCoords: true, verificationStatus: 'fieldVerified' }) === 'Field-checked 2026');
 t('statusLabel never says verified for pending', !/verified/i.test(L.statusLabel({ verificationStatus: 'pendingVerification' })));
 t('statusLabel fieldVerified', L.statusLabel({ verificationStatus: 'fieldVerified' }) === 'Field-checked 2026');
 t('statusLabel approved', L.statusLabel({ verificationStatus: 'approved' }) === 'Approved');
@@ -122,7 +124,13 @@ t('help emergency must be 112; unverified phone hidden', v.help.emergencyNumber 
 const dv = L.validateDataset(DEMO);
 t('demo file valid', dv.ok && dv.fatal === '', dv.fatal);
 t('demo file: 83 pandals, 28 nhoods', dv.pandals.length === 83 && dv.neighbourhoods.length === 28, [dv.pandals.length, dv.neighbourhoods.length]);
-t('demo file: all pandals pendingVerification', dv.pandals.every(p => p.verificationStatus === 'pendingVerification'));
+t('demo file: all pandals pendingVerification (ops) + location confirmed', dv.pandals.every(p => p.verificationStatus === 'pendingVerification') && dv.pandals.every(p => p.locationStatus === 'confirmed' && L.isLocationConfirmed(p)));
+t('location confirmed ≠ fieldVerified/approved', dv.pandals.every(p => !L.isCheckedLocation(p.verificationStatus) && L.statusLabel(p) === 'Location confirmed' && L.statusLabel(p) !== 'Field-checked 2026' && L.statusLabel(p) !== 'Approved'));
+t('confirmed pandal has Google Maps directions URL', !!L.mapsDirUrl(dv.pandals[0]) && /destination=26\.7118%2C88\.4237/.test(L.mapsDirUrl(dv.pandals[0])));
+t('isLocationConfirmed requires coords + confirmed + not demo', L.isLocationConfirmed({ locationStatus: 'confirmed', hasCoords: true, demo: false }) && !L.isLocationConfirmed({ locationStatus: 'confirmed', hasCoords: false }) && !L.isLocationConfirmed({ locationStatus: 'confirmed', hasCoords: true, demo: true }) && !L.isLocationConfirmed({ locationStatus: 'unconfirmed', hasCoords: true }));
+v = L.validateDataset(ds({ pandals: [pandal('pc', { locationStatus: 'confirmed' }), pandal('pb', { locationStatus: 'confirmed', latitude: undefined, longitude: undefined }), pandal('pd', { locationStatus: 'confirmed', demo: true, verificationStatus: 'pendingVerification' })] }));
+t('confirmed without coords / DEMO confirmed rejected', v.pandals.find(p=>p.id==='pc').locationStatus==='confirmed' && v.pandals.find(p=>p.id==='pb').locationStatus==='unconfirmed' && v.pandals.find(p=>p.id==='pd').locationStatus==='unconfirmed');
+t('branding still disabled', require('../branding.js').officialBrandingApproved === false);
 t('demo file: parking/facilities are DEMO', dv.parking.every(p => p.demo) && dv.facilities.every(f => f.demo));
 t('demo file: only DEMO traffic is visitor-visible', dv.traffic.filter(L.isVisitorTraffic).every(r => r.demo) && dv.traffic.filter(L.isVisitorTraffic).length >= 1);
 t('demo file: 2025 baseline never visitor-visible', dv.traffic.filter(r => r.verificationStatus === 'reference' || r.verificationStatus === 'expired' || r.status === 'expired').every(r => !L.isVisitorTraffic(r)));
@@ -171,7 +179,7 @@ scan.forEach(f => {
 });
 // Visitor-facing strings in app.js / index must not label pending data as verified
 const visitorCopy = rd('app.js') + rd('index.html');
-t('no false "verified" claim for pending locations', !/Location verified/i.test(visitorCopy) && /pending 2026 field verification/i.test(visitorCopy));
+t('no false "verified" claim for pending locations', !/Location verified/i.test(visitorCopy) && /Location confirmed/.test(visitorCopy) && /Parking and traffic arrangements for 2026 are being finalised/.test(visitorCopy));
 t('DEMO label present in UI paths', /DEMO \\u2014 NOT VERIFIED/.test(rd('app.js')) && /Sample 2026 scenario/.test(rd('app.js')));
 // --- refinement pass guards
 t('facility types limited to booths + hospitals', L.FACILITY_TYPES.join() === 'police-booth,hospital');

@@ -71,6 +71,7 @@
     if (rec.demo) cls += 'badge-demo';
     else if (rec.verificationStatus === 'approved') cls += 'badge-approved';
     else if (rec.verificationStatus === 'fieldVerified') cls += 'badge-field';
+    else if (rec.kind === 'pandal' && P.isLocationConfirmed(rec)) cls += 'badge-confirmed';
     else cls += 'badge-pending';
     return el('span', cls, label);
   }
@@ -196,7 +197,7 @@
     }
     if (d && d.meta && (d.meta.isDemoDataset || d.meta.containsDemoRecords)) {
       var db = el('div', 'banner banner-demo');
-      add(db, el('strong', '', 'Demo build. '), document.createTextNode('Pandal locations are pending 2026 field verification. DEMO items are samples, not actual 2026 orders.'));
+      add(db, el('strong', '', 'Demo build. '), document.createTextNode('Pandal locations are confirmed. 2026 parking and traffic are being finalised. DEMO items are samples, not actual 2026 orders.'));
       box.appendChild(db);
     }
     if (L0.source === 'cache' || L0.stale) {
@@ -294,7 +295,11 @@
     $('#pandal-title').textContent = p ? p.name : 'Pandal';
     $('#pandal-locality').textContent = p ? (p.locality || '') : '';
     var st = clear($('#pandal-status'));
-    if (p) st.appendChild(statusBadge(p));
+    if (p) {
+      st.appendChild(statusBadge(p));
+      // Location confirmed ≠ parking/traffic finalised.
+      if (P.isLocationConfirmed(p)) st.appendChild(el('p', 'meta small', 'Parking and traffic arrangements for 2026 are being finalised.'));
+    }
     var back = $('#pandal-back');
     back.setAttribute('href', p && p.locality ? '#/n/' + encodeURIComponent(P.slug(p.locality)) : '#/pandals');
     back.textContent = '\u2190 ' + (p && p.locality ? p.locality : 'Pandals');
@@ -311,7 +316,8 @@
     var parkBox = clear($('#pandal-parking'));
     if (p && S.data) {
       var parks = P.parkingForPandal(S.data.parking, p.id);
-      if (!parks.length) parkBox.appendChild(el('p', 'empty', 'Parking information is being verified for 2026.'));
+      var real = parks.filter(function (k) { return !k.demo && P.isCheckedLocation(k.verificationStatus); });
+      if (!real.length) parkBox.appendChild(el('p', 'empty', 'Parking information is being verified for 2026.'));
       parks.forEach(function (k) {
         var card = el('div', 'info-card' + (k.demo ? ' is-demo' : '')), w = P.walkFor(k, p.id, S.data.walkingRoutes);
         add(card, statusBadge(k), el('h3', '', k.name));
