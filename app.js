@@ -33,42 +33,26 @@
 
   /* ---------- branding / theme ---------- */
   function applyBranding() {
-    var name = BR.appName || 'Siliguri Puja Guide';
-    $('#brand-name').textContent = name;
+    var approved = BR.officialBrandingApproved === true;
+    $('#brand-name').textContent = BR.appName || 'Siliguri Puja Guide';
     $('#brand-tag').textContent = BR.tagline || '';
-    $('#brand-descriptor').textContent = BR.descriptor || '';
-    $('#brand-dates').textContent = '';
-    add($('#brand-dates'), attrs(el('span', '', '\uD83D\uDCC5'), { 'aria-hidden': 'true' }), document.createTextNode(' ' + (BR.festivalDates || '')));
-    $('#foot-line').textContent = BR.officialBrandingApproved ? BR.footerApproved : BR.footerDemo;
-    var strip = $('#idstrip'), logos = $('#idstrip-logos'), cap = $('#idstrip-cap');
-    var ib = BR.institutionalBranding || {};
-    clear(logos);
-    if (ib.enabled && ib.logosPresent && ib.logos && ib.logos.length) {
-      strip.hidden = false;
-      cap.textContent = ib.caption || '';
-      (ib.names || []).forEach(function () {});
-      ib.logos.forEach(function (L) {
-        var img = attrs(el('img'), { src: L.src, alt: L.alt || '', width: '120', height: '40', loading: 'lazy' });
-        logos.appendChild(img);
-      });
-      if (ib.names && ib.names.length) {
-        cap.textContent = (ib.caption || '') + ' ' + ib.names.join(' & ');
-      }
-    } else {
-      strip.hidden = true;
-    }
+    // Official wording only after written approval; neutral wording otherwise (never hardcoded).
+    $('#brand-descriptor').textContent = approved ? (BR.descriptor || '') : (BR.descriptorDefault || '');
+    $('#brand-dates').textContent = BR.festivalDates || '';
+    $('#foot-line').textContent = approved ? BR.footerApproved : BR.footerDemo;
+    var strip = $('#idstrip'), logos = clear($('#idstrip-logos')), cap = $('#idstrip-cap'), ib = BR.institutionalBranding || {};
+    strip.hidden = !(approved && ib.enabled && ib.logosPresent && ib.logos && ib.logos.length);
+    if (strip.hidden) return;
+    cap.textContent = (ib.caption || '') + (ib.names && ib.names.length ? ' ' + ib.names.join(' & ') : '');
+    ib.logos.forEach(function (lg) { logos.appendChild(attrs(el('img'), { src: lg.src, alt: lg.alt || '', height: '32', loading: 'lazy' })); });
   }
   function initTheme() {
     var t = 'light';
     try { t = localStorage.getItem(LS_THEME) || t; } catch (e) {}
-    if (t !== 'dark' && t !== 'light') t = 'light';
-    document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+    if (t !== 'dark') t = 'light';
+    document.documentElement.setAttribute('data-theme', t);
     var btn = $('#theme-btn');
-    if (btn) {
-      btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
-      btn.title = t === 'dark' ? 'Day mode' : 'Night mode';
-      var lbl = $('.theme-lbl', btn); if (lbl) lbl.textContent = t === 'dark' ? 'Day mode' : 'Night mode';
-    }
+    if (btn) { btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false'); btn.setAttribute('aria-label', 'Night mode'); btn.title = t === 'dark' ? 'Switch to day mode' : 'Switch to night mode'; }
   }
   function toggleTheme() {
     var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
@@ -83,18 +67,26 @@
 
   /* ---------- status badges ---------- */
   function statusBadge(rec) {
-    var label = P.statusLabel(rec);
-    var cls = 'badge ';
+    var label = rec.demo ? 'DEMO \u2014 NOT VERIFIED' : P.statusLabel(rec), cls = 'badge ';
     if (rec.demo) cls += 'badge-demo';
     else if (rec.verificationStatus === 'approved') cls += 'badge-approved';
     else if (rec.verificationStatus === 'fieldVerified') cls += 'badge-field';
-    else if (rec.verificationStatus === 'expired') cls += 'badge-expired';
-    else if (rec.verificationStatus === 'reference') cls += 'badge-reference';
     else cls += 'badge-pending';
     return el('span', cls, label);
   }
-  function pendingNote() {
-    return el('p', 'meta', 'Location pending 2026 field verification');
+  function svgIcon(name) {
+    var ns = 'http://www.w3.org/2000/svg', s = document.createElementNS(ns, 'svg'), u = document.createElementNS(ns, 'use');
+    s.setAttribute('class', 'ic'); s.setAttribute('aria-hidden', 'true'); s.setAttribute('focusable', 'false');
+    u.setAttribute('href', '#i-' + name); s.appendChild(u); return s;
+  }
+  function btn(label, cls, onClick) { var b = attrs(el('button', 'btn btn-sm' + (cls ? ' ' + cls : ''), label), { type: 'button' }); b.addEventListener('click', onClick); return b; }
+  function line(label, value) { var p = el('p', 'kv'); add(p, el('span', 'k', label + ' '), el('span', 'v', value)); return p; }
+  // "about 450 m" / "about 8 min"; demo values are marked as samples so they never read as operational advice.
+  function walkVals(distM, timeMin, demo) {
+    var out = [];
+    if (distM != null) out.push(line('Walking distance', 'about ' + distM + ' m' + (demo ? ' (sample)' : '')));
+    if (timeMin != null) out.push(line('Walking time', 'about ' + timeMin + ' min' + (demo ? ' (sample)' : '')));
+    return out;
   }
 
   /* ---------- maps ---------- */
@@ -118,7 +110,8 @@
     m.layer.clearLayers();
   }
   function divIcon(cls, letter) {
-    return L.divIcon({ className: '', html: '<div class="mk ' + cls + '">' + letter + '</div>', iconSize: [28, 28], iconAnchor: [14, 14] });
+    // Plain coloured dot; the marker title/tooltip carries the name (no text letters on markers).
+    return L.divIcon({ className: '', html: '<div class="mk ' + cls + '"></div>', iconSize: [18, 18], iconAnchor: [9, 9] });
   }
   function addMarker(mapId, lat, lon, cls, letter, title) {
     var m = ensureMap(mapId); if (!m || !P.validCoords(lat, lon)) return null;
@@ -193,32 +186,22 @@
 
   /* ---------- banners / freshness ---------- */
   function renderBanners() {
-    var box = clear($('#status-banners'));
-    var d = S.data, L0 = S.load;
-    if (L0.status === 'loading') {
-      box.appendChild(el('div', 'banner', 'Loading data\u2026'));
-      return;
-    }
+    var box = clear($('#status-banners')), d = S.data, L0 = S.load;
+    function retry(label) { var b = attrs(el('button', 'btn btn-sm', label), { type: 'button' }); b.addEventListener('click', function () { refresh('manual'); }); return b; }
+    if (L0.status === 'loading') { box.appendChild(el('div', 'banner', 'Loading data\u2026')); return; }
     if (L0.status === 'unavailable') {
       var b = el('div', 'banner banner-err');
-      add(b, el('strong', '', 'Data unavailable. '), document.createTextNode(L0.detail || 'Could not load the guide data.'));
-      var retry = attrs(el('button', 'btn btn-sm', 'Retry'), { type: 'button' });
-      retry.addEventListener('click', function () { refresh('manual'); });
-      b.appendChild(retry);
-      box.appendChild(b);
-      return;
+      add(b, el('span', '', 'Data unavailable. ' + (L0.detail || 'Could not load the guide data.')), retry('Retry'));
+      box.appendChild(b); return;
     }
     if (d && d.meta && (d.meta.isDemoDataset || d.meta.containsDemoRecords)) {
       var db = el('div', 'banner banner-demo');
-      add(db, el('strong', '', 'Demo / reference data. '), document.createTextNode('Pandal locations are pending 2026 field verification. DEMO parking and traffic cards are samples — not actual 2026 Police orders.'));
+      add(db, el('strong', '', 'Demo build. '), document.createTextNode('Pandal locations are pending 2026 field verification. DEMO items are samples, not actual 2026 orders.'));
       box.appendChild(db);
     }
     if (L0.source === 'cache' || L0.stale) {
       var ob = el('div', 'banner banner-warn');
-      add(ob, el('strong', '', 'Data may be outdated. '), document.createTextNode('Showing the last copy saved on this device. '));
-      var r2 = attrs(el('button', 'btn btn-sm', 'Refresh'), { type: 'button' });
-      r2.addEventListener('click', function () { refresh('manual'); });
-      ob.appendChild(r2);
+      add(ob, el('span', '', 'Data may be outdated.'), retry('Refresh'));
       box.appendChild(ob);
     }
   }
@@ -240,7 +223,6 @@
     add(li, el('p', 'pc-loc', p.locality || 'Other areas'));
     var row = el('p', 'badge-row');
     row.appendChild(statusBadge(p));
-    if (!p.demo && p.verificationStatus === 'pendingVerification') row.appendChild(el('span', 'sr-only', 'Location pending 2026 field verification'));
     li.appendChild(row);
     var acts = el('div', 'pc-actions');
     if (opts.showView !== false) {
@@ -285,7 +267,7 @@
     sum.textContent = nhoods.length + ' neighbourhoods · ' + S.data.pandals.length + ' pandals';
     nhoods.forEach(function (n) {
       var a = attrs(el('a', 'nhood-item'), { href: '#/n/' + encodeURIComponent(n.id) });
-      add(a, el('div', 'nh-name', n.name), el('div', 'nh-count', n.count + (n.count === 1 ? ' pandal' : ' pandals')));
+      add(a, el('span', 'nh-name', n.name), el('span', 'nh-count', n.count + (n.count === 1 ? ' pandal' : ' pandals')), svgIcon('chev'));
       var li = el('li'); li.appendChild(a); nhoodList.appendChild(li);
     });
   }
@@ -301,7 +283,7 @@
     var pandals = n.pandalIds.map(function (id) { return byId(S.data.pandals, id); }).filter(Boolean);
     pandals.forEach(function (p) {
       list.appendChild(pandalCard(p));
-      if (p.hasCoords) addMarker('map-nhood', p.lat, p.lon, 'mk-pandal', 'P', p.name);
+      if (p.hasCoords) addMarker('map-nhood', p.lat, p.lon, 'mk-pandal', '', p.name);
     });
     fitLayer('map-nhood');
   }
@@ -312,123 +294,82 @@
     $('#pandal-title').textContent = p ? p.name : 'Pandal';
     $('#pandal-locality').textContent = p ? (p.locality || '') : '';
     var st = clear($('#pandal-status'));
-    if (p) {
-      st.appendChild(statusBadge(p));
-      if (!p.demo && (p.verificationStatus === 'pendingVerification' || p.verificationStatus === 'reference')) {
-        st.appendChild(el('span', 'meta small', ' · Location pending 2026 field verification'));
-      }
-    }
+    if (p) st.appendChild(statusBadge(p));
     var back = $('#pandal-back');
-    if (p && p.locality) {
-      back.setAttribute('href', '#/n/' + encodeURIComponent(P.slug(p.locality)));
-      back.textContent = '\u2190 ' + p.locality;
-    } else {
-      back.setAttribute('href', '#/pandals');
-      back.textContent = '\u2190 Pandals';
-    }
+    back.setAttribute('href', p && p.locality ? '#/n/' + encodeURIComponent(P.slug(p.locality)) : '#/pandals');
+    back.textContent = '\u2190 ' + (p && p.locality ? p.locality : 'Pandals');
 
     clearMap('map-pandal');
-    var acts = clear($('#pandal-actions'));
+    var acts = clear($('#pandal-actions')), mapBox = $('#map-pandal');
+    mapBox.hidden = !(p && p.hasCoords);
     if (p && p.hasCoords) {
-      addMarker('map-pandal', p.lat, p.lon, 'mk-pandal', 'P', p.name);
-      fitLayer('map-pandal', 0.4);
-      var dir = attrs(el('button', 'btn btn-primary', 'Directions'), { type: 'button' });
-      dir.addEventListener('click', function () { openNav(p, p.name); });
-      acts.appendChild(dir);
-    } else if (p) {
-      acts.appendChild(el('p', 'meta', 'Map location pending 2026 field verification.'));
+      acts.appendChild(btn('Directions', 'btn-primary', function () { openNav(p, p.name); }));
+      addMarker('map-pandal', p.lat, p.lon, 'mk-pandal', '', p.name);
     }
 
-    // Get there
+    // GET THERE: parking point(s) serving this pandal + the walk to it
     var parkBox = clear($('#pandal-parking'));
     if (p && S.data) {
       var parks = P.parkingForPandal(S.data.parking, p.id);
-      if (!parks.length) {
-        parkBox.appendChild(el('p', 'empty', 'Parking and walking routes pending 2026 field verification.'));
-      } else {
-        parks.forEach(function (k) {
-          var card = el('div', 'info-card');
-          add(card, el('h3', '', k.name));
-          card.appendChild(statusBadge(k));
-          if (k.demo) card.appendChild(el('p', 'meta', 'Sample scenario — not real parking.'));
-          var walk = P.walkFor(k, p.id, S.data.walkingRoutes);
-          if (walk.distanceM != null) card.appendChild(el('p', '', 'Walking distance: about ' + walk.distanceM + ' m'));
-          if (walk.timeMin != null) card.appendChild(el('p', '', 'Walking time: about ' + walk.timeMin + ' min'));
-          if (walk.steps && walk.steps.length) {
-            var ul = el('ul'); walk.steps.forEach(function (s) { ul.appendChild(el('li', '', s)); });
-            card.appendChild(ul);
-          }
-          if (k.limitations) card.appendChild(el('p', 'meta', k.limitations));
-          if (k.hasCoords) {
-            var d2 = attrs(el('button', 'btn btn-sm btn-primary', 'Directions to parking'), { type: 'button' });
-            d2.addEventListener('click', function () { openNav(k, k.name); });
-            card.appendChild(d2);
-            addMarker('map-pandal', k.lat, k.lon, 'mk-park', 'P', k.name);
-          }
-          parkBox.appendChild(card);
-        });
-        fitLayer('map-pandal');
-      }
+      if (!parks.length) parkBox.appendChild(el('p', 'empty', 'Parking information is being verified for 2026.'));
+      parks.forEach(function (k) {
+        var card = el('div', 'info-card' + (k.demo ? ' is-demo' : '')), w = P.walkFor(k, p.id, S.data.walkingRoutes);
+        add(card, statusBadge(k), el('h3', '', k.name));
+        walkVals(w.distanceM, w.timeMin, w.demo).forEach(function (n) { card.appendChild(n); });
+        var row = el('div', 'pc-actions');
+        row.appendChild(attrs(el('a', 'btn btn-sm', 'View parking & walking route'), { href: '#/parking' }));
+        card.appendChild(row);
+        if (k.hasCoords) addMarker('map-pandal', k.lat, k.lon, 'mk-park', '', k.name);
+        if (w.geometry && maps['map-pandal']) maps['map-pandal'].layer.addLayer(L.polyline(w.geometry, { color: '#2f5a43', weight: 3, dashArray: '4 6' }));
+        parkBox.appendChild(card);
+      });
     }
+    if (p && p.hasCoords) fitLayer('map-pandal', 0.4);
 
-    // Traffic (visitor feed only; only show if related or say none)
+    // TRAFFIC: only active/upcoming visitor records associated with this pandal
     var tBox = clear($('#pandal-traffic'));
     if (p && S.data) {
       var feed = P.trafficFeed(S.data.traffic, refMs());
-      var related = [].concat(feed.active, feed.upcoming).filter(function (x) {
-        return (x.r.relatedPandalIds || []).indexOf(p.id) >= 0;
-      });
-      if (!related.length) {
-        tBox.appendChild(el('p', 'empty', 'No published restriction for this area.'));
-      } else {
-        related.forEach(function (x) { tBox.appendChild(trafficCard(x)); });
-      }
+      var related = feed.active.concat(feed.upcoming).filter(function (x) { return (x.r.relatedPandalIds || []).indexOf(p.id) >= 0; });
+      if (!related.length) tBox.appendChild(el('p', 'empty', 'No published traffic restriction is currently associated with this pandal.'));
+      related.forEach(function (x) { tBox.appendChild(trafficCard(x, true)); });
     }
 
-    // Nearby help
-    var hBox = clear($('#pandal-help'));
-    if (S.data) {
-      var pabs = S.data.facilities.filter(function (f) { return f.type === 'police-booth'; });
-      if (!pabs.length) {
-        hBox.appendChild(el('p', 'empty', 'Police Assistance Booth locations pending 2026 field verification.'));
-      } else {
-        pabs.slice(0, 2).forEach(function (f) {
-          var c = el('div', 'info-card');
-          add(c, el('h3', '', f.name));
-          c.appendChild(statusBadge(f));
-          if (f.demo) c.appendChild(el('p', 'meta', 'DEMO sample location.'));
-          if (f.hasCoords) {
-            var b = attrs(el('button', 'btn btn-sm', 'Directions'), { type: 'button' });
-            b.addEventListener('click', function () { openNav(f, f.name); });
-            c.appendChild(b);
-          }
-          hBox.appendChild(c);
-        });
-      }
+    // NEARBY HELP: only booths / hospitals within 2 km of this pandal
+    var hBox = clear($('#pandal-help')), near = [];
+    if (p && p.hasCoords && S.data) {
+      near = S.data.facilities.filter(function (f) { return f.hasCoords && P.distanceKm(p.lat, p.lon, f.lat, f.lon) <= 2; })
+        .sort(function (a, b) { return P.distanceKm(p.lat, p.lon, a.lat, a.lon) - P.distanceKm(p.lat, p.lon, b.lat, b.lon); }).slice(0, 2);
+      near.forEach(function (f) {
+        var c = el('div', 'info-card' + (f.demo ? ' is-demo' : ''));
+        add(c, statusBadge(f), el('h3', '', f.name), el('p', 'meta', (f.type === 'hospital' ? 'Hospital' : 'Police Assistance Booth') + ' \u00B7 about ' + P.distanceKm(p.lat, p.lon, f.lat, f.lon).toFixed(1) + ' km'));
+        c.appendChild(btn('Directions', '', function () { openNav(f, f.name); }));
+        hBox.appendChild(c);
+      });
     }
+    $('#pandal-help-h').hidden = !near.length;
+    hBox.hidden = !near.length;
   }
 
-  function trafficCard(item) {
-    var r = item.r, ev = item.ev;
-    var card = el('li', 'info-card');
+  // Strip the sample disclaimer embedded in demo visitorAction text; the card shows its own compact demo line.
+  function actionText(r) { var t = r.visitorAction || ''; return r.demo ? t.replace(/\s*Sample scenario[^.]*\.?\s*$/i, '') : t; }
+  function trafficWhen(r) {
+    var w = P.windowsOf(r); if (!w || !w.length) return { date: '', time: '' };
+    if (r.dailyStart !== undefined) return { date: P.fmtDayRange(w[0].start, w[w.length - 1].start), time: P.fmtTimeRange(w[0].start, w[0].end) + ' daily' };
+    return { date: P.fmtDayRange(w[0].start, w[0].end), time: P.fmtTimeRange(w[0].start, w[0].end) };
+  }
+  function trafficCard(item, noMap) {
+    var r = item.r, card = el('li', 'info-card' + (r.demo ? ' is-demo' : '')), when = trafficWhen(r);
     card.dataset.id = r.id;
-    var place = r.place || r.affectedRoad || r.name;
-    add(card, el('h3', '', place));
-    card.appendChild(statusBadge(r));
-    var typeLabel = P.RTYPE_LABEL[r.restrictionType] || r.restrictionType || 'Restriction';
-    card.appendChild(el('p', '', typeLabel));
-    var when = P.describeTrafficTime(r, ev);
-    if (when) card.appendChild(el('p', 'meta', when));
-    if (r.visitorAction) card.appendChild(el('p', '', r.visitorAction));
-    if (r.demo) card.appendChild(el('p', 'meta', 'Sample scenario — not an actual 2026 traffic order.'));
-    if (r.mapGeometry || r.hasCoords) {
-      var btn = attrs(el('button', 'btn btn-sm', 'View map'), { type: 'button' });
-      btn.addEventListener('click', function () { showTrafficOnMap(r); });
-      card.appendChild(btn);
-    }
+    if (r.demo) card.appendChild(statusBadge(r));
+    add(card, el('h3', '', r.place || r.affectedRoad || r.name), el('p', 'rtype', P.RTYPE_LABEL[r.restrictionType] || 'Restriction'));
+    if (when.date) card.appendChild(line('Date', when.date));
+    if (when.time) card.appendChild(line('Time', when.time));
+    if (actionText(r)) card.appendChild(line('What to do:', actionText(r)));
+    if (r.demo) card.appendChild(el('p', 'meta', 'Sample 2026 scenario \u2014 not an actual traffic order.'));
+    if (!noMap && (r.mapGeometry || r.hasCoords)) card.appendChild(btn('View map', '', function () { showTrafficOnMap(r); }));
     return card;
   }
-
   function showTrafficOnMap(r) {
     var box = $('#map-traffic');
     box.hidden = false;
@@ -436,14 +377,14 @@
     ensureMap('map-traffic');
     if (r.mapGeometry && r.mapGeometry.type === 'Point') {
       var c = r.mapGeometry.coordinates;
-      addMarker('map-traffic', c[1], c[0], 'mk-traf', 'T', r.place || r.name);
+      addMarker('map-traffic', c[1], c[0], 'mk-traf', '', r.place || r.name);
     } else if (r.mapGeometry && r.mapGeometry.type === 'LineString') {
       var latlngs = r.mapGeometry.coordinates.map(function (c) { return [c[1], c[0]]; });
       var m = maps['map-traffic'];
       var line = L.polyline(latlngs, { color: '#8c1c2c', weight: 4 });
       m.layer.addLayer(line);
     } else if (r.hasCoords) {
-      addMarker('map-traffic', r.lat, r.lon, 'mk-traf', 'T', r.place || r.name);
+      addMarker('map-traffic', r.lat, r.lon, 'mk-traf', '', r.place || r.name);
     }
     fitLayer('map-traffic');
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -461,42 +402,40 @@
   }
 
   function renderParkingPanel() {
-    var list = clear($('#parking-list'));
-    var empty = $('#parking-empty');
+    var list = clear($('#parking-list')), empty = $('#parking-empty'), parks = S.data ? S.data.parking : [];
+    // Honest empty/notice state: shown whenever no parking point has been checked for 2026.
+    empty.hidden = parks.some(function (k) { return !k.demo && P.isCheckedLocation(k.verificationStatus); });
     clearMap('map-parking');
-    if (!S.data || !S.data.parking.length) {
-      empty.hidden = false;
-      return;
-    }
-    empty.hidden = true;
-    S.data.parking.forEach(function (k) {
-      var card = el('li', 'info-card');
+    $('#map-parking').hidden = !parks.length;
+    parks.forEach(function (k) {
+      var card = el('li', 'info-card' + (k.demo ? ' is-demo' : ''));
       card.dataset.id = k.id;
-      add(card, el('h3', '', k.name));
-      card.appendChild(statusBadge(k));
-      if (k.demo) card.appendChild(el('p', 'meta', 'Sample scenario — not real parking.'));
-      var served = (k.servedPandalIds || []).map(function (id) {
-        var p = byId(S.data.pandals, id); return p ? p.name : id;
-      });
-      if (served.length) card.appendChild(el('p', '', 'Serves: ' + served.join(', ')));
-      if (k.walkingDistance != null) card.appendChild(el('p', '', 'Walking distance: about ' + k.walkingDistance + ' m'));
-      if (k.walkingTime != null) card.appendChild(el('p', '', 'Walking time: about ' + k.walkingTime + ' min'));
-      if (k.walkingRoute && k.walkingRoute.length) {
-        var ul = el('ul'); k.walkingRoute.forEach(function (s) { ul.appendChild(el('li', '', s)); });
-        card.appendChild(ul);
-      }
-      if (k.limitations) card.appendChild(el('p', 'meta', k.limitations));
-      if (k.hasCoords) {
-        addMarker('map-parking', k.lat, k.lon, 'mk-park', 'P', k.name);
-        var d = attrs(el('button', 'btn btn-sm btn-primary', 'Directions'), { type: 'button' });
-        d.addEventListener('click', function () { openNav(k, k.name); });
-        card.appendChild(d);
-      }
+      add(card, statusBadge(k), el('h3', '', k.name));
+      var served = (k.servedPandalIds || []).map(function (id) { var p = byId(S.data.pandals, id); return p ? p.name : ''; }).filter(Boolean);
+      if (served.length) card.appendChild(line('Serves', served.join(', ')));
+      walkVals(k.walkingDistance, k.walkingTime, k.demo).forEach(function (n) { card.appendChild(n); });
+      var row = el('div', 'pc-actions');
+      if (k.hasCoords) row.appendChild(btn('Directions', 'btn-primary', function () { openNav(k, k.name); }));
+      row.appendChild(btn('Walking route', '', function () { showParkingRoute(k); }));
+      card.appendChild(row);
       list.appendChild(card);
     });
-    fitLayer('map-parking');
+    if (parks.length) showParkingRoute(parks[0], true);
   }
-
+  // Parking map: the selected point + the pandals it serves (+ a route line only when a checked geometry exists).
+  function showParkingRoute(k, quiet) {
+    clearMap('map-parking');
+    if (k.hasCoords) addMarker('map-parking', k.lat, k.lon, 'mk-park', '', k.name);
+    (k.servedPandalIds || []).forEach(function (id) {
+      var p = byId(S.data.pandals, id); if (!p || !p.hasCoords) return;
+      addMarker('map-parking', p.lat, p.lon, 'mk-pandal', '', p.name);
+      var w = P.walkFor(k, id, S.data.walkingRoutes);
+      if (w.geometry) maps['map-parking'].layer.addLayer(L.polyline(w.geometry, { color: '#2f5a43', weight: 3, dashArray: '4 6' }));
+    });
+    fitLayer('map-parking');
+    $$('#parking-list .info-card').forEach(function (c) { c.classList.toggle('is-sel', c.dataset.id === k.id); });
+    if (!quiet) $('#map-parking').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
   function syncTimeInputs() {
     var t = refMs();
     var parts = P.istParts(t);
@@ -513,15 +452,13 @@
   function renderTrafficPanel() {
     syncTimeInputs();
     S.checkAt = readCheckAt();
-    var active = clear($('#traffic-active'));
-    var upcoming = clear($('#traffic-upcoming'));
-    var ae = $('#traffic-active-empty'), ue = $('#traffic-upcoming-empty');
-    if (!S.data) { ae.hidden = false; ue.hidden = false; return; }
-    var feed = P.trafficFeed(S.data.traffic, S.checkAt);
-    ae.hidden = feed.active.length > 0;
-    ue.hidden = feed.upcoming.length > 0;
+    var active = clear($('#traffic-active')), upcoming = clear($('#traffic-upcoming'));
+    var feed = S.data ? P.trafficFeed(S.data.traffic, S.checkAt) : { active: [], upcoming: [] };
+    $('#traffic-active-empty').hidden = feed.active.length > 0;
+    $('#traffic-upcoming-wrap').hidden = feed.upcoming.length === 0;   // empty Upcoming is hidden entirely
     feed.active.forEach(function (x) { active.appendChild(trafficCard(x)); });
     feed.upcoming.forEach(function (x) { upcoming.appendChild(trafficCard(x)); });
+    $('#map-traffic').hidden = true;
   }
 
   /* ---------- FACILITIES ---------- */
@@ -540,11 +477,11 @@
     items.forEach(function (f) {
       var card = el('li', 'info-card');
       add(card, el('h3', '', f.name));
-      card.appendChild(statusBadge(f));
-      if (f.demo) card.appendChild(el('p', 'meta', 'DEMO sample location — not a verified 2026 booth/hospital listing.'));
+      card.className += f.demo ? ' is-demo' : '';
+      card.insertBefore(statusBadge(f), card.firstChild);
       if (f.landmark) card.appendChild(el('p', 'meta', f.landmark));
       if (f.hasCoords) {
-        addMarker('map-facilities', f.lat, f.lon, 'mk-fac', type === 'hospital' ? 'H' : 'Pb', f.name);
+        addMarker('map-facilities', f.lat, f.lon, 'mk-fac', '', f.name);
         var d = attrs(el('button', 'btn btn-sm btn-primary', 'Directions'), { type: 'button' });
         d.addEventListener('click', function () { openNav(f, f.name); });
         card.appendChild(d);

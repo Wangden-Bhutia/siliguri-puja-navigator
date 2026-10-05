@@ -24,6 +24,16 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-park" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="M10 17V7h3a3 3 0 0 1 0 6h-3"/></symbol>
+  <symbol id="i-traffic" viewBox="0 0 24 24"><rect x="8" y="2.5" width="8" height="19" rx="3"/><circle cx="12" cy="7" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="17" r="1.4"/></symbol>
+  <symbol id="i-sos" viewBox="0 0 24 24"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5"/><path d="M12 17.5v.01"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+</svg>
 
 <header class="mast" id="mast">
   <div class="wrap mast-inner">
@@ -32,12 +42,12 @@
       <span class="brand-tag" id="brand-tag">Find pandals. Plan your route. Travel safely.</span>
     </a>
     <button type="button" class="theme-btn" id="theme-btn" aria-pressed="false" title="Night mode">
-      <span aria-hidden="true">&#9790;</span><span class="theme-lbl">Night mode</span>
+      <svg class="ic ic-moon" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg><svg class="ic ic-sun" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg><span class="theme-lbl">Night mode</span>
     </button>
   </div>
   <div class="wrap mast-meta">
-    <p class="descriptor" id="brand-descriptor">Official Durga Puja Traffic &amp; Visitor Information</p>
-    <p class="dates" id="brand-dates"><span aria-hidden="true">&#128197;</span> 16 – 21 October 2026</p>
+    <p class="descriptor" id="brand-descriptor">Durga Puja Visitor Information · Siliguri</p>
+    <p class="dates" id="brand-dates">16 – 21 October 2026</p>
   </div>
   <div class="wrap idstrip" id="idstrip" hidden>
     <div class="idstrip-logos" id="idstrip-logos"></div>
@@ -53,16 +63,16 @@
     <h1 class="sr-only">Home</h1>
     <div class="bigactions">
       <a class="bigbtn bigbtn-primary" href="#/pandals" data-go="pandals">
-        <span class="bi" aria-hidden="true">&#128205;</span>
+        <svg class="ic bi" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg>
         <span class="bt">Find a Pandal</span>
       </a>
       <div class="bigrow">
         <a class="bigbtn" href="#/parking" data-go="parking">
-          <span class="bi" aria-hidden="true">P</span>
+          <svg class="ic bi" aria-hidden="true" focusable="false"><use href="#i-park"/></svg>
           <span class="bt">Parking &amp; Walking</span>
         </a>
         <a class="bigbtn" href="#/parking/traffic" data-go="traffic">
-          <span class="bi" aria-hidden="true">&#128678;</span>
+          <svg class="ic bi" aria-hidden="true" focusable="false"><use href="#i-traffic"/></svg>
           <span class="bt">Traffic</span>
         </a>
       </div>
@@ -106,14 +116,13 @@
       <p class="lede" id="pandal-locality"></p>
       <p class="badge-row" id="pandal-status"></p>
     </header>
-    <h2 class="sec">Where is it?</h2>
-    <div class="mapbox" id="map-pandal" role="img" aria-label="Map of this pandal"></div>
     <div class="actions" id="pandal-actions"></div>
+    <div class="mapbox mapbox-sm" id="map-pandal" role="img" aria-label="Map of this pandal and its parking"></div>
     <h2 class="sec">Get there</h2>
     <div id="pandal-parking"></div>
     <h2 class="sec">Traffic</h2>
     <div id="pandal-traffic"></div>
-    <h2 class="sec">Nearby help</h2>
+    <h2 class="sec" id="pandal-help-h">Nearby help</h2>
     <div id="pandal-help"></div>
   </section>
 
@@ -128,9 +137,9 @@
     </header>
     <div id="panel-parking" role="tabpanel" aria-labelledby="sub-parking">
       <p class="lede">Where do I leave my vehicle?</p>
+      <p class="empty note" id="parking-empty" hidden>Parking information is being verified for 2026.</p>
       <div class="mapbox" id="map-parking" role="img" aria-label="Map of parking and drop points"></div>
       <ul class="card-list" id="parking-list"></ul>
-      <p class="empty" id="parking-empty" hidden>Parking and walking routes will be published after 2026 field verification.</p>
     </div>
     <div id="panel-traffic" role="tabpanel" aria-labelledby="sub-traffic" hidden>
       <p class="lede">Check before you travel.</p>
@@ -141,10 +150,11 @@
       </div>
       <h2 class="sec">Active now</h2>
       <ul class="card-list" id="traffic-active"></ul>
-      <p class="empty" id="traffic-active-empty" hidden>No active restrictions for this time.</p>
-      <h2 class="sec">Upcoming</h2>
-      <ul class="card-list" id="traffic-upcoming"></ul>
-      <p class="empty" id="traffic-upcoming-empty" hidden>No upcoming restrictions for this time.</p>
+      <div class="clear-note" id="traffic-active-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No active traffic restrictions</p><p class="muted small">No published restrictions are active for the selected time.</p></div>
+      <div id="traffic-upcoming-wrap" hidden>
+        <h2 class="sec">Upcoming</h2>
+        <ul class="card-list" id="traffic-upcoming"></ul>
+      </div>
       <div class="mapbox" id="map-traffic" role="img" aria-label="Map of selected traffic restriction" hidden></div>
     </div>
   </section>
@@ -179,13 +189,13 @@
 <footer class="foot"><div class="wrap"><p id="foot-line">Siliguri Puja Guide · Durga Puja 2026 · Demo version</p></div></footer>
 
 <nav class="tabbar" id="tabbar" aria-label="Sections" hidden>
-  <a href="#/" data-tab="home"><span class="ti" aria-hidden="true">&#8962;</span><span>Home</span></a>
-  <a href="#/pandals" data-tab="pandals"><span class="ti" aria-hidden="true">&#128205;</span><span>Pandals</span></a>
-  <a href="#/parking" data-tab="parking"><span class="ti" aria-hidden="true">P</span><span>Parking &amp; Traffic</span></a>
+  <a href="#/" data-tab="home"><svg class="ic ti" aria-hidden="true" focusable="false"><use href="#i-home"/></svg><span>Home</span></a>
+  <a href="#/pandals" data-tab="pandals"><svg class="ic ti" aria-hidden="true" focusable="false"><use href="#i-pin"/></svg><span>Pandals</span></a>
+  <a href="#/parking" data-tab="parking"><svg class="ic ti" aria-hidden="true" focusable="false"><use href="#i-park"/></svg><span>Parking &amp; Traffic</span></a>
 </nav>
 
 <button type="button" class="sos-fab" id="sos-fab" aria-haspopup="dialog" aria-controls="sos-sheet" aria-expanded="false" title="Need help?" hidden>
-  <span aria-hidden="true">&#128680;</span><span class="sr-only">Need help? Emergency and police assistance</span>
+  <svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sos"/></svg><span class="sr-only">Need help? Emergency and police assistance</span>
 </button>
 
 <dialog class="sheet" id="sos-sheet" aria-labelledby="sos-title">

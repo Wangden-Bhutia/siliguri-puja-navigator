@@ -51,7 +51,14 @@ with sync_playwright() as p:
     ok('home freshness shows Updated', 'Updated' in pg.inner_text('#home-fresh') or 'outdated' in pg.inner_text('#home-fresh'), pg.inner_text('#home-fresh'))
     ok('home single warn card', pg.locator('#view-home .warn-card').count()==1)
     ok('demo/pending banner shown', 'pending 2026 field verification' in pg.inner_text('#status-banners').lower())
-    ok('identity strip with 2 logos', pg.is_visible('#idstrip') and pg.locator('#idstrip-logos img').count()==2)
+    ok('identity strip hidden while branding not approved', pg.is_hidden('#idstrip') and pg.locator('#idstrip-logos img').count()==0)
+    ok('neutral descriptor, no "Official" claim while unapproved', pg.text_content('#brand-descriptor')=='Durga Puja Visitor Information · Siliguri' and 'official' not in pg.inner_text('body').lower())
+    ok('home: title, tagline, dates', pg.inner_text('#brand-name')=='Siliguri Puja Guide' and pg.inner_text('#brand-tag')=='Find pandals. Plan your route. Travel safely.' and '16 – 21 October 2026' in pg.inner_text('#brand-dates'))
+    ok('home: 3 actions only, primary Find a Pandal', pg.locator('#view-home a.bigbtn').count()==3 and 'Find a Pandal' in pg.inner_text('#view-home a.bigbtn-primary'))
+    ok('home: no stats/counts', not __import__('re').search(r'\b\d+ (pandals|neighbourhoods)\b', pg.inner_text('#view-home')))
+    ok('icons are monochrome SVG (no "P"/emoji text icons)', pg.locator('#tabbar svg.ic').count()==3 and pg.locator('#view-home .bigbtn svg.ic').count()==3 and pg.locator('#sos-fab svg.ic').count()==1 and not pg.evaluate("[...document.querySelectorAll('.bi,.ti')].some(e=>e.tagName!=='svg')"))
+    ok('icons use currentColor stroke', pg.evaluate("getComputedStyle(document.querySelector('#tabbar svg.ic')).stroke")==pg.evaluate("getComputedStyle(document.querySelector('#tabbar a')).color"))
+    ok('theme button icon-only on small screens with accessible name', pg.is_hidden('#theme-btn .theme-lbl') and pg.get_attribute('#theme-btn','aria-label')=='Night mode' and pg.get_attribute('#theme-btn','aria-pressed') in ('true','false'))
     ok('footer says Demo version', 'Demo version' in pg.inner_text('#foot-line'))
     pg.screenshot(path=SHOTS+'home-390.png',full_page=False)
 
@@ -78,8 +85,12 @@ with sync_playwright() as p:
     pg.click('#view-home a[data-go="parking"]'); pg.wait_for_timeout(500)
     ok('J2 Home→Parking: parking panel', visible_view(pg)=='parking' and pg.is_visible('#panel-parking') and pg.is_hidden('#panel-traffic'))
     pk=pg.inner_text('#parking-list')
-    ok('parking cards clearly DEMO', pk.count('DEMO')>=2 and 'Sample scenario' in pk, pk[:200])
-    ok('parking shows served pandals + walk', 'Serves:' in pk and 'Walking distance' in pk and 'Walking time' in pk)
+    ok('parking lead question', 'Where do I leave my vehicle?' in pg.inner_text('#panel-parking'))
+    ok('parking cards clearly DEMO — NOT VERIFIED', pg.locator('#parking-list .badge-demo').count()==2 and pk.count('DEMO — NOT VERIFIED')==2, pk[:200])
+    ok('parking demo values marked sample', 'about 450 m (sample)' in pk and 'about 8 min (sample)' in pk)
+    ok('parking card: serves + walk + Directions + Walking route', 'Serves' in pk and 'Walking distance' in pk and 'Walking time' in pk and pg.locator('#parking-list button:has-text("Directions")').count()==2 and pg.locator('#parking-list button:has-text("Walking route")').count()==2)
+    ok('parking card hides limitations/source/ids/route text', 'Capacity' not in pk and 'source' not in pk.lower() and 'demo-park' not in pk and 'Sample walk' not in pk)
+    ok('parking verified-note shown (no verified parking)', pg.is_visible('#parking-empty') and 'Parking information is being verified for 2026.' in pg.inner_text('#parking-empty'))
     ok('parking tab current', pg.get_attribute('#tabbar a[data-tab="parking"]','aria-current')=='page')
 
     # J3 Home -> Traffic
@@ -93,13 +104,20 @@ with sync_playwright() as p:
     pg.fill('#t-date','2026-10-17'); pg.dispatch_event('#t-date','change')
     pg.fill('#t-time','19:30'); pg.dispatch_event('#t-time','change'); pg.wait_for_timeout(250)
     act=pg.inner_text('#traffic-active')
-    ok('J8 active DEMO Sevoke More card', 'Sevoke More' in act and 'Vehicle restriction' in act and 'DEMO' in act and 'Sample scenario' in act, act)
+    ok('J8 active DEMO Sevoke More card', 'Sevoke More' in act and 'Vehicle restriction' in act and 'DEMO — NOT VERIFIED' in act and 'Sample 2026 scenario — not an actual traffic order.' in act, act)
+    ok('traffic card fields: Date, Time, What to do', 'Date' in act and '16–21 Oct' in act and 'Time' in act and 'What to do:' in act and act.count('Sample')==1, act)
+    ok('traffic: empty Upcoming section hidden', pg.is_hidden('#traffic-upcoming-wrap'))
     ok('traffic card hides authority/order/source', 'source' not in act.lower() and 'order no' not in act.lower() and 'authority' not in act.lower())
     ok('active card shows time range', 'PM' in act and 'AM' in act, act)
     pg.click('#traffic-active button:has-text("View map")'); pg.wait_for_timeout(500)
     ok('View map reveals traffic map', pg.is_visible('#map-traffic') and pg.locator('#map-traffic .mk-traf').count()==1)
     pg.fill('#t-date','2026-10-25'); pg.dispatch_event('#t-date','change'); pg.wait_for_timeout(200)
     ok('after festival: no active, no upcoming (expired hidden)', pg.locator('#traffic-active li').count()==0 and pg.locator('#traffic-upcoming li').count()==0 and pg.is_visible('#traffic-active-empty'))
+    ok('empty traffic copy', '✓ No active traffic restrictions' in pg.inner_text('#traffic-active-empty') and 'No published restrictions are active for the selected time.' in pg.inner_text('#traffic-active-empty'))
+    ok('empty Upcoming hidden entirely after festival', pg.is_hidden('#traffic-upcoming-wrap'))
+    pg.fill('#t-date','2026-10-10'); pg.dispatch_event('#t-date','change'); pg.wait_for_timeout(200)
+    ok('before festival: DEMO shows under Upcoming, Upcoming visible', pg.is_visible('#traffic-upcoming-wrap') and pg.locator('#traffic-upcoming li').count()==1 and pg.locator('#traffic-active li').count()==0)
+    ok('expired 2025 records never in visitor feed', all(x not in pg.inner_text('#panel-traffic') for x in ['Airview','Naukaghat','Jhankar','Matigara','2025']))
 
     # J4 Pandals -> Neighbourhood -> Pandal
     go(pg,'pandals')
@@ -111,15 +129,17 @@ with sync_playwright() as p:
     pg.click('#nhood-pandal-list .pandal-card:has-text("Dada Bhai") a:has-text("View")'); pg.wait_for_timeout(600)
     ok('J4b pandal detail', visible_view(pg)=='pandal' and 'Dada Bhai' in pg.inner_text('#pandal-title'))
     det=pg.inner_text('#view-pandal')
-    ok('pandal detail: pending verification note', 'Location pending 2026 field verification' in det)
-    ok('pandal detail sections Where/Get there/Traffic/help', all(s in det for s in ['Where is it?','Get there','Traffic','Nearby help']))
+    ok('pandal detail: status badge pending (never verified)', 'Pending 2026 verification' in pg.inner_text('#pandal-status') and 'Verified' not in det)
+    ok('pandal detail order: name, locality, badge, Directions before map', pg.evaluate("(()=>{const a=document.querySelector('#pandal-actions'),m=document.querySelector('#map-pandal');return !!(a.compareDocumentPosition(m)&Node.DOCUMENT_POSITION_FOLLOWING)})()") and pg.locator('#pandal-actions button:has-text("Directions")').count()==1)
+    ok('pandal detail sections Get there/Traffic', 'Get there' in det and 'Traffic' in det)
+    ok('pandal detail: small contextual map (pandal + its parking only)', pg.locator('#map-pandal .mk-pandal').count()==1 and pg.locator('#map-pandal .mk-park').count()==1 and pg.locator('#map-pandal').bounding_box()['height']<=170)
     ok('pandal detail no source/coords', 'Pujo Songi' not in det and '26.71' not in det)
-    ok('pandal map has marker', pg.locator('#map-pandal .mk-pandal').count()==1)
+    ok('pandal detail: View parking & walking route link', pg.locator('#pandal-parking a[href="#/parking"]:has-text("View parking & walking route")').count()==1)
     # J6 Pandal -> Parking
     pkd=pg.inner_text('#pandal-parking')
-    ok('J6 Pandal→Parking: DEMO drop + walk info', 'DEMO' in pkd and 'Walking distance' in pkd and 'Walking time' in pkd, pkd[:300])
-    ok('pandal traffic empty-state copy', 'No published restriction for this area' in pg.inner_text('#pandal-traffic'))
-    ok('pandal nearby PAB is DEMO', 'DEMO' in pg.inner_text('#pandal-help'))
+    ok('J6 Pandal→Parking: DEMO — NOT VERIFIED drop + sample walk', 'DEMO — NOT VERIFIED' in pkd and 'about 785 m (sample)' in pkd and 'about 13 min (sample)' in pkd, pkd[:300])
+    ok('pandal traffic empty-state copy', 'No published traffic restriction is currently associated with this pandal.' in pg.inner_text('#pandal-traffic'))
+    ok('pandal nearby help hidden when no booth/hospital within 2 km', pg.is_hidden('#pandal-help-h') and pg.is_hidden('#pandal-help'))
     pg.screenshot(path=SHOTS+'pandal-390.png',full_page=True)
 
     # J5 Pandal -> Directions (nav-sheet once, then Google Maps)
@@ -137,8 +157,10 @@ with sync_playwright() as p:
 
     # J7 Parking -> walking route
     go(pg,'parking')
-    ok('J7 parking walking route list', pg.locator('#parking-list li ul li').count()>=1)
-    ok('parking map markers', pg.locator('#map-parking .mk-park').count()==2)
+    ok('parking map contextual: 1 parking + its 5 served pandals', pg.locator('#map-parking .mk-park').count()==1 and pg.locator('#map-parking .mk-pandal').count()==5)
+    pg.click('#parking-list li:nth-child(2) button:has-text("Walking route")'); pg.wait_for_timeout(400)
+    ok('J7 Walking route switches map to selected parking', pg.locator('#map-parking .mk-park').count()==1 and pg.locator('#map-parking .mk-pandal').count()==5 and 'is-sel' in pg.get_attribute('#parking-list li:nth-child(2)','class'))
+    ok('map markers carry no text letters', pg.evaluate("[...document.querySelectorAll('.mk')].every(m=>m.textContent==='')"))
 
     # history back
     go(pg,'pandals'); go(pg,'n/hakimpara')
@@ -153,6 +175,9 @@ with sync_playwright() as p:
     ok('SOS control rooms: number to be confirmed, no Call', sos.count('Number to be confirmed for 2026')==2 and pg.locator('#sos-list a[href^="tel:"]').count()==1, sos)
     ib=pg.locator('#sos-sheet .sheet-inner').bounding_box()
     ok('SOS is a bottom sheet (anchored to bottom)', ib and abs((ib['y']+ib['height'])-844)<=2, ib)
+    order=pg.eval_on_selector_all('#sos-list .sos-label','els=>els.map(e=>e.textContent.trim())')
+    ok('SOS priority order', order==['112','Police Control Room','Traffic Control Room','Police Assistance Booths','Hospitals'], order)
+    ok('SOS has no toilets/water/first aid', not any(x in sos.lower() for x in ['toilet','water','first aid']))
     ok('SOS fab aria-expanded', pg.get_attribute('#sos-fab','aria-expanded')=='true')
     pg.screenshot(path=SHOTS+'sos-390.png')
     # J10 SOS -> PAB
@@ -164,6 +189,11 @@ with sync_playwright() as p:
     pg.click('#sos-list a[href="#/facilities/hospital"]'); pg.wait_for_timeout(500)
     ok('J11 SOS→Hospital', 'Hospitals' in pg.inner_text('#fac-title') and 'DEMO' in pg.inner_text('#fac-list'))
 
+    alltext=''
+    for r in ['','pandals','n/deshbandhupara','p/SG26-001','parking','parking/traffic','facilities/pab','facilities/hospital','info/safety','info/privacy','info/terms']:
+        go(pg,r,350); alltext+=pg.inner_text('body')
+    ok('no toilets / drinking water / first aid anywhere visitor-facing', not __import__('re').search(r'toilet|drinking water|first.aid', alltext, __import__('re').I))
+    ok('no "Official" claim anywhere visitor-facing while unapproved', 'official' not in alltext.lower())
     # info pages
     go(pg,'info/privacy')
     ok('info privacy', pg.inner_text('#info-title')=='Privacy policy')
@@ -177,14 +207,14 @@ with sync_playwright() as p:
     ctx.close()
 
     # ============ viewports 360 / 390 / 412: overlap + hscroll ============
-    for w,h in [(360,780),(390,844),(412,915)]:
-        ctx=new_ctx(w,h); pg=ctx.new_page(); e2=[]; watch(pg,e2)
+    for theme,(w,h) in [(t,v) for t in ('light','dark') for v in [(360,780),(390,844),(412,915)]]:
+        ctx=new_ctx(w,h); ctx.add_init_script(f"localStorage.setItem('spn.theme','{theme}')"); pg=ctx.new_page(); e2=[]; watch(pg,e2)
         for route in ['','pandals','n/siliguri-town','p/SG26-001','parking','parking/traffic','facilities/pab']:
             goto(pg,route) if route=='' else go(pg,route,550)
             hs=pg.evaluate("document.documentElement.scrollWidth>innerWidth")
-            ok(f'{w}px #{route or "/"} no horizontal scroll', not hs)
+            ok(f'{theme} {w}px #{route or "/"} no horizontal scroll', not hs)
             fab=pg.locator('#sos-fab').bounding_box(); bar=pg.locator('#tabbar').bounding_box()
-            ok(f'{w}px #{route or "/"} SOS above tabbar (no overlap)', fab and bar and not rects_overlap(fab,bar) and fab['y']+fab['height']<=bar['y'], [fab,bar])
+            ok(f'{theme} {w}px #{route or "/"} SOS above tabbar (no overlap)', fab and bar and not rects_overlap(fab,bar) and fab['y']+fab['height']<=bar['y'], [fab,bar])
             # scroll to bottom: last actionable control should not be hidden under fab/tabbar
             pg.evaluate("window.scrollTo(0,document.body.scrollHeight)"); pg.wait_for_timeout(150)
             covered=pg.evaluate("""()=>{const fab=document.querySelector('#sos-fab').getBoundingClientRect();const bar=document.querySelector('#tabbar').getBoundingClientRect();
@@ -192,17 +222,51 @@ with sync_playwright() as p:
               const last=els[els.length-1]; if(!last) return null; const r=last.getBoundingClientRect();
               const ov=(a,b)=>!(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top);
               return ov(r,fab)||ov(r,bar)?{t:last.textContent.trim().slice(0,40),r:[r.top,r.bottom,r.left,r.right]}:null}""")
-            ok(f'{w}px #{route or "/"} last control reachable (not under SOS/tabbar)', covered is None, covered)
+            ok(f'{theme} {w}px #{route or "/"} last control reachable (not under SOS/tabbar)', covered is None, covered)
             if route in ('p/SG26-001',):
                 zc=pg.locator('#map-pandal .leaflet-control-zoom').bounding_box()
                 pg.evaluate("document.querySelector('#map-pandal').scrollIntoView({block:'center'})"); pg.wait_for_timeout(100)
                 zc=pg.locator('#map-pandal .leaflet-control-zoom').bounding_box(); fab=pg.locator('#sos-fab').bounding_box()
-                ok(f'{w}px map zoom controls not under SOS', not rects_overlap(zc,fab), [zc,fab])
+                ok(f'{theme} {w}px map zoom controls not under SOS', not rects_overlap(zc,fab), [zc,fab])
         # touch targets
         go(pg,'')
         small=pg.evaluate("""[...document.querySelectorAll('#tabbar a, #sos-fab, .bigbtn, #theme-btn')].filter(e=>e.offsetParent||e.id==='sos-fab').map(e=>{const r=e.getBoundingClientRect();return [e.id||e.className,r.width,r.height]}).filter(x=>x[1]<44||x[2]<44)""")
-        ok(f'{w}px touch targets ≥44px', not small, small)
-        ok(f'{w}px no console errors', not e2, e2)
+        ok(f'{theme} {w}px touch targets ≥44px', not small, small)
+        # SOS sheet fully inside the viewport
+        go(pg,''); pg.click('#sos-fab'); pg.wait_for_timeout(300)
+        sb=pg.locator('#sos-sheet .sheet-inner').bounding_box()
+        ok(f'{theme} {w}px SOS sheet within viewport', sb and sb['x']>=0 and sb['y']>=0 and sb['x']+sb['width']<=w+0.5 and sb['y']+sb['height']<=h+0.5, sb)
+        pg.keyboard.press('Escape'); pg.wait_for_timeout(200)
+        # keyboard focus ring visible on key controls
+        fv=pg.evaluate("""()=>{const out=[];for(const s of ['#view-home a.bigbtn-primary','#theme-btn','#sos-fab','#tabbar a[data-tab=pandals]']){const e=document.querySelector(s);e.focus();}return true}""")
+        rings=[]
+        for sel in ['#theme-btn','#view-home a.bigbtn-primary','#tabbar a[data-tab="pandals"]','#sos-fab']:
+            pg.evaluate("document.activeElement&&document.activeElement.blur()")
+            pg.focus(sel); pg.keyboard.press('Shift'); 
+            st=pg.evaluate("s=>{const e=document.querySelector(s);const c=getComputedStyle(e);return [e.matches(':focus-visible'),c.outlineStyle,parseFloat(c.outlineWidth)]}",sel)
+            rings.append((sel,st))
+        ok(f'{theme} {w}px focus-visible ring visible on key controls', all(r[1][1]!='none' and r[1][2]>=2 for r in rings), rings)
+        # pressed state: normal -> subtle pressed -> normal, never transparent/vanishing, never near-white in dark
+        cdp=ctx.new_cdp_session(pg); pressed=[]
+        for route,sel in [('','#view-home a.bigbtn-primary'),('','#view-home a[data-go="parking"]'),('','#tabbar a[data-tab="pandals"]'),('parking','#sub-traffic'),('parking','#parking-list button:has-text("Walking route") >> nth=0')]:
+            go(pg,route,350)
+            loc=pg.locator(sel).first; loc.scroll_into_view_if_needed(); bb=loc.bounding_box()
+            q="s=>{const e=document.querySelector(s);const c=getComputedStyle(e);return [c.backgroundColor,c.opacity,c.visibility]}"
+            css=sel.split(' >> ')[0].replace(':has-text(\"Walking route\")','') if 'Walking' in sel else sel
+            if 'Walking' in sel: css='#parking-list .pc-actions button:nth-child(2)'
+            n0=pg.evaluate(q,css)
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':bb['x']+bb['width']/2,'y':bb['y']+bb['height']/2}]}); pg.wait_for_timeout(80)
+            n1=pg.evaluate(q,css)
+            cdp.send('Input.dispatchTouchEvent',{'type':'touchCancel','touchPoints':[]}); pg.wait_for_timeout(120)
+            n2=pg.evaluate(q,css)
+            pressed.append((sel,n0,n1,n2))
+        def alpha(c):
+            import re; m=re.findall(r'[\d.]+',c); return float(m[3]) if len(m)>3 else 1.0
+        def lumc(c):
+            import re; m=[float(x) for x in re.findall(r'[\d.]+',c)[:3]]; return 0.2126*m[0]+0.7152*m[1]+0.0722*m[2]
+        ok(f'{theme} {w}px pressed state visible & reverts (buttons never vanish)', all(x[2][1]!='0' and x[2][2]=='visible' and x[3]==x[1] for x in pressed), pressed)
+        ok(f'{theme} {w}px pressed bg never near-white in dark', theme=='light' or all(not(alpha(x[2][0])>=.5 and lumc(x[2][0])>=245) for x in pressed), pressed)
+        ok(f'{theme} {w}px no console errors', not e2, e2)
         ctx.close()
 
     # ============ SW offline smoke ============

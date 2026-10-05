@@ -5,7 +5,8 @@
    !!! APPROVAL REQUIRED BEFORE MERGING / PUBLISHING !!!
    The descriptor ("Official ..."), the joint-initiative caption and the two police logos suggest an
    institutional relationship. They must have WRITTEN approval from the responsible authority before this is
-   published. Until then keep officialBrandingApproved = false (footer stays "Demo version") and, if approval is
+   published. Until then keep officialBrandingApproved = false: the app then shows descriptorDefault, hides the
+   identity strip and the footer stays "Demo version". If approval is
    not given, set institutionalBranding.enabled = false (hides the whole identity strip) and change `descriptor`.
    Never write "endorsed by" / "approved by" and never claim government ownership. */
 (function (root) {
@@ -14,7 +15,8 @@
     appName: 'Siliguri Puja Guide',
     shortName: 'Puja Guide',
     tagline: 'Find pandals. Plan your route. Travel safely.',
-    descriptor: 'Official Durga Puja Traffic & Visitor Information',   // needs written approval (see above)
+    descriptor: 'Official Durga Puja Traffic & Visitor Information',   // shown ONLY when officialBrandingApproved = true
+    descriptorDefault: 'Durga Puja Visitor Information \u00B7 Siliguri', // neutral wording used until approval
     festivalDates: '16 \u2013 21 October 2026',
     festivalName: 'Durga Puja 2026',
     officialBrandingApproved: false,                                   // true only after written approval

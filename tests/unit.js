@@ -133,10 +133,10 @@ t('demo file: schema 2 + demo flags', dv.meta.schemaVersion === 2 && dv.meta.isD
 const BR = require('../branding.js');
 const html = rd('index.html'), manifest = JSON.parse(rd('manifest.webmanifest')), offline = rd('offline.html');
 const txtOf = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&ndash;/g, '\u2013').replace(/\s+/g, ' ');
-t('branding fields', BR.appName === 'Siliguri Puja Guide' && BR.tagline === 'Find pandals. Plan your route. Travel safely.' && BR.descriptor === 'Official Durga Puja Traffic & Visitor Information' && BR.festivalDates === '16 \u2013 21 October 2026');
+t('branding fields', BR.appName === 'Siliguri Puja Guide' && BR.tagline === 'Find pandals. Plan your route. Travel safely.' && BR.descriptor === 'Official Durga Puja Traffic & Visitor Information' && BR.descriptorDefault === 'Durga Puja Visitor Information \u00B7 Siliguri' && BR.festivalDates === '16 \u2013 21 October 2026');
 t('branding approval false', BR.officialBrandingApproved === false && /Demo version/.test(BR.footerDemo));
 t('index has brand + 3 tabs + SOS', /id="brand-name"/.test(html) && /data-tab="home"/.test(html) && /data-tab="pandals"/.test(html) && /data-tab="parking"/.test(html) && /id="sos-fab"/.test(html) && /id="sos-sheet"/.test(html) && /id="nav-sheet"/.test(html));
-t('index tagline/descriptor/dates/footer', txtOf(html).includes(BR.tagline) && txtOf(html).includes(BR.descriptor) && txtOf(html).includes(BR.festivalDates) && html.includes(BR.footerDemo));
+t('index tagline/descriptor/dates/footer', txtOf(html).includes(BR.tagline) && txtOf(html).includes(BR.descriptorDefault) && txtOf(html).includes(BR.festivalDates) && html.includes(BR.footerDemo));
 t('manifest name', manifest.name === BR.appName && manifest.short_name === BR.shortName);
 t('offline name', /Siliguri Puja Guide/.test(offline));
 t('old Navigator name absent from visitor files', ['index.html', 'app.js', 'branding.js', 'offline.html', 'manifest.webmanifest'].every(f => !/Siliguri Puja Navigator/i.test(rd(f))));
@@ -172,7 +172,15 @@ scan.forEach(f => {
 // Visitor-facing strings in app.js / index must not label pending data as verified
 const visitorCopy = rd('app.js') + rd('index.html');
 t('no false "verified" claim for pending locations', !/Location verified/i.test(visitorCopy) && /pending 2026 field verification/i.test(visitorCopy));
-t('DEMO label present in UI paths', /DEMO/.test(rd('app.js')) && /Sample scenario/.test(rd('app.js')));
+t('DEMO label present in UI paths', /DEMO \\u2014 NOT VERIFIED/.test(rd('app.js')) && /Sample 2026 scenario/.test(rd('app.js')));
+// --- refinement pass guards
+t('facility types limited to booths + hospitals', L.FACILITY_TYPES.join() === 'police-booth,hospital');
+v = L.validateDataset(ds({ facilities: [{ id: 'f1', name: 'Toilet block', type: 'toilet', latitude: 26.72, longitude: 88.42, verificationStatus: 'pendingVerification' }] }));
+t('toilet facility rejected and reported', v.facilities.length === 0 && v.skipped.some(s => s.kind === 'facility'));
+t('no toilets / drinking water / first aid on visitor surfaces', !/toilet|drinking.water|first.aid/i.test(rd('index.html') + rd('app.js') + rd('offline.html') + rd('manifest.webmanifest')));
+t('no "Official" claim in visitor HTML/manifest while not approved', BR.officialBrandingApproved === false && !/official/i.test(txtOf(html).replace(/official durga puja traffic/i, '')) && !/official/i.test(rd('manifest.webmanifest')));
+t('app.js uses approval flag for descriptor (not hardcoded)', /approved \? \(BR\.descriptor/.test(rd('app.js')) && /BR\.descriptorDefault/.test(rd('app.js')));
+t('no "P" text or emoji used as nav/home icons', !/<span class="(bi|ti)"[^>]*>[^<]+<\/span>/.test(html) && (html.match(/<use href="#i-/g) || []).length >= 7);
 
 console.log(pass + ' passed, ' + fail + ' failed');
 if (fail) process.exit(1);

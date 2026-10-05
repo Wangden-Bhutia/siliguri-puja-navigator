@@ -4,7 +4,7 @@
    data/puja-data.json is intentionally NOT precached (it is network-first). */
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const root = process.env.SPN_ROOT ? path.resolve(process.env.SPN_ROOT) : path.join(__dirname, '..');
-const SKIP = /^(\.git|\.github|node_modules|tools|tests|docs|screenshots|data|README\.md|service-worker\.js|\.nojekyll|.*\.zip|.*\.md)(\/|$)/;
+const SKIP = /^(\.git|\.gitignore|\.github|node_modules|tools|tests|docs|screenshots|data|README\.md|service-worker\.js|\.nojekyll|.*\.zip|.*\.md)(\/|$)/;
 // branding.js: mark whether BOTH optional logo files exist (so the app never requests missing files)
 const bp = path.join(root, 'branding.js');
 if (fs.existsSync(bp)) {
