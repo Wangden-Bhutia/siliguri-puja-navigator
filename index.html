@@ -143,19 +143,30 @@
     </div>
     <div id="panel-traffic" role="tabpanel" aria-labelledby="sub-traffic" hidden>
       <p class="lede">Check before you travel.</p>
+      <p class="traffic-caveat" id="traffic-caveat">Traffic arrangements and timings may change at short notice. Follow on-ground police directions and posted signs. Mapped locations — 2026 traffic arrangement pending verification.</p>
+      <div class="mapbox" id="map-traffic" role="img" aria-label="Map of traffic restrictions and control points"></div>
+      <h2 class="sec">Planned restrictions</h2>
+      <p class="muted small" id="traffic-planned-note">Working basis from published corridor material. Not a confirmed 2026 order. No invented active times.</p>
+      <ul class="card-list" id="traffic-planned"></ul>
+      <p class="empty" id="traffic-planned-empty" hidden>Planned restriction corridors will appear here when published.</p>
+      <h2 class="sec">Diversions</h2>
+      <ul class="card-list" id="traffic-diversions"></ul>
+      <p class="empty" id="traffic-diversions-empty" hidden>No diversion routes published yet.</p>
+      <h2 class="sec">Control points</h2>
+      <ul class="card-list card-list-compact" id="traffic-controls"></ul>
+      <p class="empty" id="traffic-controls-empty" hidden>No control points published yet.</p>
+      <h2 class="sec">Sample (DEMO)</h2>
       <div class="timecheck">
         <label>Date <input type="date" id="t-date"></label>
         <label>Time <input type="time" id="t-time"></label>
         <button type="button" class="btn" id="t-now">Use now</button>
       </div>
-      <h2 class="sec">Active now</h2>
       <ul class="card-list" id="traffic-active"></ul>
-      <div class="clear-note" id="traffic-active-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No active traffic restrictions</p><p class="muted small">No published restrictions are active for the selected time.</p></div>
+      <div class="clear-note" id="traffic-active-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No DEMO sample active for the selected time</p><p class="muted small">DEMO items are samples only — not actual 2026 orders.</p></div>
       <div id="traffic-upcoming-wrap" hidden>
-        <h2 class="sec">Upcoming</h2>
+        <h2 class="sec">Upcoming DEMO</h2>
         <ul class="card-list" id="traffic-upcoming"></ul>
       </div>
-      <div class="mapbox" id="map-traffic" role="img" aria-label="Map of selected traffic restriction" hidden></div>
     </div>
   </section>
 

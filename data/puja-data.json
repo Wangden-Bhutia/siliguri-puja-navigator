@@ -1,8 +1,8 @@
 {
   "meta": {
     "schemaVersion": 2,
-    "datasetVersion": "2026-ref-0.3.0",
-    "lastUpdated": "2026-10-05T18:30:00+05:30",
+    "datasetVersion": "2026-ref-0.4.0",
+    "lastUpdated": "2026-10-05T18:45:00+05:30",
     "isDemoDataset": true,
     "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
@@ -11,9 +11,10 @@
       "startDate": "2026-10-16",
       "endDate": "2026-10-21"
     },
-    "notice": "Pandal locations are confirmed and usable for directions. 2026 parking and traffic arrangements are not finalised. Police Assistance Booths are mapped to landmarks from the Siliguri Police Commissionerate Puja Map 2024; 2026 deployment and exact booth positions are pending verification. DEMO parking/traffic/facility records are samples only. Official branding is disabled until written approval.",
+    "notice": "Pandal locations are confirmed and usable for directions. 2026 parking and traffic arrangements are not finalised. Traffic restriction corridors and control points are mapped from Siliguri Police Commissionerate Puja traffic material as a working basis; 2026 orders, timings and exact geometry are pending verification. Police Assistance Booths are mapped to landmarks; 2026 deployment and exact booth positions are pending verification. DEMO parking/traffic/facility records are samples only. Official branding is disabled until written approval.",
     "pandalDataStatus": "locationConfirmed",
-    "pabDataStatus": "landmarkMapped"
+    "pabDataStatus": "landmarkMapped",
+    "trafficDataStatus": "plannedBasis2024PendingVerification"
   },
   "pandals": [
     {
@@ -1910,5 +1911,629 @@
         "verificationStatus": "pendingVerification"
       }
     ]
-  }
+  },
+  "trafficNodes": [
+    {
+      "id": "paribahan-nagar",
+      "name": "Paribahan Nagar",
+      "latitude": 26.7258,
+      "longitude": 88.3877,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "bhaktinagar-check-post",
+      "name": "Bhaktinagar Check Post",
+      "latitude": 26.74768,
+      "longitude": 88.43863,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "baneswar-more",
+      "name": "Baneswar More",
+      "latitude": 26.7295,
+      "longitude": 88.4626,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "ashighar-more",
+      "name": "Ashighar More",
+      "latitude": 26.716022,
+      "longitude": 88.456378,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "naukaghat-more",
+      "name": "Naukaghat More",
+      "latitude": 26.69361,
+      "longitude": 88.40722,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "panitanki-more",
+      "name": "Panitanki More",
+      "latitude": 26.72069,
+      "longitude": 88.42701,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "hasmi-chowk",
+      "name": "Hasmi Chowk",
+      "latitude": 26.7107,
+      "longitude": 88.4263,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "venus-more",
+      "name": "Venus More",
+      "latitude": 26.711522,
+      "longitude": 88.425884,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "amar-garage",
+      "name": "Amar Garage",
+      "latitude": 26.73444,
+      "longitude": 88.43301,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "sevoke-more",
+      "name": "Sevoke More",
+      "latitude": 26.7157,
+      "longitude": 88.4227,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "jalpai-more",
+      "name": "Jalpai More",
+      "latitude": 26.699772,
+      "longitude": 88.412016,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "babupura-more",
+      "name": "Babupura More",
+      "latitude": 26.69575,
+      "longitude": 88.436,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "court-more",
+      "name": "Court More",
+      "latitude": 26.70838,
+      "longitude": 88.42838,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "airview-more",
+      "name": "Airview More",
+      "latitude": 26.7183,
+      "longitude": 88.4202,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "alu-chowdhury-more",
+      "name": "Alu Chowdhury More",
+      "latitude": 26.69713,
+      "longitude": 88.42538,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "hospital-more",
+      "name": "Hospital More",
+      "latitude": 26.711,
+      "longitude": 88.42738,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "pakurtala-more",
+      "name": "Pakurtala More",
+      "latitude": 26.71802,
+      "longitude": 88.4298,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "haren-mukherjee-road",
+      "name": "Haren Mukherjee Road",
+      "latitude": 26.71731,
+      "longitude": 88.42962,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "hati-more-netaji-more",
+      "name": "Hati More / Netaji More",
+      "latitude": 26.70784,
+      "longitude": 88.4343,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "rath-khola-more",
+      "name": "Rath Khola More",
+      "latitude": 26.70664,
+      "longitude": 88.439,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "tikiapara-more",
+      "name": "Tikiapara More",
+      "latitude": 26.7026,
+      "longitude": 88.4276,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "ananda-mohan-bose-sree-ma-crossing",
+      "name": "Ananda Mohan Bose Road / Sree Ma Sarani Crossing",
+      "latitude": 26.692,
+      "longitude": 88.4318,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "gopal-more",
+      "name": "Gopal More",
+      "latitude": 26.69575,
+      "longitude": 88.436,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "nts-more",
+      "name": "NTS More",
+      "latitude": 26.701516,
+      "longitude": 88.431878,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "dada-bhai-more",
+      "name": "Dada Bhai More",
+      "latitude": 26.699634,
+      "longitude": 88.431753,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "subrata-sangha",
+      "name": "Subrata Sangha",
+      "latitude": 26.6971,
+      "longitude": 88.43232,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "darjeeling-more",
+      "name": "Darjeeling More",
+      "latitude": 26.73985,
+      "longitude": 88.40264,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "medical-more",
+      "name": "Medical More",
+      "latitude": 26.69174,
+      "longitude": 88.37025,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    },
+    {
+      "id": "shiv-mandir",
+      "name": "Shiv Mandir",
+      "latitude": 26.70992,
+      "longitude": 88.36497,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "sourceYear": 2024
+    }
+  ],
+  "trafficRestrictions": [
+    {
+      "id": "TR-01",
+      "name": "Panitanki More → Hasmi Chowk (Venus More)",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Bidhan Road",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "panitanki-more",
+      "toNode": "hasmi-chowk",
+      "note": "Hasmi Chowk is at Venus More approaches on Bidhan Road."
+    },
+    {
+      "id": "TR-02",
+      "name": "Amar Garage → Sevoke More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Sevoke Road",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "amar-garage",
+      "toNode": "sevoke-more"
+    },
+    {
+      "id": "TR-03",
+      "name": "Jalpai More → Babupura More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Approach corridor",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "jalpai-more",
+      "toNode": "babupura-more",
+      "note": "Corridor wording aligned with published local-route lists; confirm against 2024 order item [C]3."
+    },
+    {
+      "id": "TR-04",
+      "name": "Venus More → Court More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Kachhari Road",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "venus-more",
+      "toNode": "court-more"
+    },
+    {
+      "id": "TR-05",
+      "name": "Airview More → Sevoke More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Church Road",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "airview-more",
+      "toNode": "sevoke-more"
+    },
+    {
+      "id": "TR-06",
+      "name": "Airview More → Venus More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Hill Cart Road",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "airview-more",
+      "toNode": "venus-more"
+    },
+    {
+      "id": "TR-07",
+      "name": "Hasmi Chowk → Babupura More / Tikiapara More (flyover)",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Flyover",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "hasmi-chowk",
+      "toNode": "babupura-more",
+      "altToNodes": [
+        "tikiapara-more"
+      ],
+      "note": "Via flyover toward Babupura More and Tikiapara More."
+    },
+    {
+      "id": "TR-08",
+      "name": "Alu Chowdhury More → Babupura More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Sree Ma Sarani",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "alu-chowdhury-more",
+      "toNode": "babupura-more"
+    },
+    {
+      "id": "TR-09",
+      "name": "Hospital More → Pakurtala More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Haren Mukherjee Road",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "hospital-more",
+      "toNode": "pakurtala-more"
+    },
+    {
+      "id": "TR-10",
+      "name": "Connecting roads from Haren Mukherjee Road and Bidhan Road",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Connecting roads (Haren Mukherjee Road, Bidhan Road)",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "zone": true,
+      "zoneLabel": "Connecting roads from Haren Mukherjee Road and Bidhan Road",
+      "anchorNodes": [
+        "haren-mukherjee-road",
+        "panitanki-more",
+        "hasmi-chowk",
+        "hospital-more",
+        "pakurtala-more"
+      ],
+      "note": "Zone restriction — connecting roads; not a single corridor segment."
+    },
+    {
+      "id": "TR-11",
+      "name": "Hati More / Netaji More → Rath Khola More",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Approach corridor",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "hati-more-netaji-more",
+      "toNode": "rath-khola-more"
+    },
+    {
+      "id": "TR-12",
+      "name": "Toward NJP via Dada Bhai More approaches",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "smallVehicles"
+      ],
+      "affectedRoad": "NJP approach",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "nts-more",
+      "toNode": "dada-bhai-more",
+      "note": "Small-vehicle approach toward NJP via Dada Bhai More area — confirm exact 2024 wording."
+    },
+    {
+      "id": "TR-13",
+      "name": "Toward NJP via Dada Bhai More / Subrata Sangha",
+      "restrictionType": "vehicleClassRestriction",
+      "vehicleScope": [
+        "smallVehicles",
+        "fourWheelers"
+      ],
+      "affectedRoad": "NJP approach",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "approximateGeometry": true,
+      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
+      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "fromNode": "dada-bhai-more",
+      "toNode": "subrata-sangha",
+      "note": "Small / four-wheeler traffic toward NJP should not use Dada Bhai More or Subrata Sangha; see diversion-njp-small."
+    }
+  ],
+  "trafficControls": [
+    {
+      "id": "tc-paribahan-nagar",
+      "name": "Paribahan Nagar — goods vehicle control",
+      "nodeId": "paribahan-nagar",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "timingNote": "Timing subject to 2026 order / on-ground police."
+    },
+    {
+      "id": "tc-bhaktinagar-check-post",
+      "name": "Bhaktinagar Check Post — goods vehicle control",
+      "nodeId": "bhaktinagar-check-post",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "timingNote": "Timing subject to 2026 order / on-ground police."
+    },
+    {
+      "id": "tc-baneswar-more",
+      "name": "Baneswar More — goods vehicle control",
+      "nodeId": "baneswar-more",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "timingNote": "Timing subject to 2026 order / on-ground police."
+    },
+    {
+      "id": "tc-ashighar-more",
+      "name": "Ashighar More — goods vehicle control",
+      "nodeId": "ashighar-more",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "timingNote": "Timing subject to 2026 order / on-ground police."
+    },
+    {
+      "id": "tc-naukaghat-more",
+      "name": "Naukaghat More — goods vehicle control",
+      "nodeId": "naukaghat-more",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "timingNote": "Timing subject to 2026 order / on-ground police."
+    }
+  ],
+  "trafficDiversions": [
+    {
+      "id": "diversion-njp-small",
+      "name": "NJP approach — small / four-wheeler diversion",
+      "viaNodes": [
+        "darjeeling-more",
+        "medical-more",
+        "shiv-mandir",
+        "naukaghat-more"
+      ],
+      "avoidNodes": [
+        "dada-bhai-more",
+        "subrata-sangha"
+      ],
+      "vehicleScope": [
+        "smallVehicles",
+        "fourWheelers"
+      ],
+      "instruction": "For small / four-wheeler traffic toward NJP station, use Darjeeling More → Medical More → Shiv Mandir → Naukaghat. Do not use Dada Bhai More or Subrata Sangha.",
+      "verificationStatus": "pendingVerification",
+      "sourceYear": 2024,
+      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "timingNote": "Timing subject to 2026 order / on-ground police."
+    }
+  ]
 }

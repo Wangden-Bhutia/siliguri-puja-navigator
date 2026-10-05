@@ -21,8 +21,11 @@
   // confirmed = coordinates are correct and usable for directions NOW.
   // It must NEVER imply fieldVerified or approved (parking/traffic/ops still pending).
   // mapped = landmark/intersection pin for facilities (e.g. PABs); NOT a confirmed 2026 booth position.
-  var LSTATUSES = ['unconfirmed', 'confirmed', 'mapped'];
+  var LSTATUSES = ['unconfirmed', 'confirmed', 'mapped', 'landmarkAnchor'];
   var FACILITY_LSTATUSES = ['unconfirmed', 'mapped'];  // facilities never use confirmed
+  var NODE_LSTATUSES = ['mapped', 'landmarkAnchor'];  // traffic junction pins
+  var VEHICLE_SCOPES = ['allVehicles', 'smallVehicles', 'fourWheelers', 'goodsVehicles', 'twoWheelers', 'buses'];
+  var CONTROL_TYPES = ['noEntryBeyondControlPoint'];
   var TSTATUSES = ['scheduled', 'cancelled', 'expired'];
   var RTYPES = ['noEntry', 'controlledMovement', 'diversion', 'routeRelocation', 'oneWay', 'vehicleClassRestriction'];
   var RTYPE_LABEL = { noEntry: 'No entry', controlledMovement: 'Controlled movement', diversion: 'Diversion', routeRelocation: 'Route relocation', oneWay: 'One-way', vehicleClassRestriction: 'Vehicle restriction' };
@@ -199,17 +202,26 @@
     if (r.demo) return true;
     return r.verificationStatus === 'approved';
   }
-  function trafficFeed(list, now) {
-    var active = [], upcoming = [];
+  // Active/Upcoming: approved 2026 orders + DEMO samples only (never invent Active Now for pending).
+  // Planned: pendingVerification corridor records from trafficRestrictions (working basis, no invented times).
+  function trafficFeed(list, now, plannedList) {
+    var active = [], upcoming = [], planned = [];
     (list || []).forEach(function (r) {
       if (!isVisitorTraffic(r)) return;
       var ev = evaluateTraffic(r, now);
       if (ev.state === 'active') active.push({ r: r, ev: ev });
       else if (ev.state === 'upcoming') upcoming.push({ r: r, ev: ev });
     });
-    var by = function (x, y) { return x.ev.windowStart - y.ev.windowStart; };
+    (plannedList || []).forEach(function (r) {
+      if (!r || r.demo) return;
+      if (r.verificationStatus !== 'pendingVerification') return;
+      if (r.confirmed2026 === true) return;
+      planned.push({ r: r, ev: { state: 'planned' } });
+    });
+    var by = function (x, y) { return (x.ev.windowStart || 0) - (y.ev.windowStart || 0); };
     active.sort(by); upcoming.sort(by);
-    return { active: active, upcoming: upcoming };
+    planned.sort(function (a, b) { return String(a.r.id).localeCompare(String(b.r.id)); });
+    return { active: active, upcoming: upcoming, planned: planned };
   }
   // "6 PM–1 AM · 16–21 Oct" (daily) or "18 Oct, 6 PM–19 Oct, 2 AM" (single)
   function describeTrafficTime(r, ev) {
@@ -261,6 +273,7 @@
 
   function validateDataset(raw) {
     var res = { ok: false, fatal: '', meta: null, pandals: [], neighbourhoods: [], parking: [], walkingRoutes: [], traffic: [], facilities: [],
+      trafficNodes: [], trafficRestrictions: [], trafficControls: [], trafficDiversions: [],
       help: { emergencyNumber: '112', contacts: [] }, errors: [], warnings: [], skipped: [] };
     if (!raw || typeof raw !== 'object' || Array.isArray(raw)) { res.fatal = 'Data file is not a JSON object.'; return res; }
     var m = raw.meta;
@@ -315,8 +328,8 @@
       o.police2024Name = str(rec.police2024Name, 200);
       // locationStatus: confirmed | unconfirmed (default). Confirmed coords ≠ fieldVerified ≠ approved.
       var ls = str(rec.locationStatus, 20) || 'unconfirmed';
-      if (ls === 'mapped') { err('pandal', o.id, 'locationStatus mapped is for facilities only; treated as unconfirmed'); ls = 'unconfirmed'; }
-      else if (LSTATUSES.indexOf(ls) < 0) { err('pandal', o.id, 'invalid locationStatus "' + ls + '" (use unconfirmed, confirmed); treated as unconfirmed'); ls = 'unconfirmed'; }
+      if (ls === 'mapped' || ls === 'landmarkAnchor') { err('pandal', o.id, 'locationStatus ' + ls + ' is not for pandals; treated as unconfirmed'); ls = 'unconfirmed'; }
+      else if (ls !== 'unconfirmed' && ls !== 'confirmed') { err('pandal', o.id, 'invalid locationStatus "' + ls + '" (use unconfirmed, confirmed); treated as unconfirmed'); ls = 'unconfirmed'; }
       if (ls === 'confirmed' && !o.hasCoords) { err('pandal', o.id, 'locationStatus confirmed requires valid coordinates; treated as unconfirmed'); ls = 'unconfirmed'; }
       if (o.demo && ls === 'confirmed') { err('pandal', o.id, 'a DEMO pandal cannot have locationStatus confirmed; treated as unconfirmed'); ls = 'unconfirmed'; }
       o.locationStatus = ls;
@@ -429,6 +442,122 @@
       res.traffic.push(o);
     });
 
+    // ---- traffic nodes (junction pins for restriction segments / controls)
+    var nodeById = {};
+    (Array.isArray(raw.trafficNodes) ? raw.trafficNodes : []).forEach(function (rec) {
+      var o = base(rec, 'trafficNode'); if (!o) return;
+      o.kind = 'trafficNode';
+      if (o.coordProblem) { skip('trafficNode', o.id, [o.coordProblem]); return; }
+      var ls = str(rec.locationStatus, 20) || 'mapped';
+      if (NODE_LSTATUSES.indexOf(ls) < 0) { err('trafficNode', o.id, 'invalid locationStatus "' + ls + '" (use ' + NODE_LSTATUSES.join(', ') + '); treated as mapped'); ls = 'mapped'; }
+      if (ls === 'confirmed' || rec.confirmed2026 === true) { err('trafficNode', o.id, 'traffic nodes must not be confirmed2026; treated as mapped/landmarkAnchor'); }
+      o.locationStatus = ls;
+      o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+      nodeById[o.id] = o;
+      res.trafficNodes.push(o);
+    });
+
+    // ---- trafficRestrictions (planned corridor / zone basis; no invented Active Now windows)
+    function scopeList(rec) {
+      var sc = strList(rec.vehicleScope);
+      if (!sc.length && Array.isArray(rec.vehicleTypes)) sc = strList(rec.vehicleTypes);
+      return sc;
+    }
+    function validScopes(sc, kind, id) {
+      var out = [];
+      sc.forEach(function (v) {
+        if (VEHICLE_SCOPES.indexOf(v) < 0) err(kind, id, 'invalid vehicleScope "' + v + '"');
+        else out.push(v);
+      });
+      return out.length ? out : ['allVehicles'];
+    }
+    (Array.isArray(raw.trafficRestrictions) ? raw.trafficRestrictions : []).forEach(function (rec) {
+      if (rec && typeof rec === 'object' && !rec.name) rec = Object.assign({ name: rec.id }, rec);
+      var o = base(rec, 'trafficRestriction'); if (!o) return;
+      o.kind = 'trafficRestriction';
+      o.restrictionType = str(rec.restrictionType, 40) || 'noEntry';
+      if (RTYPES.indexOf(o.restrictionType) < 0) err('trafficRestriction', o.id, 'invalid restrictionType "' + o.restrictionType + '"');
+      o.vehicleScope = validScopes(scopeList(rec), 'trafficRestriction', o.id);
+      o.affectedRoad = str(rec.affectedRoad, 200);
+      o.note = str(rec.note, 500);
+      o.visitorAction = str(rec.visitorAction, 500);
+      o.timingNote = str(rec.timingNote, 300);
+      o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+      o.approximateGeometry = rec.approximateGeometry !== false;
+      o.confirmed2026 = rec.confirmed2026 === true;
+      if (o.confirmed2026) err('trafficRestriction', o.id, 'must not be confirmed2026 while pending verification');
+      if (o.verificationStatus === 'approved' || o.verificationStatus === 'fieldVerified') {
+        err('trafficRestriction', o.id, 'planned corridor records stay pendingVerification until 2026 order');
+      }
+      o.zone = rec.zone === true;
+      if (o.zone) {
+        o.zoneLabel = str(rec.zoneLabel, 300) || o.name;
+        o.anchorNodes = strList(rec.anchorNodes).filter(function (nid) {
+          if (nodeById[nid]) return true;
+          err('trafficRestriction', o.id, 'anchorNode "' + nid + '" does not exist');
+          return false;
+        });
+        o.fromNode = ''; o.toNode = ''; o.altToNodes = [];
+      } else {
+        o.fromNode = str(rec.fromNode, 80); o.toNode = str(rec.toNode, 80);
+        o.altToNodes = strList(rec.altToNodes);
+        if (!nodeById[o.fromNode]) err('trafficRestriction', o.id, 'fromNode "' + o.fromNode + '" does not exist');
+        if (!nodeById[o.toNode]) err('trafficRestriction', o.id, 'toNode "' + o.toNode + '" does not exist');
+        o.altToNodes = o.altToNodes.filter(function (nid) {
+          if (nodeById[nid]) return true;
+          err('trafficRestriction', o.id, 'altToNode "' + nid + '" does not exist');
+          return false;
+        });
+      }
+      res.trafficRestrictions.push(o);
+    });
+
+    // ---- trafficControls (goods / control points)
+    (Array.isArray(raw.trafficControls) ? raw.trafficControls : []).forEach(function (rec) {
+      if (rec && typeof rec === 'object' && !rec.name) rec = Object.assign({ name: rec.id }, rec);
+      var o = base(rec, 'trafficControl'); if (!o) return;
+      o.kind = 'trafficControl';
+      o.nodeId = str(rec.nodeId, 80);
+      if (!nodeById[o.nodeId]) { skip('trafficControl', o.id, ['nodeId "' + o.nodeId + '" does not exist']); return; }
+      o.controlType = str(rec.controlType, 60) || 'noEntryBeyondControlPoint';
+      if (CONTROL_TYPES.indexOf(o.controlType) < 0) err('trafficControl', o.id, 'invalid controlType "' + o.controlType + '"');
+      o.vehicleScope = validScopes(scopeList(rec), 'trafficControl', o.id);
+      o.timingNote = str(rec.timingNote, 300);
+      o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+      o.confirmed2026 = rec.confirmed2026 === true;
+      if (o.confirmed2026) err('trafficControl', o.id, 'must not be confirmed2026');
+      // attach coords from node for map convenience
+      var n = nodeById[o.nodeId];
+      o.lat = n.lat; o.lon = n.lon; o.hasCoords = true; o.nodeName = n.name;
+      res.trafficControls.push(o);
+    });
+
+    // ---- trafficDiversions
+    (Array.isArray(raw.trafficDiversions) ? raw.trafficDiversions : []).forEach(function (rec) {
+      if (rec && typeof rec === 'object' && !rec.name) rec = Object.assign({ name: rec.id }, rec);
+      var o = base(rec, 'trafficDiversion'); if (!o) return;
+      o.kind = 'trafficDiversion';
+      o.viaNodes = strList(rec.viaNodes).filter(function (nid) {
+        if (nodeById[nid]) return true;
+        err('trafficDiversion', o.id, 'viaNode "' + nid + '" does not exist');
+        return false;
+      });
+      o.avoidNodes = strList(rec.avoidNodes).filter(function (nid) {
+        if (nodeById[nid]) return true;
+        err('trafficDiversion', o.id, 'avoidNode "' + nid + '" does not exist');
+        return false;
+      });
+      if (o.viaNodes.length < 2) err('trafficDiversion', o.id, 'viaNodes needs at least 2 valid nodes');
+      o.vehicleScope = validScopes(scopeList(rec), 'trafficDiversion', o.id);
+      o.instruction = str(rec.instruction, 800);
+      o.timingNote = str(rec.timingNote, 300);
+      o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+      o.confirmed2026 = rec.confirmed2026 === true;
+      if (o.confirmed2026) err('trafficDiversion', o.id, 'must not be confirmed2026');
+      if (!o.instruction) err('trafficDiversion', o.id, 'missing instruction');
+      res.trafficDiversions.push(o);
+    });
+
     // ---- facilities (police assistance booths, hospitals)
     (Array.isArray(raw.facilities) ? raw.facilities : []).forEach(function (rec) {
       var o = base(rec, 'facility'); if (!o) return;
@@ -476,7 +605,7 @@
   function pandalFields(p) { return [p.name, p.locality, p.police2024Name]; }
 
   return {
-    IST_MS: IST_MS, BBOX: BBOX, VSTATUSES: VSTATUSES, LSTATUSES: LSTATUSES, FACILITY_LSTATUSES: FACILITY_LSTATUSES, TSTATUSES: TSTATUSES, RTYPES: RTYPES, RTYPE_LABEL: RTYPE_LABEL, PARKING_TYPES: PARKING_TYPES, FACILITY_TYPES: FACILITY_TYPES,
+    IST_MS: IST_MS, BBOX: BBOX, VSTATUSES: VSTATUSES, LSTATUSES: LSTATUSES, FACILITY_LSTATUSES: FACILITY_LSTATUSES, NODE_LSTATUSES: NODE_LSTATUSES, VEHICLE_SCOPES: VEHICLE_SCOPES, CONTROL_TYPES: CONTROL_TYPES, TSTATUSES: TSTATUSES, RTYPES: RTYPES, RTYPE_LABEL: RTYPE_LABEL, PARKING_TYPES: PARKING_TYPES, FACILITY_TYPES: FACILITY_TYPES,
     parseIST: parseIST, parseISTDate: parseISTDate, parseHM: parseHM, istParts: istParts, dayStart: dayStart,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtDateTime: fmtDateTime, fmtClock: fmtClock, fmtTimeRange: fmtTimeRange, fmtDayRange: fmtDayRange,
     fmtShort: fmtShort, fmtAge: fmtAge, freshness: freshness,
