@@ -1,8 +1,8 @@
 {
   "meta": {
     "schemaVersion": 2,
-    "datasetVersion": "2026-ref-0.2.0",
-    "lastUpdated": "2026-10-05T11:55:00+05:30",
+    "datasetVersion": "2026-ref-0.3.0",
+    "lastUpdated": "2026-10-05T18:30:00+05:30",
     "isDemoDataset": true,
     "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
@@ -11,8 +11,9 @@
       "startDate": "2026-10-16",
       "endDate": "2026-10-21"
     },
-    "notice": "Pandal locations are confirmed and usable for directions. 2026 parking and traffic arrangements are not finalised. DEMO parking/traffic/facility records are samples only. Official branding is disabled until written approval.",
-    "pandalDataStatus": "locationConfirmed"
+    "notice": "Pandal locations are confirmed and usable for directions. 2026 parking and traffic arrangements are not finalised. Police Assistance Booths are mapped to landmarks from the Siliguri Police Commissionerate Puja Map 2024; 2026 deployment and exact booth positions are pending verification. DEMO parking/traffic/facility records are samples only. Official branding is disabled until written approval.",
+    "pandalDataStatus": "locationConfirmed",
+    "pabDataStatus": "landmarkMapped"
   },
   "pandals": [
     {
@@ -1654,6 +1655,222 @@
     }
   ],
   "facilities": [
+    {
+      "id": "pab-agnishikha-club",
+      "name": "Police Assistance Booth — Agnishikha Club, Paresh Nagar",
+      "type": "police-booth",
+      "latitude": 26.729397,
+      "longitude": 88.428153,
+      "landmark": "Agnishikha Club, Paresh Nagar",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-ashighar-more",
+      "name": "Police Assistance Booth — Ashighar More",
+      "type": "police-booth",
+      "latitude": 26.716022,
+      "longitude": 88.456378,
+      "landmark": "Ashighar More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-champasari-more",
+      "name": "Police Assistance Booth — Champasari More",
+      "type": "police-booth",
+      "latitude": 26.7372,
+      "longitude": 88.4167,
+      "landmark": "Champasari More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-cosmos-mall",
+      "name": "Police Assistance Booth — Cosmos Mall",
+      "type": "police-booth",
+      "latitude": 26.738671,
+      "longitude": 88.434283,
+      "landmark": "Cosmos Mall",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-dada-bhai-more",
+      "name": "Police Assistance Booth — Dada Bhai More",
+      "type": "police-booth",
+      "latitude": 26.699634,
+      "longitude": 88.431753,
+      "landmark": "Dada Bhai More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-hyderpara-sporting-club",
+      "name": "Police Assistance Booth — Hyderpara Sporting Club",
+      "type": "police-booth",
+      "latitude": 26.720384,
+      "longitude": 88.436647,
+      "landmark": "Hyderpara Sporting Club",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-jalpai-more",
+      "name": "Police Assistance Booth — Jalpai More",
+      "type": "police-booth",
+      "latitude": 26.699772,
+      "longitude": 88.412016,
+      "landmark": "Jalpai More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-jhankar-more",
+      "name": "Police Assistance Booth — Jhankar More",
+      "type": "police-booth",
+      "latitude": 26.711,
+      "longitude": 88.4184,
+      "landmark": "Jhankar More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-nts-more",
+      "name": "Police Assistance Booth — NTS More",
+      "type": "police-booth",
+      "latitude": 26.701516,
+      "longitude": 88.431878,
+      "landmark": "NTS More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-pakurtala-more",
+      "name": "Police Assistance Booth — Pakurtala More",
+      "type": "police-booth",
+      "latitude": 26.718128,
+      "longitude": 88.429279,
+      "landmark": "Pakurtala More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-panitanki-more",
+      "name": "Police Assistance Booth — Panitanki More",
+      "type": "police-booth",
+      "latitude": 26.72069,
+      "longitude": 88.42701,
+      "landmark": "Panitanki More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-rath-khola-more",
+      "name": "Police Assistance Booth — Rath Khola More",
+      "type": "police-booth",
+      "latitude": 26.708259,
+      "longitude": 88.440397,
+      "landmark": "Rath Khola More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-siliguri-junction",
+      "name": "Police Assistance Booth — Siliguri Junction",
+      "type": "police-booth",
+      "latitude": 26.723878,
+      "longitude": 88.414278,
+      "landmark": "Siliguri Junction",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-tinbatti-more",
+      "name": "Police Assistance Booth — Tinbatti More",
+      "type": "police-booth",
+      "latitude": 26.6904,
+      "longitude": 88.4164,
+      "landmark": "Tinbatti More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-venus-more",
+      "name": "Police Assistance Booth — Venus More",
+      "type": "police-booth",
+      "latitude": 26.711522,
+      "longitude": 88.425884,
+      "landmark": "Venus More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-bihar-more-bagdogra",
+      "name": "Police Assistance Booth — Bihar More, Bagdogra",
+      "type": "police-booth",
+      "latitude": 26.698522,
+      "longitude": 88.318028,
+      "landmark": "Bihar More, Bagdogra",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-maya-devi-club",
+      "name": "Police Assistance Booth — Maya Devi Club",
+      "type": "police-booth",
+      "latitude": 26.718,
+      "longitude": 88.384,
+      "landmark": "Maya Devi Club",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
+    {
+      "id": "pab-airview-more",
+      "name": "Police Assistance Booth — Airview More",
+      "type": "police-booth",
+      "latitude": 26.7183,
+      "longitude": 88.4202,
+      "landmark": "Airview More",
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "demo": false,
+      "source": "Siliguri Police Commissionerate Puja Map 2024; landmark coordinate mapping"
+    },
     {
       "id": "demo-pab-1",
       "name": "DEMO – Sample Police Assistance Booth",

@@ -72,6 +72,7 @@
     else if (rec.verificationStatus === 'approved') cls += 'badge-approved';
     else if (rec.verificationStatus === 'fieldVerified') cls += 'badge-field';
     else if (rec.kind === 'pandal' && P.isLocationConfirmed(rec)) cls += 'badge-confirmed';
+    else if (rec.kind === 'facility' && P.isLocationMapped(rec)) cls += 'badge-mapped';
     else cls += 'badge-pending';
     return el('span', cls, label);
   }
@@ -352,7 +353,12 @@
         .sort(function (a, b) { return P.distanceKm(p.lat, p.lon, a.lat, a.lon) - P.distanceKm(p.lat, p.lon, b.lat, b.lon); }).slice(0, 2);
       near.forEach(function (f) {
         var c = el('div', 'info-card' + (f.demo ? ' is-demo' : ''));
-        add(c, statusBadge(f), el('h3', '', f.name), el('p', 'meta', (f.type === 'hospital' ? 'Hospital' : 'Police Assistance Booth') + ' \u00B7 about ' + P.distanceKm(p.lat, p.lon, f.lat, f.lon).toFixed(1) + ' km'));
+        var kind = f.type === 'hospital' ? 'Hospital' : 'Police Assistance Booth';
+        var meta = kind + ' \u00B7 about ' + P.distanceKm(p.lat, p.lon, f.lat, f.lon).toFixed(1) + ' km';
+        add(c, statusBadge(f), el('h3', '', f.name), el('p', 'meta', meta));
+        if (!f.demo && f.type === 'police-booth' && P.isLocationMapped(f)) {
+          c.appendChild(el('p', 'meta', 'Mapped landmark \u2014 2026 PAB deployment not yet verified'));
+        }
         c.appendChild(btn('Directions', '', function () { openNav(f, f.name); }));
         hBox.appendChild(c);
       });
@@ -477,7 +483,7 @@
     $('#fac-title').textContent = type === 'hospital' ? 'Hospitals' : 'Police Assistance Booths';
     $('#fac-lede').textContent = type === 'hospital'
       ? 'Hospital locations for emergencies. Confirm details on the ground.'
-      : 'Police Assistance Booths. Confirm locations on the ground.';
+      : 'Police Assistance Booths mapped to landmarks. 2026 deployment and exact positions are pending verification.';
     var list = clear($('#fac-list'));
     var empty = $('#fac-empty');
     clearMap('map-facilities');
@@ -489,9 +495,15 @@
       add(card, el('h3', '', f.name));
       card.className += f.demo ? ' is-demo' : '';
       card.insertBefore(statusBadge(f), card.firstChild);
+      card.appendChild(el('p', 'meta', f.type === 'hospital' ? 'Hospital' : 'Police Assistance Booth'));
       if (f.landmark) card.appendChild(el('p', 'meta', f.landmark));
+      if (!f.demo && P.isLocationMapped(f)) {
+        card.appendChild(el('p', 'meta', 'Mapped landmark \u2014 2026 PAB deployment not yet verified'));
+      }
       if (f.hasCoords) {
-        addMarker('map-facilities', f.lat, f.lon, 'mk-fac', '', f.name);
+        // Distinct markers: PABs vs hospitals vs (elsewhere) pandals/parking/traffic
+        var mk = f.type === 'hospital' ? 'mk-hosp' : (f.demo ? 'mk-fac' : 'mk-pab');
+        addMarker('map-facilities', f.lat, f.lon, mk, '', f.name);
         var d = attrs(el('button', 'btn btn-sm btn-primary', 'Directions'), { type: 'button' });
         d.addEventListener('click', function () { openNav(f, f.name); });
         card.appendChild(d);
@@ -510,6 +522,7 @@
         'Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.',
         'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements.',
         'Pandal locations in this build are confirmed and usable for directions. Parking and traffic arrangements for 2026 are still being finalised. DEMO records are samples only.',
+        'Police Assistance Booths are mapped to landmarks; 2026 deployment and exact booth positions are pending verification.',
         'In an emergency dial 112.'
       ]
     },

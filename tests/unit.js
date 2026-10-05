@@ -131,7 +131,22 @@ t('isLocationConfirmed requires coords + confirmed + not demo', L.isLocationConf
 v = L.validateDataset(ds({ pandals: [pandal('pc', { locationStatus: 'confirmed' }), pandal('pb', { locationStatus: 'confirmed', latitude: undefined, longitude: undefined }), pandal('pd', { locationStatus: 'confirmed', demo: true, verificationStatus: 'pendingVerification' })] }));
 t('confirmed without coords / DEMO confirmed rejected', v.pandals.find(p=>p.id==='pc').locationStatus==='confirmed' && v.pandals.find(p=>p.id==='pb').locationStatus==='unconfirmed' && v.pandals.find(p=>p.id==='pd').locationStatus==='unconfirmed');
 t('branding still disabled', require('../branding.js').officialBrandingApproved === false);
-t('demo file: parking/facilities are DEMO', dv.parking.every(p => p.demo) && dv.facilities.every(f => f.demo));
+t('demo file: parking still all DEMO; demo facilities remain DEMO', dv.parking.every(p => p.demo) && dv.facilities.filter(f => f.demo).length >= 2 && dv.facilities.filter(f => f.demo).every(f => f.demo));
+const mappedPabs = dv.facilities.filter(f => f.type === 'police-booth' && !f.demo);
+t('demo file: 18 mapped PABs', mappedPabs.length === 18, mappedPabs.length);
+t('mapped PABs: locationStatus mapped, pendingVerification, valid coords, not DEMO', mappedPabs.every(f => f.locationStatus === 'mapped' && f.verificationStatus === 'pendingVerification' && f.hasCoords && !f.demo && !L.isCheckedLocation(f.verificationStatus) && !L.isLocationConfirmed(f) && L.isLocationMapped(f) && L.statusLabel(f) === 'Location mapped'));
+t('mapped PABs: none fieldVerified/confirmed locationStatus', mappedPabs.every(f => f.verificationStatus !== 'fieldVerified' && f.locationStatus !== 'confirmed' && f.locationStatus !== 'fieldVerified'));
+t('no fabricated Champasari Sri Guru Bidyamandir PAB', !dv.facilities.some(f => /Champasari Sri Guru|Bidyamandir/i.test(f.name + ' ' + (f.landmark || ''))));
+t('demo PAB still present and distinguishable', dv.facilities.some(f => f.id === 'demo-pab-1' && f.demo && f.type === 'police-booth' && f.locationStatus !== 'mapped'));
+t('statusLabel mapped facility', L.statusLabel({ kind: 'facility', locationStatus: 'mapped', hasCoords: true, verificationStatus: 'pendingVerification', demo: false }) === 'Location mapped');
+t('isLocationMapped requires mapped + coords + not demo', L.isLocationMapped({ locationStatus: 'mapped', hasCoords: true, demo: false }) && !L.isLocationMapped({ locationStatus: 'mapped', hasCoords: false }) && !L.isLocationMapped({ locationStatus: 'confirmed', hasCoords: true }) && !L.isLocationMapped({ locationStatus: 'mapped', hasCoords: true, demo: true }));
+v = L.validateDataset(ds({ facilities: [
+  { id: 'fm', name: 'PAB M', type: 'police-booth', latitude: 26.72, longitude: 88.42, locationStatus: 'mapped', verificationStatus: 'pendingVerification', demo: false },
+  { id: 'fc', name: 'PAB C', type: 'police-booth', latitude: 26.72, longitude: 88.42, locationStatus: 'confirmed', verificationStatus: 'pendingVerification', demo: false },
+  { id: 'fd', name: 'DEMO booth', type: 'police-booth', latitude: 26.72, longitude: 88.42, locationStatus: 'mapped', verificationStatus: 'pendingVerification', demo: true }
+] }));
+t('facility confirmed rejected; DEMO mapped rejected', v.facilities.find(f=>f.id==='fm').locationStatus==='mapped' && v.facilities.find(f=>f.id==='fc').locationStatus==='unconfirmed' && v.facilities.find(f=>f.id==='fd').locationStatus==='unconfirmed');
+t('FACILITY_LSTATUSES is unconfirmed,mapped', L.FACILITY_LSTATUSES.join() === 'unconfirmed,mapped');
 t('demo file: only DEMO traffic is visitor-visible', dv.traffic.filter(L.isVisitorTraffic).every(r => r.demo) && dv.traffic.filter(L.isVisitorTraffic).length >= 1);
 t('demo file: 2025 baseline never visitor-visible', dv.traffic.filter(r => r.verificationStatus === 'reference' || r.verificationStatus === 'expired' || r.status === 'expired').every(r => !L.isVisitorTraffic(r)));
 t('demo file: no approved phones', dv.help.contacts.every(c => !c.phone));

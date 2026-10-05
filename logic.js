@@ -20,7 +20,9 @@
   // Location confirmation is SEPARATE from operational verification.
   // confirmed = coordinates are correct and usable for directions NOW.
   // It must NEVER imply fieldVerified or approved (parking/traffic/ops still pending).
-  var LSTATUSES = ['unconfirmed', 'confirmed'];
+  // mapped = landmark/intersection pin for facilities (e.g. PABs); NOT a confirmed 2026 booth position.
+  var LSTATUSES = ['unconfirmed', 'confirmed', 'mapped'];
+  var FACILITY_LSTATUSES = ['unconfirmed', 'mapped'];  // facilities never use confirmed
   var TSTATUSES = ['scheduled', 'cancelled', 'expired'];
   var RTYPES = ['noEntry', 'controlledMovement', 'diversion', 'routeRelocation', 'oneWay', 'vehicleClassRestriction'];
   var RTYPE_LABEL = { noEntry: 'No entry', controlledMovement: 'Controlled movement', diversion: 'Diversion', routeRelocation: 'Route relocation', oneWay: 'One-way', vehicleClassRestriction: 'Vehicle restriction' };
@@ -134,13 +136,16 @@
   /* ---------- statuses ---------- */
   function isCheckedLocation(v) { return v === 'fieldVerified' || v === 'approved'; }
   function isLocationConfirmed(rec) { return !!(rec && rec.locationStatus === 'confirmed' && rec.hasCoords && !rec.demo); }
+  function isLocationMapped(rec) { return !!(rec && rec.locationStatus === 'mapped' && rec.hasCoords && !rec.demo); }
   // Short visitor label. Location-confirmed pandals say so without claiming field-check or approval.
+  // Mapped facilities (PABs) say Location mapped — never confirmed / field-checked.
   function statusLabel(rec) {
     if (rec.demo) return 'DEMO';
     // Operational statuses win when they actually mean field-check / approval.
     if (rec.verificationStatus === 'approved') return 'Approved';
     if (rec.verificationStatus === 'fieldVerified') return 'Field-checked 2026';
     if (rec.kind === 'pandal' && isLocationConfirmed(rec)) return 'Location confirmed';
+    if (rec.kind === 'facility' && isLocationMapped(rec)) return 'Location mapped';
     switch (rec.verificationStatus) {
       case 'pendingVerification': return 'Pending 2026 verification';
       case 'reference': return 'Reference only';
@@ -310,7 +315,8 @@
       o.police2024Name = str(rec.police2024Name, 200);
       // locationStatus: confirmed | unconfirmed (default). Confirmed coords ≠ fieldVerified ≠ approved.
       var ls = str(rec.locationStatus, 20) || 'unconfirmed';
-      if (LSTATUSES.indexOf(ls) < 0) { err('pandal', o.id, 'invalid locationStatus "' + ls + '" (use ' + LSTATUSES.join(', ') + '); treated as unconfirmed'); ls = 'unconfirmed'; }
+      if (ls === 'mapped') { err('pandal', o.id, 'locationStatus mapped is for facilities only; treated as unconfirmed'); ls = 'unconfirmed'; }
+      else if (LSTATUSES.indexOf(ls) < 0) { err('pandal', o.id, 'invalid locationStatus "' + ls + '" (use unconfirmed, confirmed); treated as unconfirmed'); ls = 'unconfirmed'; }
       if (ls === 'confirmed' && !o.hasCoords) { err('pandal', o.id, 'locationStatus confirmed requires valid coordinates; treated as unconfirmed'); ls = 'unconfirmed'; }
       if (o.demo && ls === 'confirmed') { err('pandal', o.id, 'a DEMO pandal cannot have locationStatus confirmed; treated as unconfirmed'); ls = 'unconfirmed'; }
       o.locationStatus = ls;
@@ -430,6 +436,13 @@
       if (FACILITY_TYPES.indexOf(o.type) < 0) { skip('facility', o.id, ['invalid type "' + o.type + '"']); return; }
       if (o.coordProblem) { skip('facility', o.id, [o.coordProblem]); return; }
       o.landmark = str(rec.landmark, 200); o.hours = str(rec.hours, 200);
+      // locationStatus: mapped = landmark pin (not confirmed 2026 booth). Never confirmed/fieldVerified.
+      var fls = str(rec.locationStatus, 20) || 'unconfirmed';
+      if (fls === 'confirmed') { err('facility', o.id, 'facilities use locationStatus mapped (landmark), not confirmed; treated as unconfirmed'); fls = 'unconfirmed'; }
+      else if (FACILITY_LSTATUSES.indexOf(fls) < 0) { err('facility', o.id, 'invalid locationStatus "' + fls + '" (use ' + FACILITY_LSTATUSES.join(', ') + '); treated as unconfirmed'); fls = 'unconfirmed'; }
+      if (fls === 'mapped' && !o.hasCoords) { err('facility', o.id, 'locationStatus mapped requires valid coordinates; treated as unconfirmed'); fls = 'unconfirmed'; }
+      if (o.demo && fls === 'mapped') { err('facility', o.id, 'a DEMO facility cannot have locationStatus mapped; treated as unconfirmed'); fls = 'unconfirmed'; }
+      o.locationStatus = fls;
       res.facilities.push(o);
     });
 
@@ -463,13 +476,13 @@
   function pandalFields(p) { return [p.name, p.locality, p.police2024Name]; }
 
   return {
-    IST_MS: IST_MS, BBOX: BBOX, VSTATUSES: VSTATUSES, LSTATUSES: LSTATUSES, TSTATUSES: TSTATUSES, RTYPES: RTYPES, RTYPE_LABEL: RTYPE_LABEL, PARKING_TYPES: PARKING_TYPES, FACILITY_TYPES: FACILITY_TYPES,
+    IST_MS: IST_MS, BBOX: BBOX, VSTATUSES: VSTATUSES, LSTATUSES: LSTATUSES, FACILITY_LSTATUSES: FACILITY_LSTATUSES, TSTATUSES: TSTATUSES, RTYPES: RTYPES, RTYPE_LABEL: RTYPE_LABEL, PARKING_TYPES: PARKING_TYPES, FACILITY_TYPES: FACILITY_TYPES,
     parseIST: parseIST, parseISTDate: parseISTDate, parseHM: parseHM, istParts: istParts, dayStart: dayStart,
     fmtDate: fmtDate, fmtTime: fmtTime, fmtDateTime: fmtDateTime, fmtClock: fmtClock, fmtTimeRange: fmtTimeRange, fmtDayRange: fmtDayRange,
     fmtShort: fmtShort, fmtAge: fmtAge, freshness: freshness,
     toLocalInputValue: toLocalInputValue, fromLocalInputValue: fromLocalInputValue, fromDateTimeInputs: fromDateTimeInputs,
     validCoords: validCoords, mapsDirUrl: mapsDirUrl, distanceKm: distanceKm, safeHttpUrl: safeHttpUrl, slug: slug,
-    isCheckedLocation: isCheckedLocation, isLocationConfirmed: isLocationConfirmed, statusLabel: statusLabel,
+    isCheckedLocation: isCheckedLocation, isLocationConfirmed: isLocationConfirmed, isLocationMapped: isLocationMapped, statusLabel: statusLabel,
     windowsOf: windowsOf, evaluateTraffic: evaluateTraffic, isVisitorTraffic: isVisitorTraffic, trafficFeed: trafficFeed, describeTrafficTime: describeTrafficTime,
     walkFor: walkFor, parkingForPandal: parkingForPandal, groupNeighbourhoods: groupNeighbourhoods,
     validateDataset: validateDataset, matches: matches, pandalFields: pandalFields
