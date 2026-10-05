@@ -145,7 +145,9 @@ with sync_playwright() as p:
     pkd=pg.inner_text('#pandal-parking')
     ok('J6 Pandal→Parking: DEMO — NOT VERIFIED drop + sample walk', 'DEMO — NOT VERIFIED' in pkd and 'about 785 m (sample)' in pkd and 'about 13 min (sample)' in pkd, pkd[:300])
     ok('pandal traffic empty-state copy', 'No published traffic restriction is currently associated with this pandal.' in pg.inner_text('#pandal-traffic'))
-    ok('pandal nearby help hidden when no booth/hospital within 2 km', pg.is_hidden('#pandal-help-h') and pg.is_hidden('#pandal-help'))
+    # Nearby help: mapped PABs within 2 km of Dada Bhai (e.g. Venus More) — show real distance, not fabricated
+    ok('pandal nearby help shows mapped PABs within 2 km', pg.is_visible('#pandal-help-h') and pg.is_visible('#pandal-help') and 'Police Assistance Booth' in pg.inner_text('#pandal-help') and 'Location mapped' in pg.inner_text('#pandal-help') and 'Mapped landmark' in pg.inner_text('#pandal-help'))
+    ok('pandal nearby help has Directions', pg.locator('#pandal-help button:has-text("Directions")').count()>=1)
     pg.screenshot(path=SHOTS+'pandal-390.png',full_page=True)
 
     # J5 Pandal -> Directions (nav-sheet once, then Google Maps)
@@ -189,7 +191,19 @@ with sync_playwright() as p:
     # J10 SOS -> PAB
     pg.click('#sos-list a[href="#/facilities/pab"]'); pg.wait_for_timeout(500)
     ok('J10 SOS→PAB facilities view', visible_view(pg)=='facilities' and 'Police Assistance Booths' in pg.inner_text('#fac-title') and not pg.is_visible('#sos-sheet'))
-    ok('PAB DEMO card + marker', 'DEMO' in pg.inner_text('#fac-list') and pg.locator('#map-facilities .mk-fac').count()==1)
+    fac=pg.inner_text('#fac-list')
+    ok('PAB DEMO card still present and labelled DEMO', 'DEMO' in fac and 'Sample Police Assistance Booth' in fac)
+    ok('18 mapped PAB markers (mk-pab), demo uses mk-fac', pg.locator('#map-facilities .mk-pab').count()==18 and pg.locator('#map-facilities .mk-fac').count()==1, [pg.locator('#map-facilities .mk-pab').count(), pg.locator('#map-facilities .mk-fac').count()])
+    ok('mapped PAB card: Location mapped + landmark note', 'Location mapped' in fac and 'Mapped landmark' in fac and 'Airview More' in fac)
+    ok('mapped PABs not labelled DEMO', pg.evaluate("""()=>{const cards=[...document.querySelectorAll('#fac-list .info-card')].filter(c=>!c.classList.contains('is-demo'));return cards.length===18 && cards.every(c=>!/DEMO/.test(c.innerText) && /Location mapped/.test(c.innerText))}"""))
+    ok('PAB Directions present for mapped booths', pg.locator('#fac-list .info-card:not(.is-demo) button:has-text("Directions")').count()==18)
+    # Directions opens nav sheet for a mapped PAB
+    pg.locator('#fac-list .info-card:not(.is-demo) button:has-text("Directions")').first.click(); pg.wait_for_timeout(300)
+    ok('mapped PAB Directions opens nav-sheet', pg.is_visible('#nav-sheet') and 'Google Maps may not reflect' in pg.inner_text('#nav-sheet'))
+    href_pab=pg.get_attribute('#nav-go','href')
+    ok('mapped PAB nav link is Google Maps dir', href_pab and href_pab.startswith('https://www.google.com/maps/dir/?api=1&destination='), href_pab)
+    pg.click('#nav-sheet button[value="cancel"]'); pg.wait_for_timeout(200)
+    ok('no Champasari Sri Guru fabricated PAB', 'Bidyamandir' not in fac and 'Champasari Sri Guru' not in fac)
     # J11 SOS -> Hospital
     pg.click('#sos-fab'); pg.wait_for_timeout(300)
     pg.click('#sos-list a[href="#/facilities/hospital"]'); pg.wait_for_timeout(500)
