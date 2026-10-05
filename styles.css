@@ -119,8 +119,8 @@ main.wrap{padding-top:12px;padding-bottom:20px}
 .bigrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .bigbtn .bi{width:18px;height:18px;opacity:.9;flex:none}
 /* secondary: same family, lower emphasis; icon beside label so one line fits */
-.bigrow .bigbtn{flex-direction:row;gap:6px;padding:10px 8px;text-align:center;min-height:52px;font-size:15px;font-weight:600;background:#fff;border-color:var(--line)}
-html[data-theme="dark"] .bigrow .bigbtn{background:var(--card)}
+.bigrow .bigbtn{flex-direction:row;gap:6px;padding:10px 8px;text-align:center;min-height:52px;font-size:15px;font-weight:600;background:#fff;border-color:rgba(42,26,22,.12)}
+html[data-theme="dark"] .bigrow .bigbtn{background:var(--card);border-color:rgba(248,239,222,.14)}
 .bigrow .bt{white-space:nowrap}
 @media(max-width:359px){.bigrow .bigbtn{gap:4px;padding:10px 6px}.bigrow .bi{width:16px;height:16px}}
 .freshness{margin:0 0 8px;font-family:var(--sans);font-size:.8rem;font-weight:400;color:var(--muted)}
