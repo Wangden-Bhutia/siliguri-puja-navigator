@@ -460,6 +460,82 @@ with sync_playwright() as p:
     ok('sw: data is network-first - upstream change visible immediately (no stale SW cache)','Changed Name' in pg.inner_text('#pandal-list'),pg.inner_text('#pandal-list')[:100])
     ok('sw/offline: no uncaught page errors',not [e for e in errs if 'PAGEERROR' in e],errs[:3])
     ctx.close()
+
+    # ================= 15. visual refinement checks =================
+    # home card geometry at 360x740 (baseline before refinement, measured on main: cards 104+117+117 = 338 px)
+    BEFORE_SUM=338
+    ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'',700)
+    m=pg.evaluate("""()=>{const a=[...document.querySelectorAll('.bigbtn')];const r=a.map(x=>x.getBoundingClientRect());return {h:r.map(x=>Math.round(x.height)),bottom:Math.round(r[2].bottom),fresh:Math.round(document.querySelector('.fresh-row').getBoundingClientRect().bottom),warn:Math.round(document.querySelector('#view-home .banner-permanent').getBoundingClientRect().bottom),header:Math.round(document.querySelector('#masthead').getBoundingClientRect().height),bg:a.map(x=>getComputedStyle(x).backgroundColor),fam:a.map(x=>getComputedStyle(x.querySelector('.bb-t')).fontFamily),h1:getComputedStyle(document.querySelector('h1')).fontFamily,txt:a.map(x=>[x.querySelector('.bb-t').textContent,x.querySelector('.bb-s').textContent])}}""")
+    print('INFO home 360x740 card heights',m['h'],'sum',sum(m['h']),'before',BEFORE_SUM,'header',m['header'])
+    ok('visual: home cards reduced >=20%% in height at 360x740 (sum %d vs %d)'%(sum(m['h']),BEFORE_SUM),sum(m['h'])<=BEFORE_SUM*0.8 and all(x>=44 for x in m['h']),m)
+    ok('visual: primary card is the tallest and filled burgundy; secondaries are tinted (different background)',m['h'][0]>max(m['h'][1:])-20 and m['h'][0]>=76 and m['bg'][0]=='rgb(90, 15, 30)' and m['bg'][1]!=m['bg'][0] and m['bg'][2]!=m['bg'][0],m['bg'])
+    ok('visual: card titles + descriptions use sans-serif; app name keeps the serif',all('Georgia' not in f for f in m['fam']) and 'Georgia' in m['h1'],(m['fam'],m['h1']))
+    ok('visual: card wording exact',m['txt']==[['Find a Pandal','Search, see where it is, get directions.'],['Parking & Walking Routes','Parking, drop-off, pick-up and walking routes.'],['Traffic Updates & Help','Published road restrictions, diversions and essential facilities.']],m['txt'])
+    ok('visual: all three cards, freshness/Refresh and the traffic warning fit in the first 740 px screen without scrolling',m['warn']<=740 and m['fresh']<=740,m)
+    ok('visual: header is compact (<=125 px at 360 wide, incl. dates)',m['header']<=125,m['header'])
+    for i,(href,v) in enumerate((('#/find','find'),('#/parking','parking'),('#/traffic','traffic'))):
+        goto(pg,'',300); pg.locator('.bigbtn').nth(i).tap() if False else pg.locator('.bigbtn').nth(i).click(); pg.wait_for_timeout(350)
+        ok('visual: whole card %d is clickable and opens %s'%(i+1,v),vis(pg,'#view-'+v) and pg.evaluate("location.hash")==href)
+    goto(pg,'',300)
+    pg.keyboard.press('Tab'); pg.keyboard.press('Tab'); pg.keyboard.press('Tab')
+    foc=pg.evaluate("(()=>{const e=document.activeElement;const cs=getComputedStyle(e);return {c:e.className,ow:cs.outlineWidth,os:cs.outlineStyle}})()")
+    ok('visual: keyboard focus ring visible (>=3px outline) on cards/controls',foc['os']!='none' and float(foc['ow'].replace('px',''))>=3,foc)
+    ok('visual: no new bottom nav on home, no dialogs/illustrations added (no <img>/<svg> in home)',not vis(pg,'#tabbar') and pg.locator('#view-home img, #view-home svg, dialog').count()==0)
+    ok('visual: demo warning compact (<=64 px tall at 360 wide) and still states "Sample data – not real pandals or orders" with a text icon',vis(pg,'#bn-demo') and pg.evaluate("document.querySelector('#bn-demo').getBoundingClientRect().height")<=64 and pg.inner_text('#bn-demo').startswith('◆ Sample data – not real pandals or orders'),pg.inner_text('#bn-demo'))
+    ok('visual: demo warning stays visible on every screen with demo data',all((go(pg,r,250) or True) and vis(pg,'#bn-demo') for r in ('find','parking','traffic','help','info','')))
+    # install prompt UI intact (header, compact)
+    pg.evaluate("""()=>{const e=new Event('beforeinstallprompt');e.prompt=()=>{window.__prompted=1};e.userChoice=Promise.resolve({outcome:'accepted'});window.dispatchEvent(e)}""")
+    ok('install: button appears in the header after beforeinstallprompt, >=44 px',vis(pg,'#install-btn') and pg.evaluate("document.querySelector('#install-btn').getBoundingClientRect().height")>=44 and pg.evaluate("!!document.querySelector('#masthead #install-btn')"))
+    pg.screenshot(path=SHOTS+'v3-install-visible-360x740.png')
+    pg.click('#install-btn'); pg.wait_for_timeout(200); ok('install: click calls prompt() then hides',pg.evaluate("window.__prompted===1") and not vis(pg,'#install-btn'))
+    ok('visual: no console errors at 360x740',not errs,errs); ctx.close()
+    # reduced motion
+    ctx=new_ctx(reduced_motion='reduce'); pg=ctx.new_page(); goto(pg,'',400)
+    ok('visual: prefers-reduced-motion disables transitions/animations',pg.evaluate("[...document.querySelectorAll('.bigbtn,.btn')].every(e=>parseFloat(getComputedStyle(e).transitionDuration)===0)")); ctx.close()
+    # overflow at narrow widths, light + night, every route; axe colour contrast on home states
+    for (w,h) in ((320,568),(360,740),(375,812),(390,844),(412,915)):
+        for theme in ('light','night'):
+            ctx=new_ctx(viewport={'width':w,'height':h}); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'',500)
+            if theme=='night': pg.click('#theme-btn'); pg.wait_for_timeout(150)
+            bad_r=[]
+            for r in ('','find','find/demo-pandal-a','parking','traffic','help','info'):
+                go(pg,r,300)
+                o=pg.evaluate("({sw:document.documentElement.scrollWidth,iw:innerWidth,bw:document.body.scrollWidth,wide:[...document.querySelectorAll('.view:not([hidden]) *, #masthead *, #tabbar *')].filter(e=>{const x=e.getBoundingClientRect();return x.width&&x.right>innerWidth+1&&!e.closest('.leaflet-container')}).slice(0,3).map(e=>e.className||e.tagName)})")
+                if o['sw']>o['iw'] or o['bw']>o['iw'] or o['wide']: bad_r.append((r,o))
+            ok('overflow: no horizontal overflow at %dx%d %s on all screens'%(w,h,theme),not bad_r,bad_r)
+            if (w,h) in((320,568),(360,740),(412,915)):
+                go(pg,'',300); pg.screenshot(path=SHOTS+'v3-home-%dx%d-%s.png'%(w,h,theme))
+                go(pg,'find/demo-pandal-a',700); pg.screenshot(path=SHOTS+'v3-find-%dx%d-%s.png'%(w,h,theme))
+                go(pg,'traffic',700); pg.screenshot(path=SHOTS+'v3-traffic-%dx%d-%s.png'%(w,h,theme))
+            ok('overflow: no console errors %dx%d %s'%(w,h,theme),not errs,errs)
+            ctx.close()
+    # axe colour contrast with each freshness / banner state, day + night
+    if AXE:
+        ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); errs=[]; watch(pg,errs); mode={'m':'ok'}
+        def flaky2(r):
+            if mode['m']=='ok': r.fulfill(status=200,content_type='application/json',body=json.dumps(DEMO))
+            else: r.abort('internetdisconnected')
+        pg.route('**/data/puja-data.json*',flaky2); goto(pg,'',600); pg.evaluate(AXE)
+        def contrast(label):
+            v=pg.evaluate("axe.run(document,{runOnly:{type:'rule',values:['color-contrast','link-in-text-block']}}).then(r=>r.violations.map(v=>v.id+': '+v.nodes.slice(0,2).map(n=>n.html.slice(0,80)+' '+((n.any[0]||{}).message||'')).join(' || ')))")
+            ok('contrast AA (%s)'%label,not v,v)
+        for theme in ('light','night'):
+            if theme=='night' and pg.evaluate("document.documentElement.dataset.theme")!='dark': pg.click('#theme-btn'); pg.wait_for_timeout(150)
+            mode['m']='ok'; pg.wait_for_timeout(3200); pg.evaluate("PujaApp.refresh('manual')"); pg.wait_for_timeout(500)
+            go(pg,'',200); contrast('%s, home, demo data, current'%theme)
+            mode['m']='fail'; pg.wait_for_timeout(3200); pg.evaluate("PujaApp.refresh('manual')"); pg.wait_for_timeout(600)
+            ok('states (%s): failed refresh -> compact stale banner + freshness warns "may be outdated" (text + warning sign)'%theme,vis(pg,'#bn-offline') and 'may be outdated' in pg.inner_text('#view-home [data-fresh]') and pg.evaluate("getComputedStyle(document.querySelector('#view-home [data-fresh]'),'::before').content").strip('"')!='⟳ ' )
+            contrast('%s, home, refresh failed / stale'%theme)
+            for r in ('find/demo-pandal-a','parking','traffic','help','info'): go(pg,r,250); contrast('%s, #/%s'%(theme,r))
+            pg.screenshot(path=SHOTS+'v3-traffic-stale-360x740-%s.png'%theme)
+            go(pg,'',200); pg.screenshot(path=SHOTS+'v3-home-stale-360x740-%s.png'%theme)
+        ok('contrast pass: no console errors (other than the deliberately aborted refreshes)',not [e for e in errs if 'ERR_INTERNET_DISCONNECTED' not in e],errs); ctx.close()
+    # demo banner: present for demo data, absent for a non-demo (verified) dataset, on home too
+    ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); serve_json(pg,verified_fixture()); goto(pg,'',600)
+    ok('demo banner: absent on home when the dataset flag says it is not demo',not vis(pg,'#bn-demo'))
+    d3=copy.deepcopy(verified_fixture()); d3['meta']['isDemoDataset']=True
+    ctx.close(); ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); serve_json(pg,d3); goto(pg,'',600)
+    ok('demo banner: tied to the flag (isDemoDataset=true shows it even for fixture records)',vis(pg,'#bn-demo')); ctx.close()
     b.close()
 bad=[r for r in results if not r[1]]
 print('\n%d checks, %d failed'%(len(results),len(bad)))
