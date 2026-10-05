@@ -19,7 +19,9 @@ Every record in the bundled file is a placeholder: names start with `DEMO –`, 
     "festival": { "name": "Durga Puja 2026", "startDate": "2026-10-17", "endDate": "2026-10-21", "note": "" },
     "notice": ""                                   // optional text for the demo banner only
   },
-  "pandals": [ ... ], "parking": [ ... ], "restrictions": [ ... ]
+  "pandals": [ ... ], "parking": [ ... ], "restrictions": [ ... ],
+  // optional (added in demo-0.2.0; older files without them still work):
+  "accessPoints": [ ... ], "walkingRoutes": [ ... ], "diversionPoints": [ ... ], "facilities": [ ... ]
 }
 ```
 **All times are India time with an explicit `+05:30` offset** (`2026-10-18T22:00:00+05:30`). Times without an offset, or with `Z`, are rejected. Dates are `YYYY-MM-DD`, daily times `HH:MM` (24-hour; `24:00` allowed for a window end).
@@ -30,7 +32,7 @@ Every record in the bundled file is a placeholder: names start with `DEMO –`, 
 | `id` | unique; letters, digits, `.`, `_`, `-` |
 | `name`, `locality` | required: `name`. `locality` strongly recommended (used for the filter) |
 | `address` | text; also used for navigation if there are no coordinates |
-| `lat`, `lon` | numbers (not strings) inside the Siliguri box: lat 26.5–27.0, lon 88.2–88.7. Both or neither. Without coordinates the pandal is listed but not drawn; with neither coordinates nor address the Navigate button is disabled |
+| `lat`, `lon` | numbers (not strings) inside the Siliguri box: lat 26.5–27.0, lon 88.2–88.7. Both or neither. Without coordinates the pandal is listed but not drawn; with neither coordinates nor address the Directions button is disabled |
 | `approximateLocation` | `true` if the point is not exact |
 | `description`, `timings`, `entrance`, `nearestParking`, `accessibility` | free text |
 | `restrictionIds` | list of restriction `id`s to cross-link |
@@ -61,6 +63,17 @@ Every record in the bundled file is a placeholder: names start with `DEMO –`, 
 | `status` | `official`, `admin-verified`, `unconfirmed`, `demo`, `draft` |
 | `geometry`, `geometryVerified` | optional GeoJSON `LineString` (`[lon,lat]` pairs). **Only drawn if `geometryVerified` is `true`, valid, and the record is official/admin-verified.** Don't draw guessed road lines |
 | `adminNotes` | internal note – not displayed, but public in the file |
+
+### Optional additions (visitor flow) – all fields below are optional unless marked required
+Every record still needs `id` (unique across **all** lists and entrances), `name`, `source`, `verifiedAt`, `verifiedBy`, `status`, `demo`, as above. Coordinates must lie inside the Siliguri box (lat 26.5–27.0, lon 88.2–88.7). **Never invent values; leave a field out if it is not known** – the app then says "unavailable / not verified". No phone numbers except as described for hospitals.
+
+- **Pandal** extras: `landmark`; `entrances: [{id, name, lat, lon, description, verified, source, verifiedAt, verifiedBy}]`. An entrance counts as a *verified public entrance* (Directions go there) only if `verified: true`, the pandal itself is official/admin-verified, and the entrance has its own `source`, `verifiedAt`, `verifiedBy`.
+- **Parking** extras: `approved: true` (only when the order names it approved parking), `landmark`, `hours`.
+- **accessPoints** (required: `type` = `drop-off` | `pick-up` | `pedestrian-entrance` | `pedestrian-exit`, `lat`, `lon`): `designated: true` only if an official order designates it, `landmark`, `hours`, `vehicleTypes`, `notes`. Shown as "Designated …" only when `designated` is true **and** the record is verified.
+- **walkingRoutes** (required: `fromId` = an access point or parking id, `pandalId`; optional `entranceId` of that pandal): `waypoints: [{lat, lon, label}]` (surveyed points along the real walkable path), `instructions: [..]`, `routeVerified`, `distanceM`, `timeMin`. `routeVerified: true` is honoured only when the record is official/admin-verified, `distanceM` (1–20000) and `timeMin` (1–240) are given, there are ≥2 waypoints and ≥1 instruction, and the distance is not shorter than the straight line. Otherwise the route is shown as **not verified** with no distance/time and no line on the map.
+- **Restriction** extras: `roadStretch` (e.g. "Hill Cart Road, from X to Y"), `direction`.
+- **diversionPoints** (required: `restrictionId` of an existing restriction, `lat`, `lon`, `instruction` ≤300 chars): `order`, `landmark`. Shown under the restriction they belong to.
+- **facilities** (required: `type` = `toilet` | `drinking-water` | `first-aid` | `hospital` | `police-booth`, plus coordinates, `address` or `landmark`): `hours`, `landmark`, `address`, `availableFrom`/`availableTo` (IST pair). Hospitals only: `emergencyCapable: true` is shown only with `emergencyCapabilityVerified: true` on a verified record; `phone` is shown only with `phoneAuthorised: true` on a verified record (use an official public number only with written permission; otherwise omit).
 
 ### Status meanings and badges
 - **Official** – copied from an official order/notice; `source` says which.
