@@ -5,12 +5,12 @@
     "isDemoDataset": true,
     "timezone": "Asia/Kolkata",
     "festival": {
-      "name": "Durga Puja 2026 (dates approximate - demo)",
-      "startDate": "2026-10-17",
+      "name": "Durga Puja 2026",
+      "startDate": "2026-10-16",
       "endDate": "2026-10-21",
-      "note": "DEMO: festival dates are approximate and shown only to illustrate the layout."
+      "note": ""
     },
-    "notice": "Replace with verified records before public use (see docs/ADMIN-GUIDE.md)."
+    "notice": ""
   },
   "pandals": [
     {

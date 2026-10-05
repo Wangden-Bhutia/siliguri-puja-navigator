@@ -206,7 +206,7 @@ t('incomplete data is never active: no schedule -> unconfirmed', L.evaluateRestr
 
 // freshness text
 const NOW = ms('2026-10-05T09:00:00+05:30');
-t('freshness: fresh network', (() => { const f = L.freshness({ status: 'ok', source: 'network', stale: false, lastRefresh: NOW - 60000 }, NOW); return f.level === 'ok' && f.text === 'Data refreshed 8:59 AM IST'; })());
+t('freshness: fresh network', (() => { const f = L.freshness({ status: 'ok', source: 'network', stale: false, lastRefresh: NOW - 60000 }, NOW); return f.level === 'ok' && f.text === 'Data updated 8:59 AM IST'; })());
 t('freshness: old (>15 min) shows age and is not "ok"', (() => { const f = L.freshness({ status: 'ok', source: 'network', stale: false, lastRefresh: NOW - 40 * 60000 }, NOW); return f.level === 'old' && /40 min ago/.test(f.text); })());
 t('freshness: cached copy is "may be outdated" with last real refresh', (() => { const f = L.freshness({ status: 'ok', source: 'cache', stale: false, lastRefresh: NOW - 3600000 }, NOW); return f.level === 'stale' && /may be outdated/.test(f.text) && /8:00 AM IST/.test(f.text); })());
 t('freshness: failed refresh keeps data but flags stale', L.freshness({ status: 'ok', source: 'network', stale: true, lastRefresh: NOW - 1000 }, NOW).level === 'stale');
@@ -227,6 +227,49 @@ t('demo file: no phone numbers, no designation/approval claims', !/"phone"|"phon
 t('demo file: all route / diversion references resolve', dv.walkingRoutes.length === DEMO.walkingRoutes.length && dv.diversionPoints.length === DEMO.diversionPoints.length);
 t('demo file: all five facility types and all four access types present', ['toilet', 'drinking-water', 'first-aid', 'hospital', 'police-booth'].every(x => dv.facilities.some(f => f.type === x)) && ['drop-off', 'pick-up', 'pedestrian-entrance', 'pedestrian-exit'].every(x => dv.accessPoints.some(f => f.type === x)));
 t('demo file: no verified geometry drawn', dv.restrictions.every(r => !r.geometry));
+
+// ================= branding (Siliguri Puja Guide) =================
+const BR = require('../branding.js');
+const { execFileSync } = require('child_process'), os = require('os');
+const rd = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+const html = rd('index.html'), manifest = JSON.parse(rd('manifest.webmanifest')), offline = rd('offline.html');
+const txtOf = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&ndash;/g, '\u2013').replace(/\s+/g, ' ');
+t('branding: name, tagline, descriptor, dates exact', BR.appName === 'Siliguri Puja Guide' && BR.tagline === 'Find pandals. Plan your route. Travel safely.' && BR.descriptor === 'Official Durga Puja Traffic & Visitor Information' && BR.festivalDates === '16 \u2013 21 October 2026');
+t('branding: approval flag defaults to false (footer says Demo version)', BR.officialBrandingApproved === false && /Demo version/.test(BR.footerDemo) && !/Official/.test(BR.footerDemo));
+t('branding: index.html fallback text matches branding.js', txtOf(html).includes(BR.tagline) && txtOf(html).includes(BR.descriptor) && txtOf(html).includes(BR.festivalDates) && /<title>Siliguri Puja Guide<\/title>/.test(html) && html.includes(BR.footerDemo) && /<h1[^>]*>.*Siliguri.*Puja.*Guide/s.test(html));
+t('branding: manifest name/short_name', manifest.name === BR.appName && manifest.short_name === BR.shortName && /apple-mobile-web-app-title" content="Puja Guide"/.test(html));
+t('branding: offline.html uses new name', /<title>Offline \u2013 Siliguri Puja Guide<\/title>/.test(offline));
+const userFacing = ['index.html', 'offline.html', 'admin-preview.html', 'manifest.webmanifest', 'app.js', 'branding.js', 'styles.css', 'logic.js', 'README.md', 'docs/ADMIN-GUIDE.md', 'docs/DEPLOYMENT.md', 'docs/TEST-CHECKLIST.md'];
+userFacing.forEach(f => t('old name "Siliguri Puja Navigator" absent from ' + f, !/Siliguri Puja Navigator/i.test(rd(f))));
+t('no "independent community" / endorsed-by wording in visitor pages', !/independent community|community tool|endorsed by|approved by/i.test(rd('index.html') + rd('app.js') + rd('offline.html') + rd('manifest.webmanifest')));
+t('no maintainer instructions on visitor screens (ADMIN-GUIDE / "Replace with verified")', !/ADMIN-GUIDE|Replace with verified|see README/i.test(rd('index.html') + rd('app.js')));
+t('demo banner wording', /Demo data \u2013 locations and traffic orders are not verified\./.test(html) && /Not real pandals or orders\./.test(html));
+t('home cards wording', ['Find a Pandal', 'Search by name or area and get directions.', 'Parking &amp; Routes', 'Parking, drop-off and walking routes.', 'Traffic &amp; Help', 'Traffic updates and essential services.'].every(x => html.includes('>' + x + '<')));
+t('safety bar + footer links present', html.includes('Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.') && ['Safety notice', 'Privacy policy', 'Terms of use'].every(x => html.includes('>' + x + '<')));
+t('institutional branding: kill switch + caption + both logo paths configured; logos NOT in repo', BR.institutionalBranding.enabled === true && BR.institutionalBranding.caption === 'A joint initiative by' && BR.institutionalBranding.logos.map(l => l.src).join() === 'assets/logos/west-bengal-police.png,assets/logos/siliguri-metropolitan-police.png');
+const logosInRepo = BR.institutionalBranding.logos.map(l => fs.existsSync(path.join(__dirname, '..', l.src)));
+t('logosPresent flag matches the files actually in the repo', BR.institutionalBranding.logosPresent === logosInRepo.every(Boolean), logosInRepo);
+t('assets/logos/README.md documents the exact filenames and approval', /west-bengal-police\.png/.test(rd('assets/logos/README.md')) && /siliguri-metropolitan-police\.png/.test(rd('assets/logos/README.md')) && /approval/i.test(rd('assets/logos/README.md')));
+t('branding.js carries the approval warning', /APPROVAL REQUIRED/.test(rd('branding.js')));
+// build-sw.js with and without (temporary, never committed) logo files
+(function () {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'spn-build-'));
+  const copy = (f) => { fs.mkdirSync(path.dirname(path.join(tmp, f)), { recursive: true }); fs.copyFileSync(path.join(__dirname, '..', f), path.join(tmp, f)); };
+  ['index.html', 'app.js', 'logic.js', 'branding.js', 'styles.css', 'service-worker.js', 'assets/logos/README.md'].forEach(copy);
+  const run = () => execFileSync('node', [path.join(__dirname, '..', 'tools', 'build-sw.js')], { env: Object.assign({}, process.env, { SPN_ROOT: tmp }) }).toString();
+  const assets = () => JSON.parse(fs.readFileSync(path.join(tmp, 'service-worker.js'), 'utf8').match(/^const ASSETS = (.*);$/m)[1]);
+  run();
+  t('build-sw: no logos -> logosPresent false, logos and README not precached', /logosPresent: false/.test(fs.readFileSync(path.join(tmp, 'branding.js'), 'utf8')) && !assets().some(a => a.startsWith('assets/')), assets());
+  fs.writeFileSync(path.join(tmp, 'assets/logos/west-bengal-police.png'), 'x');
+  run();
+  t('build-sw: only ONE logo -> still false (strip needs both)', /logosPresent: false/.test(fs.readFileSync(path.join(tmp, 'branding.js'), 'utf8')));
+  fs.writeFileSync(path.join(tmp, 'assets/logos/siliguri-metropolitan-police.png'), 'x');
+  run();
+  t('build-sw: both logos -> logosPresent true and both precached (README still excluded)', /logosPresent: true/.test(fs.readFileSync(path.join(tmp, 'branding.js'), 'utf8')) && assets().includes('assets/logos/west-bengal-police.png') && !assets().some(a => /README/.test(a)), assets());
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'service-worker.js'), 'utf8');
+  t('service worker: optional logos cached individually, failures tolerated', /assets\/logos\//.test(sw) && /\.catch\(\(\) => \{\}\)/.test(sw));
+  fs.rmSync(tmp, { recursive: true, force: true });
+})();
 
 // --- copy lint: no false claims of live traffic / open roads / "confirmed in force"
 const root = path.join(__dirname, '..');

@@ -1,4 +1,4 @@
-"""Playwright e2e for Siliguri Puja Navigator (visitor flow).
+"""Playwright e2e for Siliguri Puja Guide (visitor flow).
 Usage: python tests/e2e.py [BASE_URL]   (default http://127.0.0.1:8777/siliguri-puja-navigator/)
 Env: SHOTS=<dir> (default /workspace/siliguri-puja-navigator-shots-v2/), AXE=<axe.min.js> (default /tmp/axe.min.js, optional).
 Needs: playwright + system Chrome.  All fixtures are synthetic and labelled TEST FIXTURE; nothing here is real Puja data."""
@@ -99,16 +99,16 @@ with sync_playwright() as p:
     geo_calls=[]
     pg.add_init_script("window.__geo=0;const g=navigator.geolocation;if(g){const o=g.getCurrentPosition.bind(g);g.getCurrentPosition=function(){window.__geo++;return o.apply(g,arguments)};const w=g.watchPosition.bind(g);g.watchPosition=function(){window.__geo++;return w.apply(g,arguments)}}")
     goto(pg)
-    ok('title / h1 / subtitle',pg.title().startswith('Siliguri Puja Navigator') and pg.inner_text('h1')=='Siliguri Puja Navigator' and pg.inner_text('#tagline')=='Find your pandal. Know how to reach it.',pg.title())
+    ok('title / h1 / tagline / descriptor / dates (Siliguri Puja Guide)',pg.title()=='Siliguri Puja Guide' and ' '.join(pg.inner_text('h1').split())=='Siliguri Puja Guide' and pg.inner_text('#tagline')=='Find pandals. Plan your route. Travel safely.' and pg.locator('#descriptor').text_content()=='Official Durga Puja Traffic & Visitor Information' and pg.locator('#festival-dates').text_content()=='16 – 21 October 2026',pg.title())
     big=pg.locator('#view-home .bigactions a')
-    ok('home: exactly three big primary actions with the required labels',big.count()==3 and [big.nth(i).locator('.ba-title').inner_text() if big.nth(i).locator('.ba-title').count() else big.nth(i).inner_text().split('\n')[0] for i in range(3)]==['Find a Pandal','Parking & Walking Routes','Traffic Updates & Help'],[big.nth(i).inner_text() for i in range(big.count())])
+    ok('home: exactly three big actions with the required labels and descriptions',big.count()==3 and [[big.nth(k).locator('.bb-t').text_content(),big.nth(k).locator('.bb-s').text_content()] for k in range(3)]==[['Find a Pandal','Search by name or area and get directions.'],['Parking & Routes','Parking, drop-off and walking routes.'],['Traffic & Help','Traffic updates and essential services.']],[big.nth(k).inner_text() for k in range(big.count())])
     ok('home: big actions link to #/find #/parking #/traffic',[big.nth(i).get_attribute('href') for i in range(3)]==['#/find','#/parking','#/traffic'])
-    ok('home: big actions are >=56px tall and full width',pg.evaluate("[...document.querySelectorAll('#view-home .bigactions a')].every(a=>{const r=a.getBoundingClientRect();return r.height>=56&&r.width>=300})"))
+    ok('home: primary card is full width (>=300px) and >=76px tall; secondary cards >=44px tall',pg.evaluate("(()=>{const a=[...document.querySelectorAll('#view-home .bigactions a')].map(x=>x.getBoundingClientRect());return a[0].width>=300&&a[0].height>=76&&a[1].height>=44&&a[2].height>=44})()"))
     ok('home: NO map and no markers on home',pg.locator('#view-home .leaflet-container').count()==0 and pg.locator('#view-home .map-frame').count()==0 and pg.locator('.leaflet-container').count()==0 or not vis(pg,'.leaflet-container'),pg.locator('.leaflet-container').count())
-    ok('home: compact freshness indicator with IST time',pg.locator('#view-home [data-fresh]').count()==1 and 'IST' in pg.inner_text('#view-home [data-fresh]') and pg.inner_text('#view-home [data-fresh]').startswith('Data refreshed'),pg.inner_text('#view-home [data-fresh]'))
+    ok('home: compact freshness indicator with IST time',pg.locator('#view-home [data-fresh]').count()==1 and 'IST' in pg.inner_text('#view-home [data-fresh]') and pg.inner_text('#view-home [data-fresh]').startswith('Data updated'),pg.inner_text('#view-home [data-fresh]'))
     ok('home: short traffic/navigation warning visible',vis(pg,'#view-home .banner-permanent') and 'Follow the directions of traffic police' in pg.inner_text('#view-home .banner-permanent'))
     ok('home: no onboarding / account / sign-in / modal dialogs',pg.locator('dialog,[role=dialog],[aria-modal=true]').count()==0 and not any(w in pg.inner_text('body').lower() for w in ('sign in','log in','create account','welcome tour')))
-    ok('home: demo banner says sample data',vis(pg,'#bn-demo') and 'Sample data – not real pandals or orders' in pg.inner_text('#bn-demo'))
+    ok('home: demo banner (Demo data – locations and traffic orders are not verified. / Not real pandals or orders.)',vis(pg,'#bn-demo') and 'Demo data – locations and traffic orders are not verified.' in pg.inner_text('#bn-demo') and 'Not real pandals or orders.' in pg.inner_text('#bn-demo'))
     ok('home: tab bar hidden on home',not vis(pg,'#tabbar'))
     ok('home: geolocation NOT requested on load (and no permission prompt path)',pg.evaluate("window.__geo")==0)
     ok('home: no horizontal scroll',not hscroll(pg))
@@ -374,7 +374,7 @@ with sync_playwright() as p:
         elif mode['m']=='empty': r.fulfill(status=200,content_type='application/json',body='{"meta":{}}')
     pg.route('**/data/puja-data.json*',flaky); goto(pg,'',700)
     t_ok=pg.evaluate("localStorage.getItem('spn.lastRefresh')"); fr_ok=pg.inner_text('#view-home [data-fresh]')
-    ok('failure: healthy state has no stale banner and normal freshness text',not vis(pg,'#bn-offline') and fr_ok.startswith('Data refreshed') and 'outdated' not in fr_ok,fr_ok)
+    ok('failure: healthy state has no stale banner and normal freshness text',not vis(pg,'#bn-offline') and fr_ok.startswith('Data updated') and 'outdated' not in fr_ok,fr_ok)
     for m in ('abort','500','bad','empty'):
         mode['m']=m; pg.wait_for_timeout(3200); pg.evaluate("PujaApp.refresh('manual')"); pg.wait_for_timeout(700)
         ok('failure (%s): keeps cached data in view, shows "may be outdated" banner, still labels demo'%m,counts(pg)['pandalCards']==6 and vis(pg,'#bn-offline') and 'may be outdated' in pg.inner_text('#bn-offline') and info(pg)['stale'] is True,pg.inner_text('#bn-offline') if vis(pg,'#bn-offline') else 'no banner')
@@ -462,17 +462,13 @@ with sync_playwright() as p:
     ctx.close()
 
     # ================= 15. visual refinement checks =================
-    # home card geometry at 360x740 (baseline before refinement, measured on main: cards 104+117+117 = 338 px)
-    BEFORE_SUM=338
+    # home geometry at 360x740 (card heights are reported; the redesign intentionally replaces the compact 3-row cards)
     ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'',700)
-    m=pg.evaluate("""()=>{const a=[...document.querySelectorAll('.bigbtn')];const r=a.map(x=>x.getBoundingClientRect());return {h:r.map(x=>Math.round(x.height)),bottom:Math.round(r[2].bottom),fresh:Math.round(document.querySelector('.fresh-row').getBoundingClientRect().bottom),warn:Math.round(document.querySelector('#view-home .banner-permanent').getBoundingClientRect().bottom),header:Math.round(document.querySelector('#masthead').getBoundingClientRect().height),bg:a.map(x=>getComputedStyle(x).backgroundColor),fam:a.map(x=>getComputedStyle(x.querySelector('.bb-t')).fontFamily),h1:getComputedStyle(document.querySelector('h1')).fontFamily,txt:a.map(x=>[x.querySelector('.bb-t').textContent,x.querySelector('.bb-s').textContent])}}""")
-    print('INFO home 360x740 card heights',m['h'],'sum',sum(m['h']),'before',BEFORE_SUM,'header',m['header'])
-    ok('visual: home cards reduced >=20%% in height at 360x740 (sum %d vs %d)'%(sum(m['h']),BEFORE_SUM),sum(m['h'])<=BEFORE_SUM*0.8 and all(x>=44 for x in m['h']),m)
-    ok('visual: primary card is the tallest and filled burgundy; secondaries are tinted (different background)',m['h'][0]>max(m['h'][1:])-20 and m['h'][0]>=76 and m['bg'][0]=='rgb(90, 15, 30)' and m['bg'][1]!=m['bg'][0] and m['bg'][2]!=m['bg'][0],m['bg'])
-    ok('visual: card titles + descriptions use sans-serif; app name keeps the serif',all('Georgia' not in f for f in m['fam']) and 'Georgia' in m['h1'],(m['fam'],m['h1']))
-    ok('visual: card wording exact',m['txt']==[['Find a Pandal','Search, see where it is, get directions.'],['Parking & Walking Routes','Parking, drop-off, pick-up and walking routes.'],['Traffic Updates & Help','Published road restrictions, diversions and essential facilities.']],m['txt'])
-    ok('visual: all three cards, freshness/Refresh and the traffic warning fit in the first 740 px screen without scrolling',m['warn']<=740 and m['fresh']<=740,m)
-    ok('visual: header is compact (<=125 px at 360 wide, incl. dates)',m['header']<=125,m['header'])
+    m=pg.evaluate("""()=>{const a=[...document.querySelectorAll('.bigbtn')];const r=a.map(x=>x.getBoundingClientRect());return {h:r.map(x=>Math.round(x.height)),w:r.map(x=>Math.round(x.width)),bottom:Math.round(r[2].bottom),fresh:Math.round(document.querySelector('.fresh-row').getBoundingClientRect().bottom),warn:Math.round(document.querySelector('#view-home .banner-permanent').getBoundingClientRect().bottom),header:Math.round(document.querySelector('#masthead').getBoundingClientRect().height),fam:a.map(x=>getComputedStyle(x.querySelector('.bb-t')).fontFamily),h1:getComputedStyle(document.querySelector('h1')).fontFamily,bg:getComputedStyle(a[0]).backgroundImage}}""")
+    print('INFO home 360x740 card heights',m['h'],'header',m['header'],'safety bar bottom',m['warn'])
+    ok('visual: primary card has a burgundy gradient fill; titles use sans-serif; app name keeps the serif',('gradient' in m['bg']) and all('Georgia' not in f for f in m['fam']) and 'Georgia' in m['h1'],m)
+    ok('visual: freshness row and safety bar are on the first 740 px screen at 360 wide (no scrolling)',m['warn']<=740 and m['fresh']<=740,m)
+    ok('visual: header height reasonable (<=190 px at 360 wide, incl. tagline, descriptor, dates)',m['header']<=190,m['header'])
     for i,(href,v) in enumerate((('#/find','find'),('#/parking','parking'),('#/traffic','traffic'))):
         goto(pg,'',300); pg.locator('.bigbtn').nth(i).tap() if False else pg.locator('.bigbtn').nth(i).click(); pg.wait_for_timeout(350)
         ok('visual: whole card %d is clickable and opens %s'%(i+1,v),vis(pg,'#view-'+v) and pg.evaluate("location.hash")==href)
@@ -480,8 +476,8 @@ with sync_playwright() as p:
     pg.keyboard.press('Tab'); pg.keyboard.press('Tab'); pg.keyboard.press('Tab')
     foc=pg.evaluate("(()=>{const e=document.activeElement;const cs=getComputedStyle(e);return {c:e.className,ow:cs.outlineWidth,os:cs.outlineStyle}})()")
     ok('visual: keyboard focus ring visible (>=3px outline) on cards/controls',foc['os']!='none' and float(foc['ow'].replace('px',''))>=3,foc)
-    ok('visual: no new bottom nav on home, no dialogs/illustrations added (no <img>/<svg> in home)',not vis(pg,'#tabbar') and pg.locator('#view-home img, #view-home svg, dialog').count()==0)
-    ok('visual: demo warning compact (<=64 px tall at 360 wide) and still states "Sample data – not real pandals or orders" with a text icon',vis(pg,'#bn-demo') and pg.evaluate("document.querySelector('#bn-demo').getBoundingClientRect().height")<=64 and pg.inner_text('#bn-demo').startswith('◆ Sample data – not real pandals or orders'),pg.inner_text('#bn-demo'))
+    ok('visual: no new bottom nav on home, no dialogs / bitmap illustrations on home (inline SVG icons only)',not vis(pg,'#tabbar') and pg.locator('#view-home img, dialog').count()==0 and pg.locator('#view-home svg').count()>=6)
+    ok('visual: demo warning compact (<=84 px tall at 360 wide), icon + text',vis(pg,'#bn-demo') and pg.evaluate("document.querySelector('#bn-demo').getBoundingClientRect().height")<=84 and pg.locator('#bn-demo svg').count()==1 and pg.inner_text('#bn-demo').startswith('Demo data – locations and traffic orders are not verified.'),pg.inner_text('#bn-demo'))
     ok('visual: demo warning stays visible on every screen with demo data',all((go(pg,r,250) or True) and vis(pg,'#bn-demo') for r in ('find','parking','traffic','help','info','')))
     # install prompt UI intact (header, compact)
     pg.evaluate("""()=>{const e=new Event('beforeinstallprompt');e.prompt=()=>{window.__prompted=1};e.userChoice=Promise.resolve({outcome:'accepted'});window.dispatchEvent(e)}""")
@@ -536,6 +532,137 @@ with sync_playwright() as p:
     d3=copy.deepcopy(verified_fixture()); d3['meta']['isDemoDataset']=True
     ctx.close(); ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); serve_json(pg,d3); goto(pg,'',600)
     ok('demo banner: tied to the flag (isDemoDataset=true shows it even for fixture records)',vis(pg,'#bn-demo')); ctx.close()
+    # ================= 16. Siliguri Puja Guide redesign: branding, identity strip, responsive cards =================
+    import subprocess, tempfile, shutil
+    def read_root(f): return open(os.path.join(ROOT,f),encoding='utf8').read()
+    # --- branding present everywhere user-visible, old name absent
+    ctx=new_ctx(viewport={'width':360,'height':740}); pg=ctx.new_page(); errs=[]; reqs16=[]; watch(pg,errs); pg.on('request',lambda r: reqs16.append(r.url))
+    goto(pg,'',700)
+    man=json.loads(urllib.request.urlopen(BASE+'manifest.webmanifest').read().decode('utf8'))
+    ok('branding: manifest name + short_name',man['name']=='Siliguri Puja Guide' and man['short_name']=='Puja Guide',man)
+    ok('branding: apple-mobile-web-app-title and <title>',pg.evaluate("document.querySelector('meta[name=apple-mobile-web-app-title]').content")=='Puja Guide' and pg.title()=='Siliguri Puja Guide')
+    off=urllib.request.urlopen(BASE+'offline.html').read().decode('utf8'); adm=urllib.request.urlopen(BASE+'admin-preview.html').read().decode('utf8')
+    ok('branding: offline.html and admin preview use the new name',('Offline – Siliguri Puja Guide' in off) and ('Siliguri Puja Guide' in adm))
+    allpages=[pg.content(),off,adm,json.dumps(man),urllib.request.urlopen(BASE+'app.js').read().decode('utf8')]
+    ok('branding: old name "Siliguri Puja Navigator" absent from built pages, manifest and app code',not any('Siliguri Puja Navigator' in x for x in allpages))
+    ok('branding: no "independent community" / endorsed / approved-by wording on visitor pages',not any(w in (pg.content()+off).lower() for w in ('independent community','community tool','endorsed by','approved by')))
+    ok('branding: footer is the honest demo line, footer links present',pg.inner_text('#foot-line')=='Siliguri Puja Guide · Durga Puja 2026 · Demo version' and [a.text_content().strip() for a in pg.locator('.footlinks a').element_handles()]==['Safety notice','Privacy policy','Terms of use'],pg.inner_text('#foot-line'))
+    ok('branding: no maintainer/admin instructions on visitor screens','ADMIN-GUIDE' not in pg.content() and 'Replace with verified' not in pg.content())
+    for lab,anchor in (('Privacy policy','info-privacy'),('Terms of use','info-terms'),('Safety notice','info-safety')):
+        goto(pg,'',250); pg.click('.footlinks a:has-text("%s")'%lab); pg.wait_for_timeout(500)
+        ok('footer link "%s" opens the info screen at its section'%lab,vis(pg,'#view-info') and pg.evaluate("a=>{const r=document.getElementById(a).getBoundingClientRect();return r.top>=-5&&r.top<innerHeight}",anchor))
+    goto(pg,'',250)
+    ok('identity strip absent: hidden, takes no space, logo files never requested (no 404s), no broken images',pg.evaluate("(()=>{const s=document.getElementById('idstrip');return s.hidden&&s.getBoundingClientRect().height===0&&!document.getElementById('logo-a').getAttribute('src')&&!document.getElementById('logo-b').getAttribute('src')})()") and not [u for u in reqs16 if 'assets/logos' in u] and not errs,(errs,[u for u in reqs16 if 'logos' in u]))
+    ctx.close()
+
+    # --- identity strip with TEMPORARY test-fixture logos (generated in a temp dir, never committed)
+    TL=tempfile.mkdtemp(prefix='spn-testlogos-')
+    subprocess.run(['python3','-c','''
+import sys
+from PIL import Image, ImageDraw, ImageFont
+d=sys.argv[1]
+for name,size,txt,col in (("a.png",(400,520),"TEST LOGO A",(150,170,200,255)),("b.png",(560,440),"TEST LOGO B",(200,170,150,255))):
+    im=Image.new("RGBA",size,(0,0,0,0)); dr=ImageDraw.Draw(im)
+    dr.rounded_rectangle([4,4,size[0]-5,size[1]-5],radius=40,fill=col,outline=(60,60,60,255),width=8)
+    try: f=ImageFont.load_default(size=52)
+    except TypeError: f=ImageFont.load_default()
+    dr.text((size[0]//2,size[1]//2),txt,fill=(20,20,20,255),font=f,anchor="mm")
+    im.save(d+"/"+name)
+''',TL],check=True)
+    def strip_ctx(w,h,present=True,enabled=True,logo_status=(200,200),**kw):
+        c=new_ctx(viewport={'width':w,'height':h},**kw)
+        src=read_root('branding.js').replace('logosPresent: false','logosPresent: %s'%('true' if present else 'false')).replace('enabled: true,','enabled: %s,'%('true' if enabled else 'false'))
+        c.route('**/branding.js',lambda r: r.fulfill(status=200,content_type='application/javascript',body=src))
+        for key,fn,st in (('west-bengal-police','a.png',logo_status[0]),('siliguri-metropolitan-police','b.png',logo_status[1])):
+            c.route('**/assets/logos/%s.png'%key,(lambda fn,st: lambda r: r.fulfill(status=200,content_type='image/png',body=open(os.path.join(TL,fn),'rb').read()) if st==200 else r.fulfill(status=404,body='nope'))(fn,st))
+        return c
+    STRIP_JS="""()=>{const s=document.getElementById('idstrip');const q=s.getBoundingClientRect();const imgs=[...s.querySelectorAll('img')].map(i=>{const r=i.getBoundingClientRect();return {h:r.height,w:r.width,nw:i.naturalWidth,nh:i.naturalHeight,alt:i.alt,wa:i.getAttribute('width'),ha:i.getAttribute('height')}});return {hidden:s.hidden,top:q.top,h:q.height,w:q.width,imgs,txt:s.innerText.replace(/\\s+/g,' '),divs:s.querySelectorAll('.id-div').length,sw:document.documentElement.scrollWidth,iw:innerWidth}}"""
+    for (w,h) in ((360,740),(412,915),(320,568)):
+        for theme in ('light','night'):
+            ctx=strip_ctx(w,h); pg=ctx.new_page(); errs=[]; watch(pg,errs); goto(pg,'',700)
+            if theme=='night': pg.click('#theme-btn'); pg.wait_for_timeout(200)
+            m=pg.evaluate(STRIP_JS)
+            ratios=[abs((i['w']/i['h'])-(i['nw']/i['nh']))/(i['nw']/i['nh']) for i in m['imgs']] or [9]
+            ok('TEST-FIXTURE logos %dx%d %s: strip visible with caption + both names + 2 dividers'%(w,h,theme),not m['hidden'] and m['h']>40 and 'A joint initiative by' in m['txt'] and 'West Bengal Police' in m['txt'] and 'Siliguri Metropolitan Police' in m['txt'] and m['divs']==2,m)
+            ok('TEST-FIXTURE logos %dx%d %s: each logo <=44px tall, >=28px, aspect ratio preserved (<1%% error), width <=30%% of strip, alt text, width/height attrs'%(w,h,theme),len(m['imgs'])==2 and all(28<=i['h']<=44.6 and i['w']<=0.31*m['w'] for i in m['imgs']) and max(ratios)<0.01 and [i['alt'] for i in m['imgs']]==['West Bengal Police logo','Siliguri Metropolitan Police logo'] and all(i['wa'] and i['ha'] for i in m['imgs']),(m['imgs'],ratios))
+            ok('TEST-FIXTURE logos %dx%d %s: no overflow, no console errors'%(w,h,theme),m['sw']<=m['iw'] and not errs,(m['sw'],m['iw'],errs))
+            pg.screenshot(path=SHOTS+'v4-TEST-FIXTURE-logos-home-%dx%d-%s.png'%(w,h,theme))
+            if AXE and (w,h)==(360,740):
+                pg.evaluate(AXE); v=pg.evaluate("axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','best-practice']}}).then(r=>r.violations.map(v=>v.id+': '+v.nodes[0].html.slice(0,80)))")
+                ok('TEST-FIXTURE logos %s: axe (incl. contrast) clean on home'%theme,not v,v)
+            ctx.close()
+    # robustness: flag true but files missing / one failing / switched off
+    for label,kw in (('both logo files 404',dict(logo_status=(404,404))),('only one logo 404',dict(logo_status=(200,404))),('institutionalBranding.enabled=false',dict(enabled=False)),('logosPresent=false even though files exist',dict(present=False))):
+        ctx=strip_ctx(360,740,**kw); pg=ctx.new_page(); errs=[]; rq=[]; watch(pg,errs); pg.on('request',lambda r: rq.append(r.url)); goto(pg,'',800)
+        m=pg.evaluate(STRIP_JS); ok('strip hidden with no gap: %s'%label,m['hidden'] and m['h']==0 and m['sw']<=m['iw'],m)
+        if label.startswith('institutional') or label.startswith('logosPresent'): ok('strip off => logo files are never requested (%s)'%label,not [u for u in rq if 'assets/logos' in u],rq)
+        ctx.close()
+    # --- responsive cards: columns vs stacked
+    COLS_JS="(()=>{const a=[...document.querySelectorAll('.bigrow .bigbtn')].map(x=>x.getBoundingClientRect());return {two:Math.abs(a[0].top-a[1].top)<2,w:a.map(x=>Math.round(x.width)),prim:Math.round(document.querySelector('.bigbtn-primary').getBoundingClientRect().width),clip:[...document.querySelectorAll('.bigbtn')].some(x=>x.scrollWidth>x.clientWidth+1),sw:document.documentElement.scrollWidth,iw:innerWidth}})()"
+    def cols(pg): return pg.evaluate(COLS_JS)
+    for w,h,exp in ((320,568,False),(360,740,True),(375,812,True),(412,915,True),(768,1024,True),(1280,800,True)):
+        ctx=new_ctx(mobile=(w<700),viewport={'width':w,'height':h}); pg=ctx.new_page(); goto(pg,'',500); m=cols(pg)
+        ok('cards at %d px: secondary cards %s, none clipped, no overflow'%(w,'side by side' if exp else 'stacked'),m['two']==exp and not m['clip'] and m['sw']<=m['iw'],m)
+        if w in(320,360): ok('cards at %d px: primary card spans the full content width'%w,m['prim']>=w-30,m)
+        ctx.close()
+    for w in (320,390):
+        ctx=new_ctx(viewport={'width':w,'height':800}); pg=ctx.new_page(); goto(pg,'',400)
+        pg.evaluate("document.documentElement.style.fontSize='32px'"); pg.wait_for_timeout(250)
+        bad_r=[]
+        for r in ('','find','parking','traffic','help','info'):
+            go(pg,r,250); o=pg.evaluate("({sw:document.documentElement.scrollWidth,iw:innerWidth})")
+            if o['sw']>o['iw']: bad_r.append((r,o))
+        go(pg,'',250); m=cols(pg)
+        ok('200%% text size at %d px: secondary cards stack (no shrinking fonts), no clipping'%w,m['two'] is False and not m['clip'],m)
+        ok('200%% text size at %d px: no horizontal overflow on any screen'%w,not bad_r,bad_r)
+        pg.screenshot(path=SHOTS+'v4-home-%dpx-200pct-text.png'%w); ctx.close()
+    # --- extra widths overflow (768/1280) on all screens, light + night
+    for (w,h) in ((768,1024),(1280,800)):
+        for theme in ('light','night'):
+            ctx=new_ctx(mobile=False,viewport={'width':w,'height':h}); pg=ctx.new_page(); goto(pg,'',400)
+            if theme=='night': pg.click('#theme-btn'); pg.wait_for_timeout(150)
+            bad_r=[]
+            for r in ('','find/demo-pandal-a','parking','traffic','help','info'):
+                go(pg,r,300); o=pg.evaluate("({sw:document.documentElement.scrollWidth,iw:innerWidth})")
+                if o['sw']>o['iw']: bad_r.append((r,o))
+            ok('overflow: none at %d px %s on all screens'%(w,theme),not bad_r,bad_r)
+            if w==768: go(pg,'',200); pg.screenshot(path=SHOTS+'v4-home-768-%s.png'%theme)
+            ctx.close()
+    # --- required screenshots (360x740, 412x915, 320x568; light + night), no logo files in the repo => strip hidden
+    for (w,h) in ((360,740),(412,915),(320,568)):
+        for theme in ('light','night'):
+            ctx=new_ctx(viewport={'width':w,'height':h}); pg=ctx.new_page(); goto(pg,'',700)
+            if theme=='night': pg.click('#theme-btn'); pg.wait_for_timeout(150)
+            pg.screenshot(path=SHOTS+'v4-home-%dx%d-%s.png'%(w,h,theme))
+            pg.screenshot(path=SHOTS+'v4-home-full-%dx%d-%s.png'%(w,h,theme),full_page=True)
+            for r in ('find','traffic','parking'):
+                go(pg,r,300); pg.screenshot(path=SHOTS+'v4-%s-%dx%d-%s.png'%(r,w,h,theme))
+            ctx.close()
+    # --- service worker installs when optional logos are flagged but missing (temp copy of the site, removed afterwards)
+    if os.path.basename(ROOT)=='siliguri-puja-navigator' and BASE.endswith('/siliguri-puja-navigator/'):
+        tmpsite=os.path.join(os.path.dirname(ROOT),'spn-swtest-tmp')
+        shutil.rmtree(tmpsite,ignore_errors=True)
+        try:
+            shutil.copytree(ROOT,tmpsite,ignore=shutil.ignore_patterns('.git','tests','node_modules'))
+            os.makedirs(os.path.join(tmpsite,'assets','logos'),exist_ok=True)
+            for n,f in (('west-bengal-police.png','a.png'),('siliguri-metropolitan-police.png','b.png')): shutil.copy(os.path.join(TL,f),os.path.join(tmpsite,'assets','logos',n))
+            subprocess.run(['node',os.path.join(ROOT,'tools','build-sw.js')],env=dict(os.environ,SPN_ROOT=tmpsite),check=True,capture_output=True)
+            swtxt=open(os.path.join(tmpsite,'service-worker.js')).read()
+            for n in ('west-bengal-police.png','siliguri-metropolitan-police.png'): os.remove(os.path.join(tmpsite,'assets','logos',n))   # now: flagged present, files missing
+            ok('sw test site: ASSETS lists both logos and branding says present (so install must tolerate their absence)','assets/logos/west-bengal-police.png' in swtxt and 'logosPresent: true' in open(os.path.join(tmpsite,'branding.js')).read())
+            ctx=new_ctx(sw='allow'); pg=ctx.new_page(); errs=[]; watch(pg,errs)
+            pg.goto(ORIGIN+'/spn-swtest-tmp/index.html'); pg.wait_for_timeout(500)
+            st=pg.evaluate("navigator.serviceWorker.ready.then(r=>r.active.state)"); pg.wait_for_timeout(800)
+            n=pg.evaluate("caches.keys().then(async k=>{const o={};for(const x of k){o[x]=(await (await caches.open(x)).keys()).map(r=>new URL(r.url).pathname.split('/').slice(-1)[0])}return o})")
+            shell=[v for k,v in n.items() if k.startswith('spn-shell-')]
+            ok('SW installs and activates when optional logo files are missing (core files cached, logos skipped)',st=='activated' and shell and 'index.html' in shell[0] and 'app.js' in shell[0] and 'west-bengal-police.png' not in shell[0],(st,n))
+            ok('app still loads and the strip stays hidden (no gap) when flagged logos are missing',pg.evaluate("document.getElementById('idstrip').hidden") and pg.evaluate("document.querySelector('h1').textContent.replace(/\\s+/g,' ').trim()")=='Siliguri Puja Guide')
+            ctx.close()
+        finally:
+            shutil.rmtree(tmpsite,ignore_errors=True)
+    else:
+        print('SKIP sw-missing-logos test (site not served from sibling dir)')
+    shutil.rmtree(TL,ignore_errors=True)
     b.close()
 bad=[r for r in results if not r[1]]
 print('\n%d checks, %d failed'%(len(results),len(bad)))

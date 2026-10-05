@@ -9,7 +9,7 @@ node tools/build-sw.js            # refresh service-worker version + precache li
 node tests/unit.js                # optional sanity check
 git init -b main
 git add -A
-git commit -m "Siliguri Puja Navigator MVP"
+git commit -m "Siliguri Puja Guide MVP"
 gh auth setup-git                 # once, so git can push with the gh login
 gh repo create Wangden-Bhutia/siliguri-puja-navigator --public --source=. --push
 ```
