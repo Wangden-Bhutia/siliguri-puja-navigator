@@ -53,7 +53,7 @@ with sync_playwright() as p:
     ok('demo banner: locations confirmed, parking/traffic finalising', 'pandal locations are confirmed' in pg.inner_text('#status-banners').lower() and 'parking and traffic' in pg.inner_text('#status-banners').lower())
     ok('identity strip hidden while branding not approved', pg.is_hidden('#idstrip') and pg.locator('#idstrip-logos img').count()==0)
     ok('neutral descriptor, no "Official" claim while unapproved', pg.text_content('#brand-descriptor')=='Durga Puja Visitor Information · Siliguri' and 'official' not in pg.inner_text('body').lower())
-    ok('home: title, tagline, dates', pg.inner_text('#brand-name')=='Siliguri Puja Guide' and pg.inner_text('#brand-tag')=='Find pandals. Plan your route. Travel safely.' and '16 – 21 October 2026' in pg.inner_text('#brand-dates'))
+    ok('home: title, tagline, dates', ' '.join(pg.inner_text('#brand-name').split())=='Siliguri Puja Guide' and pg.inner_text('#brand-tag')=='Find pandals. Plan your route. Travel safely.' and '16 – 21 October 2026' in pg.inner_text('#brand-dates'))
     ok('home: 3 actions only, primary Find a Pandal', pg.locator('#view-home a.bigbtn').count()==3 and 'Find a Pandal' in pg.inner_text('#view-home a.bigbtn-primary'))
     ok('home: no stats/counts', not __import__('re').search(r'\b\d+ (pandals|neighbourhoods)\b', pg.inner_text('#view-home')))
     ok('icons are monochrome SVG (no "P"/emoji text icons)', pg.locator('#tabbar svg.ic').count()==3 and pg.locator('#view-home .bigbtn svg.bi').count()==3 and pg.locator('#view-home .bigbtn svg.chev').count()==3 and pg.locator('#sos-fab svg.ic').count()==1 and not pg.evaluate("[...document.querySelectorAll('.bi,.ti')].some(e=>e.tagName!=='svg')"))
