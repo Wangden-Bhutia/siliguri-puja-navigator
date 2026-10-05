@@ -34,7 +34,16 @@
   /* ---------- branding / theme ---------- */
   function applyBranding() {
     var approved = BR.officialBrandingApproved === true;
-    $('#brand-name').textContent = BR.appName || 'Siliguri Puja Guide';
+    (function () {
+      var name = BR.appName || 'Siliguri Puja Guide';
+      var node = $('#brand-name');
+      // Keep thin gold underline under "Puja" when the standard brand name is used.
+      if (/^Siliguri Puja Guide$/.test(name)) {
+        node.innerHTML = 'Siliguri <span class="brand-puja">Puja</span> Guide';
+      } else {
+        node.textContent = name;
+      }
+    })();
     $('#brand-tag').textContent = BR.tagline || '';
     // Official wording only after written approval; neutral wording otherwise (never hardcoded).
     $('#brand-descriptor').textContent = approved ? (BR.descriptor || '') : (BR.descriptorDefault || '');
