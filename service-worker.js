@@ -3,7 +3,7 @@
    - data/puja-data.json: NETWORK-FIRST. A saved copy is used only if the network fails, and is returned with
      the header "X-Data-Source: cache" so the app can show a prominent "offline / may be outdated" banner.
    - Map tiles (other origin) are never cached here. */
-const VERSION = 'spn-shell-63beaff3f9';
+const VERSION = 'spn-shell-c0537d4b66';
 const ASSETS = ["./","admin-preview.html","admin-preview.js","app.js","assets/illustrations/home-pandal-scene.png","assets/illustrations/home-pandal-scene.webp","assets/illustrations/mast-banner.png","assets/illustrations/mast-banner.webp","assets/logos/originals/siliguri-metropolitan-police.original.png","assets/logos/originals/west-bengal-police.original.webp","assets/logos/siliguri-metropolitan-police.png","assets/logos/west-bengal-police.png","branding.js","icons/apple-touch-icon.png","icons/favicon-32.png","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","index.html","logic.js","manifest.webmanifest","offline.html","styles.css","theme-init.js","vendor/leaflet/LICENSE","vendor/leaflet/images/layers-2x.png","vendor/leaflet/images/layers.png","vendor/leaflet/images/marker-icon-2x.png","vendor/leaflet/images/marker-icon.png","vendor/leaflet/images/marker-shadow.png","vendor/leaflet/leaflet.css","vendor/leaflet/leaflet.js","vendor/markercluster/LICENSE","vendor/markercluster/MarkerCluster.Default.css","vendor/markercluster/MarkerCluster.css","vendor/markercluster/leaflet.markercluster.js"];
 const DATA_CACHE = 'spn-data-v1';
 const DATA_PATH = 'data/puja-data.json';

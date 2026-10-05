@@ -359,6 +359,21 @@ html[data-theme="dark"] .home-scene{opacity:.55;filter:brightness(.65) saturate(
   display:flex;flex-wrap:wrap;justify-content:center;gap:6px;align-items:center;
   padding:2px 16px;font-size:.75rem;font-weight:400;
 }
+
+/* PWA install — compact chip in footer; only when beforeinstallprompt fired */
+.foot-inner{display:flex;flex-direction:column;align-items:center;gap:6px}
+.install-chip{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:36px;padding:6px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card);color:var(--accent);
+  font:600 .78rem/1.2 var(--sans);cursor:pointer;
+  box-shadow:0 1px 2px rgba(42,26,22,.06);
+}
+.install-chip:hover{background:var(--surface-2)}
+.install-chip:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.install-chip[hidden]{display:none!important}
+html[data-theme="dark"] .install-chip{background:var(--card);border-color:var(--line);color:var(--gold-l)}
+
 /* Home: mockup-tight — scene under safety, footer on art near nav, no scroll */
 body.has-chrome:has(#view-home:not([hidden])){
   display:flex;flex-direction:column;justify-content:flex-start;

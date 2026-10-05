@@ -169,6 +169,11 @@ t('branding approval false', BR.officialBrandingApproved === false && /Demo vers
 t('index has brand + 3 tabs + SOS', /id="brand-name"/.test(html) && /data-tab="home"/.test(html) && /data-tab="pandals"/.test(html) && /data-tab="parking"/.test(html) && /id="sos-fab"/.test(html) && /id="sos-sheet"/.test(html) && /id="nav-sheet"/.test(html));
 t('index tagline/descriptor/dates/footer', txtOf(html).includes(BR.tagline) && txtOf(html).includes(BR.descriptorDefault) && txtOf(html).includes(BR.festivalDates) && html.includes(BR.footerDemo));
 t('manifest name', manifest.name === BR.appName && manifest.short_name === BR.shortName);
+t('manifest id unique for this app (not bare ./)', typeof manifest.id === 'string' && manifest.id !== './' && /siliguri-puja-navigator/.test(manifest.id) && manifest.start_url === './' && manifest.scope === './');
+t('manifest icons include 192/512 any + maskable', Array.isArray(manifest.icons) && manifest.icons.some(i => i.sizes === '192x192' && (i.purpose === 'any' || !i.purpose)) && manifest.icons.some(i => i.sizes === '512x512' && (i.purpose === 'any' || !i.purpose)) && manifest.icons.some(i => String(i.purpose || '').includes('maskable')));
+t('install chip present and hidden by default', /id="install-btn"/.test(html) && /Install app/.test(html) && /id="install-btn"[^>]*\bhidden\b/.test(html));
+t('beforeinstallprompt defers and install chip can call prompt', /beforeinstallprompt/.test(rd('app.js')) && /\.prompt\(/.test(rd('app.js')) && /install-btn/.test(rd('app.js')));
+
 t('offline name', /Siliguri Puja Guide/.test(offline));
 t('old Navigator name absent from visitor files', ['index.html', 'app.js', 'branding.js', 'offline.html', 'manifest.webmanifest'].every(f => !/Siliguri Puja Navigator/i.test(rd(f))));
 t('no endorsed/approved-by claims', !/endorsed by|approved by/i.test(rd('index.html') + rd('app.js') + rd('offline.html')));

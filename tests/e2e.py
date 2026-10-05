@@ -49,6 +49,26 @@ with sync_playwright() as p:
     ok('tabbar visible after load', pg.is_visible('#tabbar'))
     ok('SOS fab visible on home', pg.is_visible('#sos-fab'))
     ok('home freshness shows Updated', 'Updated' in pg.inner_text('#home-fresh') or 'outdated' in pg.inner_text('#home-fresh'), pg.inner_text('#home-fresh'))
+    ok('install chip hidden by default', pg.locator('#install-btn').count()==1 and pg.is_hidden('#install-btn'))
+    pg.evaluate("""() => {
+      const fake = { prompt: function(){ window.__spnInstallPrompted = (window.__spnInstallPrompted||0)+1; return Promise.resolve({outcome:'accepted'}); } };
+      PujaApp._setDeferredInstall(fake);
+    }""")
+    pg.wait_for_timeout(150)
+    ok('install chip visible when deferred install available', pg.is_visible('#install-btn'))
+    pg.click('#install-btn'); pg.wait_for_timeout(200)
+    ok('install chip prompts and hides after click', pg.evaluate('window.__spnInstallPrompted||0')>=1 and pg.is_hidden('#install-btn'))
+    # also fire real beforeinstallprompt-shaped path
+    pg.evaluate("""() => {
+      window.__spnBip = 0;
+      const e = new Event('beforeinstallprompt');
+      e.preventDefault = function(){};
+      e.prompt = function(){ window.__spnBip++; return Promise.resolve({}); };
+      window.dispatchEvent(e);
+    }""")
+    pg.wait_for_timeout(150)
+    ok('beforeinstallprompt shows install chip again', pg.is_visible('#install-btn'))
+
     ok('home single warn card', pg.locator('#view-home .warn-card').count()==1)
     ok('demo banner: locations confirmed, parking/traffic finalising', 'pandal locations are confirmed' in pg.inner_text('#status-banners').lower() and 'parking and traffic' in pg.inner_text('#status-banners').lower())
     ok('identity strip hidden while branding not approved', pg.is_hidden('#idstrip') and pg.locator('#idstrip-logos img').count()==0)

@@ -2,7 +2,7 @@
   "name": "Siliguri Puja Guide",
   "short_name": "Puja Guide",
   "description": "Find pandals. Plan your route. Travel safely. Pandal directory, parking and walking routes, and published traffic-restriction schedules for Durga Puja 2026.",
-  "id": "./",
+  "id": "https://wangden-bhutia.github.io/siliguri-puja-navigator/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

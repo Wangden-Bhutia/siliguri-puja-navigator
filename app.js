@@ -918,8 +918,30 @@
     setInterval(function () { if (document.visibilityState === 'visible') refresh('periodic'); }, PERIODIC_MS);
 
     window.addEventListener('beforeinstallprompt', function (e) {
-      e.preventDefault(); deferredInstall = e;
+      e.preventDefault();
+      deferredInstall = e;
+      showInstallChip(true);
     });
+    window.addEventListener('appinstalled', function () {
+      deferredInstall = null;
+      showInstallChip(false);
+    });
+    var installBtn = $('#install-btn');
+    if (installBtn) {
+      installBtn.addEventListener('click', function () {
+        if (!deferredInstall) return;
+        var ev = deferredInstall;
+        deferredInstall = null;
+        showInstallChip(false);
+        ev.prompt().catch(function () {});
+      });
+    }
+  }
+
+  function showInstallChip(on) {
+    var btn = $('#install-btn');
+    if (!btn) return;
+    btn.hidden = !on;
   }
 
   function registerSW() {
@@ -954,7 +976,11 @@
     refreshStats: function () { return { started: R.started, skipped: R.skipped, completed: R.completed, inFlight: !!R.inFlight }; },
     map: function (id) { return maps[id] || null; },
     openNav: openNav,
-    state: function () { return S; }
+    state: function () { return S; },
+    /* test hooks for PWA install chip */
+    _installAvailable: function () { return !!deferredInstall; },
+    _showInstallChip: showInstallChip,
+    _setDeferredInstall: function (ev) { deferredInstall = ev || null; showInstallChip(!!ev); }
   };
 
   initTheme(); applyBranding(); bind(); registerSW();
