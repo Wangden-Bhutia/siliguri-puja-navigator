@@ -936,10 +936,45 @@
         ev.prompt().catch(function () {});
       });
     }
+    var cardBtn = $('#install-card-btn');
+    if (cardBtn) {
+      cardBtn.addEventListener('click', function () {
+        if (!deferredInstall) return;
+        var ev = deferredInstall;
+        deferredInstall = null;
+        showInstallChip(false);
+        ev.prompt().catch(function () {});
+      });
+    }
+    var cardX = $('#install-card-x');
+    if (cardX) {
+      cardX.addEventListener('click', function () {
+        try { localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now())); } catch (e) {}
+        showInstallCard(false);
+      });
+    }
+  }
+
+  var INSTALL_DISMISS_KEY = 'spn.installDismissedAt';
+  var INSTALL_RESHOW_MS = 3 * 24 * 60 * 60 * 1000;
+  function isStandalone() {
+    try { if (window.matchMedia && matchMedia('(display-mode: standalone)').matches) return true; } catch (e) {}
+    return navigator.standalone === true;
+  }
+  function installCardDismissed() {
+    var t = 0;
+    try { t = parseInt(localStorage.getItem(INSTALL_DISMISS_KEY) || '0', 10) || 0; } catch (e) {}
+    return t > 0 && Date.now() - t < INSTALL_RESHOW_MS;
+  }
+  function showInstallCard(on) {
+    var card = $('#install-card');
+    if (!card) return;
+    card.hidden = !(on && !isStandalone() && !installCardDismissed());
   }
 
   function showInstallChip(on) {
     var btn = $('#install-btn');
+    showInstallCard(on);
     if (!btn) return;
     btn.hidden = !on;
   }
