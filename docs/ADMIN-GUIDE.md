@@ -103,13 +103,21 @@ Acceptable source types: official orders/advisories; official press releases; of
 2. Make your changes (keep valid JSON: commas between records, double quotes). Update `meta.lastUpdated`.
 3. *Optional but recommended:* copy the text into `admin-preview.html` (open the live site's `/admin-preview.html`) → **Validate & preview**; or use the command line below. This only checks; it does not publish.
 4. **Commit changes** (to `main`, or open a pull request for a second pair of eyes).
-5. GitHub Pages redeploys in about a minute. Reload the site (the data file is network-first and fetched with cache-busting, so you see new data immediately once deployed).
+5. The deploy workflow redeploys automatically in about a minute. Reload the site (the data file is network-first and fetched with cache-busting, so you see new data immediately once deployed).
 
 ## 5. Validate from a terminal
 ```sh
 node tools/validate-data.js            # exit code 0 = OK, 1 = problems (records that would be skipped)
 ```
 It prints skipped records with reasons, counts, and the current schedule states. The same rules run in the browser: bad records are skipped and users see a visible "data-quality warning" with the number skipped.
+
+## 5a. Import a filled-in field data collection pack
+A volunteer or officer who filled in `Siliguri-Puja-Guide-Field-Data-Pack-2026.docx` by hand (pandal verification, parking, traffic, facilities, contacts) can have it merged into `data/puja-data.json` automatically:
+```sh
+node tools/import-field-data.js path/to/filled.docx            # dry run: prints a summary, writes a preview + report, changes nothing
+node tools/import-field-data.js path/to/filled.docx --apply    # writes data/puja-data.json for real (backs up the previous file first)
+```
+Everything it adds or updates is left at `verificationStatus: pendingVerification` — it never marks anything `approved` or `fieldVerified` on its own, since that still needs a named human sign-off (see §3). Rows marked "Wrong" or "Not found" in the pandal checklist are never auto-applied; they're listed in the report (`field-import-report.json` or `data/field-import-report.json` with `--apply`) for someone to review and edit by hand. Always re-run `node tools/validate-data.js` and skim the report after an `--apply` before publishing.
 
 ## 6. If something goes wrong
 - *Users see "Data unavailable"*: the JSON is invalid or `meta` is broken. Revert the commit on GitHub (History → Revert) or fix and recommit.
