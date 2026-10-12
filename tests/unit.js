@@ -172,6 +172,10 @@ t('manifest name', manifest.name === BR.appName && manifest.short_name === BR.sh
 t('manifest id unique for this app (not bare ./)', typeof manifest.id === 'string' && manifest.id !== './' && /siliguri-puja-navigator/.test(manifest.id) && manifest.start_url === './' && manifest.scope === './');
 t('manifest icons include 192/512 any + maskable', Array.isArray(manifest.icons) && manifest.icons.some(i => i.sizes === '192x192' && (i.purpose === 'any' || !i.purpose)) && manifest.icons.some(i => i.sizes === '512x512' && (i.purpose === 'any' || !i.purpose)) && manifest.icons.some(i => String(i.purpose || '').includes('maskable')));
 t('install chip present and hidden by default', /id="install-btn"/.test(html) && /Install app/.test(html) && /id="install-btn"[^>]*\bhidden\b/.test(html));
+t('install card markup present and hidden by default', /id="install-card"[^>]*hidden/.test(rd('index.html')) && /Install Siliguri Puja Guide/.test(rd('index.html')) && /Add it to your home screen for full-screen, offline use\./.test(rd('index.html')) && /id="install-card-btn"[^>]*>Install app</.test(rd('index.html')) && /id="install-card-x"[^>]*aria-label=/.test(rd('index.html')));
+t('install card: standalone check, 3-day dismissal, localStorage', /display-mode: standalone/.test(rd('app.js')) && /3 \* 24 \* 60 \* 60 \* 1000/.test(rd('app.js')) && /spn\.installDismissedAt/.test(rd('app.js')));
+t('install card styled for dark theme', /html\[data-theme="dark"\] \.install-card/.test(rd('styles.css')));
+t('footer install chip kept', /id="install-btn"/.test(rd('index.html')));
 t('beforeinstallprompt defers and install chip can call prompt', /beforeinstallprompt/.test(rd('app.js')) && /\.prompt\(/.test(rd('app.js')) && /install-btn/.test(rd('app.js')));
 
 t('offline name', /Siliguri Puja Guide/.test(offline));
