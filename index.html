@@ -38,6 +38,7 @@
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8v.01"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.2 16a1 1 0 0 1-.87 1.5H3.67a1 1 0 0 1-.87-1.5z"/><path d="M12 9.5v4.5"/><path d="M12 17v.01"/></symbol>
 </svg>
 
 <header class="mast mast-festive" id="mast">
@@ -98,7 +99,7 @@
       <div class="freshness" id="home-fresh"></div>
     </div>
     <aside class="warn-card warn-card-home" role="note">
-      <span class="warn-ic" aria-hidden="true">&#9888;</span>
+      <svg class="ic warn-ic" aria-hidden="true" focusable="false"><use href="#i-warn"/></svg>
       <p id="home-warn-text">Traffic restrictions can change on the ground. Follow on-ground police directions and posted signs.</p>
     </aside>
     <div class="home-scene" aria-hidden="true">
@@ -261,7 +262,7 @@
   <form method="dialog" class="sheet-inner">
     <header class="sheet-head">
       <h2 id="sos-title">Need help?</h2>
-      <button type="submit" class="sheet-close" value="close" aria-label="Close">×</button>
+      <button type="submit" class="sheet-close" value="close" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
     </header>
     <ul class="sos-list" id="sos-list"></ul>
   </form>
@@ -271,7 +272,7 @@
   <form method="dialog" class="sheet-inner">
     <header class="sheet-head">
       <h2 id="nav-title">Open directions?</h2>
-      <button type="submit" class="sheet-close" value="close" aria-label="Close">×</button>
+      <button type="submit" class="sheet-close" value="close" aria-label="Close"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg></button>
     </header>
     <p class="sheet-warn" id="nav-warn-text">Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements. Follow on-ground police directions and posted signs.</p>
     <div class="sheet-actions">
