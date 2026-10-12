@@ -7,7 +7,7 @@ A mobile-first, installable web app (PWA) with a pandal directory, a map, parkin
 >
 > The app **does not show live traffic** and never says a road is open. Historical 2024/2025 traffic stays in the data file for audit but is hidden from the visitor feed. *Traffic restrictions are subject to official orders and on-ground changes. Follow the directions of traffic police.*
 
-Live site (after deployment): https://wangden-bhutia.github.io/siliguri-puja-navigator/
+Live site: https://siliguri-puja-guide.pages.dev/
 
 ## Features
 - **Simple visitor flow** (hash routes, Back button works): **Home** (`#/`) · **Pandals** (`#/pandals`, neighbourhood browse) · **Parking & Traffic** (`#/parking`, `#/parking/traffic`) · contextual **Help / SOS** (floating 🆘 sheet) · **Safety / Privacy / Terms** (`#/info/...`). No map on the home screen; each screen creates its own Leaflet map lazily.
@@ -54,14 +54,10 @@ node tools/validate-data.js path/to/other.json
 ```
 Or open `admin-preview.html` (local preview only; it cannot publish).
 
-## Deploy (GitHub Pages)
-```sh
-git init -b main && git add -A && git commit -m "Siliguri Puja Guide"
-gh repo create Wangden-Bhutia/siliguri-puja-navigator --public --source=. --push
-gh api -X POST repos/Wangden-Bhutia/siliguri-puja-navigator/pages -f "source[branch]=main" -f "source[path]=/"
-curl -I https://wangden-bhutia.github.io/siliguri-puja-navigator/        # wait for 200
-```
-Details and troubleshooting: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+## Deploy (Cloudflare Pages, via GitHub Actions)
+Pushing to `main` runs `.github/workflows/deploy.yml`: validates `data/puja-data.json`, runs the unit tests, refreshes the service-worker precache list, and deploys to Cloudflare Pages (project `siliguri-puja-guide`). No manual steps needed for a normal update.
+
+Details and one-time setup: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## After changing code or assets
 ```sh
