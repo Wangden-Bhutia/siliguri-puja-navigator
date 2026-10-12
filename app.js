@@ -55,24 +55,49 @@
     cap.textContent = (ib.caption || '') + (ib.names && ib.names.length ? ' ' + ib.names.join(' & ') : '');
     ib.logos.forEach(function (lg) { logos.appendChild(attrs(el('img'), { src: lg.src, alt: lg.alt || '', height: '32', loading: 'lazy' })); });
   }
-  function initTheme() {
-    var t = 'light';
-    try { t = localStorage.getItem(LS_THEME) || t; } catch (e) {}
-    if (t !== 'dark') t = 'light';
-    document.documentElement.setAttribute('data-theme', t);
-    var btn = $('#theme-btn');
-    if (btn) { btn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false'); btn.setAttribute('aria-label', 'Night mode'); btn.title = t === 'dark' ? 'Switch to day mode' : 'Switch to night mode'; }
+  /* Theme mode: 'auto' (follow phone, default) | 'light' | 'dark' (manual override, persisted in spn.theme).
+     Toggle cycles Auto -> Light -> Dark -> Auto. Old stored 'light'/'dark' values remain valid overrides. */
+  var THEME_MODES = ['auto', 'light', 'dark'];
+  var THEME_LABEL = { auto: 'Theme: Auto (follows phone)', light: 'Theme: Light', dark: 'Theme: Dark' };
+  var THEME_SHORT = { auto: 'Auto', light: 'Light', dark: 'Dark' };
+  var darkMQ = null;
+  try { darkMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null; } catch (e) {}
+  function themeMode() {
+    var s = null;
+    try { s = localStorage.getItem(LS_THEME); } catch (e) {}
+    return s === 'light' || s === 'dark' ? s : 'auto';
   }
-  function toggleTheme() {
-    var cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-    var next = cur === 'dark' ? 'light' : 'dark';
-    try { localStorage.setItem(LS_THEME, next); } catch (e) {}
+  function initTheme() {
+    var m = themeMode();
+    var t = m === 'auto' ? (darkMQ && darkMQ.matches ? 'dark' : 'light') : m;
+    var root = document.documentElement;
+    root.setAttribute('data-theme', t);
+    root.setAttribute('data-theme-mode', m);
+    var mc = document.querySelector('meta[name="theme-color"]');
+    if (mc) mc.setAttribute('content', t === 'dark' ? '#24060c' : '#5a0f1e');
+    var btn = $('#theme-btn');
+    if (btn) {
+      var nx = THEME_MODES[(THEME_MODES.indexOf(m) + 1) % 3];
+      btn.removeAttribute('aria-pressed');
+      btn.setAttribute('aria-label', THEME_LABEL[m] + '. Tap for ' + THEME_SHORT[nx]);
+      btn.title = THEME_LABEL[m] + ' \u2014 tap for ' + THEME_SHORT[nx];
+      var lbl = btn.querySelector('.theme-lbl'); if (lbl) lbl.textContent = THEME_SHORT[m];
+    }
+  }
+  function swapTheme() {
     // Freeze transitions for the swap frame so nothing can interpolate through an intermediate/light colour.
     var root = document.documentElement;
     root.classList.add('theme-switching');
     initTheme();
     requestAnimationFrame(function () { requestAnimationFrame(function () { root.classList.remove('theme-switching'); }); });
   }
+  function toggleTheme() {
+    var next = THEME_MODES[(THEME_MODES.indexOf(themeMode()) + 1) % 3];
+    try { if (next === 'auto') localStorage.removeItem(LS_THEME); else localStorage.setItem(LS_THEME, next); } catch (e) {}
+    swapTheme();
+  }
+  function onSystemTheme() { if (themeMode() === 'auto') swapTheme(); }
+  if (darkMQ) { if (darkMQ.addEventListener) darkMQ.addEventListener('change', onSystemTheme); else if (darkMQ.addListener) darkMQ.addListener(onSystemTheme); }
 
   /* ---------- status badges ---------- */
   function statusBadge(rec) {

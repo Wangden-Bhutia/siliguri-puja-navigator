@@ -115,9 +115,10 @@ html[data-theme="dark"] .mast-festive::before{
   background:rgba(0,0,0,.15);color:var(--head-ink);font:500 .75rem/1 var(--sans);cursor:pointer;flex:none;opacity:.85;
 }
 .theme-btn .ic{width:18px;height:18px}
-.theme-lbl{display:none}
-@media(min-width:600px){.theme-lbl{display:inline}}
-html[data-theme="dark"] .ic-moon,html:not([data-theme="dark"]) .ic-sun{display:none}
+.theme-lbl{display:inline;font-size:.7rem;letter-spacing:.01em}
+.theme-btn .ic-auto,.theme-btn .ic-moon,.theme-btn .ic-sun{display:none}
+html[data-theme-mode="auto"] .theme-btn .ic-auto,html[data-theme-mode="dark"] .theme-btn .ic-moon,html[data-theme-mode="light"] .theme-btn .ic-sun{display:inline}
+html:not([data-theme-mode]) .theme-btn .ic-auto{display:inline}
 /* icons: one small monochrome stroke set, always subordinate to the label */
 .sprite{position:absolute;width:0;height:0;overflow:hidden}
 .ic{width:1.15em;height:1.15em;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
