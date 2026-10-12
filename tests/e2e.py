@@ -98,7 +98,7 @@ with sync_playwright() as p:
     ok('icons are monochrome SVG (no "P"/emoji text icons)', pg.locator('#tabbar svg.ic').count()==3 and pg.locator('#view-home .bigbtn svg.bi').count()==3 and pg.locator('#view-home .bigbtn svg.chev').count()==3 and pg.locator('#sos-fab svg.ic').count()==1 and not pg.evaluate("[...document.querySelectorAll('.bi,.ti')].some(e=>e.tagName!=='svg')"))
     ok('parking icon is a car line icon, not a letter P', pg.locator('#tabbar a[data-tab="parking"] use[href="#i-car"]').count()==1 and pg.locator('#view-home a[data-go="parking"] use[href="#i-car"]').count()==1 and pg.locator('use[href="#i-park"]').count()==0 and pg.locator('#i-park').count()==0 and pg.locator('#i-car text').count()==0 and pg.locator('#i-car circle').count()==2)
     ok('icons use currentColor stroke', pg.evaluate("getComputedStyle(document.querySelector('#tabbar svg.ic')).stroke")==pg.evaluate("getComputedStyle(document.querySelector('#tabbar a')).color"))
-    ok('theme button icon-only on small screens with accessible name', pg.is_hidden('#theme-btn .theme-lbl') and pg.get_attribute('#theme-btn','aria-label')=='Night mode' and pg.get_attribute('#theme-btn','aria-pressed') in ('true','false'))
+    ok('theme button has short visible mode label + accessible name', pg.is_visible('#theme-btn .theme-lbl') and (pg.get_attribute('#theme-btn','aria-label') or '').startswith('Theme: '))
     ok('footer says Demo version', 'Demo version' in pg.inner_text('#foot-line'))
     pg.screenshot(path=SHOTS+'home-390.png',full_page=False)
 
@@ -477,12 +477,12 @@ with sync_playwright() as p:
         ok(f'flash {w}: backdrop tap closes sheet', not pg.is_visible('#sos-sheet'))
         ok(f'flash {w}: backdrop tap no near-white frame', not white_frames(fr,DARK_KEYS), white_frames(fr,DARK_KEYS)[:5])
         ok(f'flash {w}: SOS aria-expanded reset after close', pg.get_attribute('#sos-fab','aria-expanded')=='false')
-        # repeated taps x10 (theme toggles 10 times -> ends dark; SOS opens/closes)
+        # repeated taps x9 (3-way cycle Auto/Light/Dark from Dark: 9 taps -> ends dark; SOS opens/closes)
         start(pg)
-        for i in range(10): pg.tap('#theme-btn'); pg.wait_for_timeout(40)
+        for i in range(9): pg.tap('#theme-btn'); pg.wait_for_timeout(40)
         fr=stop(pg)
-        ok(f'flash {w}: 10x theme taps end in dark (even count)', pg.evaluate("document.documentElement.dataset.theme")=='dark')
-        ok(f'flash {w}: 10x theme taps no near-white frame on dark frames', not white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar']), white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar'])[:5])
+        ok(f'flash {w}: 9x theme taps end in dark (3-way cycle)', pg.evaluate("document.documentElement.dataset.theme")=='dark')
+        ok(f'flash {w}: 9x theme taps no near-white frame on dark frames', not white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar']), white_frames(fr,['html','body','#mast','#theme-btn','#sos-fab','#tabbar'])[:5])
         ok(f'flash {w}: theme-btn never near-white in any frame (light or dark)', not [f for f in fr if near_white(f['#theme-btn'][0])])
         ok(f'flash {w}: theme-switching class cleaned up', not pg.evaluate("document.documentElement.classList.contains('theme-switching')"))
         start(pg)
@@ -515,6 +515,47 @@ with sync_playwright() as p:
         pg.keyboard.press('Escape'); pg.wait_for_timeout(150)
         ok(f'flash {w}: no console errors', not ef, ef)
         ctx.close()
+    # ============ theme: Auto (follow phone) -> Light -> Dark -> Auto ============
+    for scheme in ('light','dark'):
+        ctx=b.new_context(viewport={'width':412,'height':915},is_mobile=True,has_touch=True,device_scale_factor=2,service_workers='block',color_scheme=scheme)
+        ctx.route('https://tile.openstreetmap.org/**',lambda r: r.fulfill(status=200,content_type='image/png',body=PNG))
+        pg=ctx.new_page(); et=[]; watch(pg,et); goto(pg)
+        st=lambda: pg.evaluate("()=>[document.documentElement.dataset.themeMode,document.documentElement.dataset.theme,document.querySelector('meta[name=theme-color]').content,localStorage.getItem('spn.theme'),document.querySelector('#theme-btn').getAttribute('aria-label'),document.querySelector('#theme-btn .theme-lbl').textContent]")
+        s0=st(); col='#24060c' if scheme=='dark' else '#5a0f1e'
+        ok(f'theme auto default follows phone ({scheme})', s0[0]=='auto' and s0[1]==scheme and s0[2]==col and s0[3] is None and s0[5]=='Auto' and 'Auto' in s0[4], s0)
+        if scheme=='light': pg.screenshot(path=SHOTS+'theme-412-auto-light.png')
+        else: pg.screenshot(path=SHOTS+'theme-412-auto-dark.png')
+        other='light' if scheme=='dark' else 'dark'
+        pg.emulate_media(color_scheme=other); pg.wait_for_timeout(200)
+        s1=st(); ok(f'theme auto live-updates when OS changes ({scheme}->{other})', s1[0]=='auto' and s1[1]==other, s1)
+        pg.emulate_media(color_scheme=scheme); pg.wait_for_timeout(200)
+        pg.tap('#theme-btn'); pg.wait_for_timeout(150); s2=st()
+        ok(f'theme tap 1 -> Light override ({scheme})', s2[0]=='light' and s2[1]=='light' and s2[2]=='#5a0f1e' and s2[3]=='light' and s2[5]=='Light', s2)
+        if scheme=='light': pg.screenshot(path=SHOTS+'theme-412-light.png')
+        pg.emulate_media(color_scheme='dark'); pg.wait_for_timeout(200)
+        ok(f'theme override ignores OS change ({scheme})', st()[1]=='light')
+        pg.emulate_media(color_scheme=scheme)
+        pg.tap('#theme-btn'); pg.wait_for_timeout(150); s3=st()
+        ok(f'theme tap 2 -> Dark override ({scheme})', s3[0]=='dark' and s3[1]=='dark' and s3[2]=='#24060c' and s3[3]=='dark' and s3[5]=='Dark', s3)
+        if scheme=='light': pg.screenshot(path=SHOTS+'theme-412-dark.png')
+        ok(f'theme Home fits one viewport at 412 ({scheme})', pg.evaluate("document.documentElement.scrollHeight<=innerHeight+1"))
+        pg.reload(); pg.wait_for_selector('#tabbar:not([hidden])'); ok(f'theme override persists across reload ({scheme})', st()[:2]==['dark','dark'])
+        pg.tap('#theme-btn'); pg.wait_for_timeout(150); s4=st()
+        ok(f'theme tap 3 -> back to Auto, storage cleared ({scheme})', s4[0]=='auto' and s4[1]==scheme and s4[3] is None, s4)
+        ok(f'theme no console errors ({scheme})', not et, et)
+        ctx.close()
+    # pre-paint: auto + dark phone paints dark on first frame
+    ctx=b.new_context(viewport={'width':360,'height':780},is_mobile=True,service_workers='block',color_scheme='dark'); pg=ctx.new_page()
+    pg.add_init_script("window.__e=[];const t=()=>{if(document.body)window.__e.push(document.documentElement.getAttribute('data-theme'));if(window.__e.length<4)requestAnimationFrame(t)};requestAnimationFrame(t);")
+    goto(pg); e=pg.evaluate('window.__e'); ok('theme auto dark: first painted frames dark', e and all(x=='dark' for x in e), e); ctx.close()
+    for (w,h) in [(360,780),(430,932)]:
+        for m in ('auto','light','dark'):
+            ctx=new_ctx(w,h)
+            if m!='auto': ctx.add_init_script(f"localStorage.setItem('spn.theme','{m}')")
+            pg=ctx.new_page(); goto(pg)
+            ok(f'theme {m} {w}px Home no vertical scroll', pg.evaluate("document.documentElement.scrollHeight<=innerHeight+1"))
+            bb=pg.locator('#theme-btn').bounding_box(); ok(f'theme {m} {w}px toggle ≥44px & on screen', bb['width']>=44 and bb['height']>=44 and bb['x']+bb['width']<=w, bb)
+            ctx.close()
     # ============ install card: Home fits one viewport, card visible ============
     for theme in ('light','dark'):
         for (w,h) in [(360,780),(390,844),(412,915),(430,932)]:

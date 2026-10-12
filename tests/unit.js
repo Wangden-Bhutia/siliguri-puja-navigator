@@ -234,5 +234,26 @@ t('no "P" text or emoji used as nav/home icons', !/<span class="(bi|ti)"[^>]*>[^
   t('Safety notice: no pending-field-verification claim for locations', !/pending field verification/i.test(body) && !/independent 2026 geographic reference/i.test(body));
 })();
 
+// --- theme: auto default, pre-paint init, migration
+(function () {
+  const vm = require('vm'); const src = rd('theme-init.js');
+  function run(stored, dark) {
+    const attrs = {}, meta = { c: '', setAttribute: (k, v) => { meta.c = v; } };
+    const ctx = { localStorage: { getItem: () => stored }, window: {}, matchMedia: () => ({ matches: dark }),
+      document: { documentElement: { setAttribute: (k, v) => { attrs[k] = v; } }, querySelector: () => meta } };
+    ctx.window.matchMedia = ctx.matchMedia; vm.runInNewContext(src, ctx); return [attrs['data-theme-mode'], attrs['data-theme'], meta.c];
+  }
+  t('theme-init: no value + light phone = auto/light', JSON.stringify(run(null, false)) === '["auto","light","#5a0f1e"]');
+  t('theme-init: no value + dark phone = auto/dark', JSON.stringify(run(null, true)) === '["auto","dark","#24060c"]');
+  t('theme-init: legacy dark kept as override', JSON.stringify(run('dark', false)) === '["dark","dark","#24060c"]');
+  t('theme-init: legacy light kept as override', JSON.stringify(run('light', true)) === '["light","light","#5a0f1e"]');
+  t('theme-init: junk value = auto', run('auto', true)[0] === 'auto' && run('xyz', false)[0] === 'auto');
+  const app = rd('app.js');
+  t('app: cycles auto/light/dark', /\['auto', 'light', 'dark'\]/.test(app));
+  t('app: listens for prefers-color-scheme change', /prefers-color-scheme: dark/.test(app) && /addEventListener\('change', onSystemTheme\)/.test(app));
+  t('app: auto clears stored override', /removeItem\(LS_THEME\)/.test(app));
+  t('index: auto icon present', /id="i-auto"/.test(rd('index.html')));
+})();
+
 console.log(pass + ' passed, ' + fail + ' failed');
 if (fail) process.exit(1);
