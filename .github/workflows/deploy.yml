@@ -51,9 +51,20 @@ jobs:
             --exclude='_site' --exclude='README.md' --exclude='.gitignore' \
             ./ _site/
 
+      - name: Ensure Cloudflare Pages project exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if ! npx wrangler pages project list 2>/dev/null | grep -q "siliguri-puja-guide"; then
+            npx wrangler pages project create siliguri-puja-guide --production-branch=main
+          else
+            echo "Pages project siliguri-puja-guide already exists"
+          fi
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy _site --project-name=siliguri-puja-guide --branch=main
+          command: pages deploy _site --project-name=siliguri-puja-guide --branch=main --commit-dirty=true
