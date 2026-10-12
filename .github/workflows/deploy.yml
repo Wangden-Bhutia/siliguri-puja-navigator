@@ -1,0 +1,59 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate puja-data.json
+        run: node tools/validate-data.js data/puja-data.json
+
+      - name: Run unit tests
+        run: node tests/unit.js
+
+      - name: Refresh service worker (version + asset list)
+        run: node tools/build-sw.js
+
+      - name: Commit refreshed service worker (if changed)
+        run: |
+          if ! git diff --quiet -- service-worker.js branding.js; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add service-worker.js branding.js
+            git commit -m "chore: refresh service-worker precache list [skip ci]"
+            git push
+          else
+            echo "service-worker.js unchanged, nothing to commit"
+          fi
+
+      - name: Assemble public site (exclude dev-only files)
+        run: |
+          mkdir -p _site
+          rsync -a --exclude='.git' --exclude='.github' --exclude='docs' \
+            --exclude='tests' --exclude='tools' --exclude='data/sources' \
+            --exclude='_site' --exclude='README.md' --exclude='.gitignore' \
+            ./ _site/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name=siliguri-puja-guide --branch=main
