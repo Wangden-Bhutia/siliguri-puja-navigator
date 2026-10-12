@@ -11,6 +11,8 @@
   --ok-bg:#e4efe7; --ok-ink:#173f2b; --ok-bd:#2f5a43;
   --input-bg:#fff; --input-bd:#6f5f52;
   --mk-pandal:#5a0f1e; --mk-park:#2f5a43; --mk-fac:#6b4f0e; --mk-pab:#1e4a6b; --mk-hosp:#6b4f0e; --mk-traf:#8c1c2c; --mk-ctrl:#c9a227;
+  --cta-bg:#5a0f1e; --cta-ink:#fbf5e6; --cta-border:#5a0f1e;
+  --cta2-bg:#faf3eb; --cta2-ink:#5a0f1e; --cta2-border:rgba(90,15,30,.06);
   --tabbar-h:56px; --sos-size:52px;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --serif:Georgia,"Times New Roman",serif;
@@ -28,6 +30,8 @@ html[data-theme="dark"]{
   --ok-bg:#17382a; --ok-ink:#d6f5e2; --ok-bd:#7fd0a0;
   --input-bg:#150709; --input-bd:#c9b79f;
   --mk-pandal:#e3c36f; --mk-park:#3f8a63; --mk-fac:#b08a2e; --mk-pab:#6fa0c4; --mk-hosp:#b08a2e; --mk-traf:#c4344a; --mk-ctrl:#e3c36f;
+  --cta-bg:#5a0f1e; --cta-ink:#fbf5e6; --cta-border:#7a1830;
+  --cta2-bg:rgba(251,245,230,.1); --cta2-ink:#f8efde; --cta2-border:rgba(248,239,222,.18);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -128,7 +132,9 @@ html:not([data-theme-mode]) .theme-btn .ic-auto{display:inline}
 .dates::before{content:" \00B7 ";opacity:.75}
 .mast-festive .mast-meta{margin-top:10px}
 .mast-festive .descriptor,.mast-festive .dates{
-  font-size:.62rem;font-weight:400;color:rgba(251,245,230,.58);letter-spacing:.01em;
+  /* .58 opacity measured below 4.5:1 against brighter patches of the banner photo
+     (worst case ~4.49:1); .85 keeps >=7:1 across the sampled region. */
+  font-size:.62rem;font-weight:400;color:rgba(251,245,230,.85);letter-spacing:.01em;
 }
 .mast-festive .dates::before{content:": ";opacity:.85}
 .idstrip{margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -176,12 +182,12 @@ body:has(#view-home:not([hidden])) main.wrap{padding-top:0;padding-bottom:0}
 #view-home .bigactions{gap:8px;margin:8px 0 8px}
 #view-home .bigbtn-primary{
   min-height:50px;padding:12px 14px;font-family:var(--sans);font-size:1.05rem;font-weight:600;
-  color:#fff;letter-spacing:.01em;
+  color:var(--cta-ink);letter-spacing:.01em;
 }
 #view-home .bigrow{gap:8px}
 #view-home .bigrow .bigbtn,#view-home .bigrow .bigbtn-secondary{
-  min-height:48px;padding:10px 10px;font-family:var(--sans);font-size:15px;font-weight:600;color:#5a0f1e;
-  background:#fff;border:1px solid rgba(90,15,30,.1);
+  min-height:48px;padding:10px 10px;font-family:var(--sans);font-size:15px;font-weight:600;color:var(--cta2-ink);
+  background:var(--cta2-bg);border:1px solid var(--cta2-border);
 }
 .bigbtn{
   display:flex;align-items:center;justify-content:center;gap:8px;
@@ -191,26 +197,21 @@ body:has(#view-home:not([hidden])) main.wrap{padding-top:0;padding-bottom:0}
   box-shadow:none;
 }
 .bigbtn-primary{
-  background:#5a0f1e;color:#fbf5e6;border-color:#5a0f1e;
+  background:var(--cta-bg);color:var(--cta-ink);border-color:var(--cta-border);
   min-height:56px;font-size:1.02rem;font-weight:650;justify-content:flex-start;
 }
 .bigbtn-primary .bt{flex:1;text-align:center}
 .bigbtn-primary .chev{margin-left:auto;opacity:.9;width:18px;height:18px}
-html[data-theme="dark"] .bigbtn-primary{background:#5a0f1e;color:#fbf5e6;border-color:#7a1830}
 .bigrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .bigbtn .bi{width:18px;height:18px;opacity:.95;flex:none}
 .bigbtn .chev{width:16px;height:16px;flex:none;opacity:.7;margin-left:auto}
-/* secondary: pink-tinted equal cards with chevron */
+/* secondary: pink-tinted equal cards with chevron. Colors come from --cta2-*
+   (see :root / html[data-theme="dark"]), so dark mode never needs its own
+   hand-written override here. */
 .bigrow .bigbtn,.bigrow .bigbtn-secondary{
   flex-direction:row;gap:6px;padding:10px 10px;text-align:left;min-height:52px;font-size:15px;font-weight:600;
-  background:#faf3eb;border:1px solid rgba(90,15,30,.06);color:#5a0f1e;justify-content:flex-start;
+  background:var(--cta2-bg);border:1px solid var(--cta2-border);color:var(--cta2-ink);justify-content:flex-start;
   box-shadow:none;
-}
-html[data-theme="dark"] .bigrow .bigbtn,html[data-theme="dark"] .bigrow .bigbtn-secondary{
-  background:rgba(251,245,230,.08);border-color:rgba(248,239,222,.12);color:var(--head-ink);
-}
-html[data-theme="dark"] #view-home .bigrow .bigbtn,html[data-theme="dark"] #view-home .bigrow .bigbtn-secondary{
-  background:rgba(251,245,230,.1);color:#f8efde;border-color:rgba(248,239,222,.18);
 }
 .bigrow .bt{white-space:nowrap;flex:1}
 @media(max-width:359px){.bigrow .bigbtn{gap:4px;padding:10px 6px}.bigrow .bi{width:16px;height:16px}.bigrow .chev{display:none}}
@@ -436,17 +437,21 @@ html[data-theme="dark"] .tabbar a{color:var(--muted)}
 html[data-theme="dark"] .tabbar a[aria-current="page"]{color:var(--accent)}
 .tabbar .ti{width:18px;height:18px;opacity:.85}
 
-/* ----- SOS FAB — sits above tabbar, clear of content ----- */
+/* ----- SOS FAB — sits above tabbar, clear of content -----
+   Pill shape with a visible "SOS" label next to the icon: the one control
+   that most needs to work at a glance, so it can't rely on an icon alone. */
 .sos-fab{
   position:fixed;z-index:950;
   right:calc(12px + env(safe-area-inset-right));
   bottom:calc(var(--tabbar-h) + 8px + env(safe-area-inset-bottom));
-  width:var(--sos-size);height:var(--sos-size);border-radius:50%;
+  min-height:var(--sos-size);height:var(--sos-size);min-width:var(--sos-size);
+  padding:0 16px 0 14px;border-radius:999px;
   border:0;background:var(--accent);color:var(--on-accent);
   cursor:pointer;box-shadow:0 1px 3px rgba(42,26,22,.22);
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:center;gap:6px;
 }
-.sos-fab .ic{width:20px;height:20px;stroke-width:2}
+.sos-fab .ic{width:20px;height:20px;stroke-width:2;flex:none}
+.sos-fab-lbl{font:800 .8rem/1 var(--sans);letter-spacing:.03em}
 .sos-fab[aria-expanded="true"]{outline:3px solid var(--gold-l)}
 
 /* ----- bottom sheets ----- */
@@ -554,6 +559,16 @@ a.nhood-item:active{background:var(--surface-2)}
 .card-list-compact .info-card{padding:10px 12px}
 .info-card-compact h3{font-size:.95rem}
 #panel-traffic .mapbox{margin-bottom:12px;min-height:180px}
+
+/* DEMO sample block: a visibly separate container (not just a per-card badge),
+   so a skimming visitor can't mistake a sample scenario for a real one. */
+.demo-block{
+  margin:1.4em 0 0;padding:14px 14px 4px;border-radius:14px;
+  background:var(--demo-bg);border:1.5px dashed var(--demo-bd);
+}
+.demo-block .sec{color:var(--demo-ink);margin-top:0}
+.demo-block-sub{margin:-4px 0 10px;font-size:.8rem;line-height:1.4;color:var(--demo-ink);opacity:.85}
+.demo-block .card-list{margin-bottom:4px}
 
 /* PWA install card on Home — overlays the decorative scene so Home never scrolls */
 .install-card{

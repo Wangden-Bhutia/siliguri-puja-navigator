@@ -99,7 +99,7 @@
     </div>
     <aside class="warn-card warn-card-home" role="note">
       <span class="warn-ic" aria-hidden="true">&#9888;</span>
-      <p>Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.</p>
+      <p id="home-warn-text">Traffic restrictions can change on the ground. Follow on-ground police directions and posted signs.</p>
     </aside>
     <div class="home-scene" aria-hidden="true">
       <picture>
@@ -189,17 +189,28 @@
       <h2 class="sec">Control points</h2>
       <ul class="card-list card-list-compact" id="traffic-controls"></ul>
       <p class="empty" id="traffic-controls-empty" hidden>No control points published yet.</p>
-      <h2 class="sec">Sample (DEMO)</h2>
-      <div class="timecheck">
-        <label>Date <input type="date" id="t-date"></label>
-        <label>Time <input type="time" id="t-time"></label>
-        <button type="button" class="btn" id="t-now">Use now</button>
-      </div>
+      <h2 class="sec">Active now</h2>
       <ul class="card-list" id="traffic-active"></ul>
-      <div class="clear-note" id="traffic-active-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No DEMO sample active for the selected time</p><p class="muted small">DEMO items are samples only — not actual 2026 orders.</p></div>
-      <div id="traffic-upcoming-wrap" hidden>
-        <h2 class="sec">Upcoming DEMO</h2>
-        <ul class="card-list" id="traffic-upcoming"></ul>
+      <p class="empty" id="traffic-active-empty" hidden>No published 2026 traffic restriction is active right now.</p>
+      <div id="traffic-real-upcoming-wrap" hidden>
+        <h2 class="sec">Upcoming</h2>
+        <ul class="card-list" id="traffic-real-upcoming"></ul>
+      </div>
+
+      <div class="demo-block" id="demo-traffic-block">
+        <h2 class="sec">Sample scenario (DEMO)</h2>
+        <p class="demo-block-sub">For demonstration only — not real 2026 traffic data. Pick a date/time to preview how an active restriction will look once real ones are published.</p>
+        <div class="timecheck">
+          <label>Date <input type="date" id="t-date"></label>
+          <label>Time <input type="time" id="t-time"></label>
+          <button type="button" class="btn" id="t-now">Use now</button>
+        </div>
+        <ul class="card-list" id="traffic-demo"></ul>
+        <div class="clear-note" id="traffic-demo-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No DEMO sample active for the selected time</p><p class="muted small">DEMO items are samples only — not actual 2026 orders.</p></div>
+        <div id="traffic-upcoming-wrap" hidden>
+          <h2 class="sec">Upcoming (sample)</h2>
+          <ul class="card-list" id="traffic-upcoming"></ul>
+        </div>
       </div>
     </div>
   </section>
@@ -242,8 +253,8 @@
   <a href="#/parking" data-tab="parking"><svg class="ic ti" aria-hidden="true" focusable="false"><use href="#i-car"/></svg><span>Parking &amp; Traffic</span></a>
 </nav>
 
-<button type="button" class="sos-fab" id="sos-fab" aria-haspopup="dialog" aria-controls="sos-sheet" aria-expanded="false" title="Need help?" hidden>
-  <svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sos"/></svg><span class="sr-only">Need help? Emergency and police assistance</span>
+<button type="button" class="sos-fab" id="sos-fab" aria-haspopup="dialog" aria-controls="sos-sheet" aria-expanded="false" aria-label="SOS — Need help? Emergency and police assistance" title="Need help?" hidden>
+  <svg class="ic" aria-hidden="true" focusable="false"><use href="#i-sos"/></svg><span class="sos-fab-lbl" aria-hidden="true">SOS</span>
 </button>
 
 <dialog class="sheet" id="sos-sheet" aria-labelledby="sos-title">
@@ -262,7 +273,7 @@
       <h2 id="nav-title">Open directions?</h2>
       <button type="submit" class="sheet-close" value="close" aria-label="Close">×</button>
     </header>
-    <p class="sheet-warn">Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements. Follow Police directions and posted signs.</p>
+    <p class="sheet-warn" id="nav-warn-text">Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements. Follow on-ground police directions and posted signs.</p>
     <div class="sheet-actions">
       <a class="btn btn-primary" id="nav-go" href="#" target="_blank" rel="noopener">Open Google Maps</a>
       <button type="submit" class="btn" value="cancel">Cancel</button>

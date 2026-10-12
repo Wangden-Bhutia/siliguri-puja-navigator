@@ -159,23 +159,27 @@ with sync_playwright() as p:
     # J8 Traffic -> Active restriction (set a DEMO window time)
     pg.fill('#t-date','2026-10-17'); pg.dispatch_event('#t-date','change')
     pg.fill('#t-time','19:30'); pg.dispatch_event('#t-time','change'); pg.wait_for_timeout(250)
-    act=pg.inner_text('#traffic-active')
+    act=pg.inner_text('#traffic-demo')
     ok('J8 active DEMO Sevoke More card', 'Sevoke More' in act and 'Vehicle restriction' in act and 'DEMO — NOT VERIFIED' in act and 'Sample 2026 scenario — not an actual traffic order.' in act, act)
     ok('traffic card fields: Date, Time, What to do', 'Date' in act and '16–21 Oct' in act and 'Time' in act and 'What to do:' in act and act.count('Sample')==1, act)
     ok('traffic: empty Upcoming section hidden', pg.is_hidden('#traffic-upcoming-wrap'))
     ok('traffic card hides authority/order/source', 'source' not in act.lower() and 'order no' not in act.lower() and 'authority' not in act.lower())
     ok('active card shows time range', 'PM' in act and 'AM' in act, act)
-    pg.click('#traffic-active button:has-text("View map")'); pg.wait_for_timeout(500)
+    # DEMO content is rendered in its own visually-separated container, never
+    # mixed into the real "Active now" list (#traffic-active stays for
+    # approved 2026 records only).
+    ok('demo content not mixed into real Active now list', pg.locator('#traffic-active li').count()==0)
+    pg.click('#traffic-demo button:has-text("View map")'); pg.wait_for_timeout(500)
     ok('View map reveals traffic map', pg.is_visible('#map-traffic') and pg.locator('#map-traffic .mk-traf').count()==1)
     pg.fill('#t-date','2026-10-25'); pg.dispatch_event('#t-date','change'); pg.wait_for_timeout(200)
-    ok('after festival: no active, no upcoming (expired hidden)', pg.locator('#traffic-active li').count()==0 and pg.locator('#traffic-upcoming li').count()==0 and pg.is_visible('#traffic-active-empty'))
-    ok('empty DEMO traffic copy', 'No DEMO sample active' in pg.inner_text('#traffic-active-empty') and 'DEMO items are samples only' in pg.inner_text('#traffic-active-empty'))
+    ok('after festival: no active, no upcoming (expired hidden)', pg.locator('#traffic-active li').count()==0 and pg.locator('#traffic-demo li').count()==0 and pg.locator('#traffic-upcoming li').count()==0 and pg.is_visible('#traffic-demo-empty'))
+    ok('empty DEMO traffic copy', 'No DEMO sample active' in pg.inner_text('#traffic-demo-empty') and 'DEMO items are samples only' in pg.inner_text('#traffic-demo-empty'))
     ok('empty Upcoming hidden entirely after festival', pg.is_hidden('#traffic-upcoming-wrap'))
     pg.fill('#t-date','2026-10-10'); pg.dispatch_event('#t-date','change'); pg.wait_for_timeout(200)
-    ok('before festival: DEMO shows under Upcoming, Upcoming visible', pg.is_visible('#traffic-upcoming-wrap') and pg.locator('#traffic-upcoming li').count()==1 and pg.locator('#traffic-active li').count()==0)
+    ok('before festival: DEMO shows under Upcoming, Upcoming visible', pg.is_visible('#traffic-upcoming-wrap') and pg.locator('#traffic-upcoming li').count()==1 and pg.locator('#traffic-demo li').count()==0)
     ok('location integrity: pending/unapproved 2026 traffic not operational (only DEMO visitor-visible)', pg.evaluate("()=>{const t=PujaApp.state().data.traffic;return t.filter(r=>PujaLogic.isVisitorTraffic(r)).every(r=>r.demo) && t.filter(r=>r.verificationStatus==='pendingVerification'&&!r.demo).every(r=>!PujaLogic.isVisitorTraffic(r))}") )
     ok('expired 2025 records never in visitor feed', '2025' not in pg.inner_text('#panel-traffic') and 'TP25' not in pg.inner_text('#panel-traffic') and 'Jhankar' not in pg.inner_text('#panel-traffic') and 'Matigara' not in pg.inner_text('#panel-traffic'))
-    ok('DEMO separated from planned layer', 'Sample (DEMO)' in pg.inner_text('#panel-traffic') and pg.locator('#traffic-planned .is-demo').count()==0)
+    ok('DEMO separated from planned layer', 'Sample scenario (DEMO)' in pg.inner_text('#panel-traffic') and pg.locator('#traffic-planned .is-demo').count()==0)
 
     # J4 Pandals -> Neighbourhood -> Pandal
     go(pg,'pandals')

@@ -31,6 +31,14 @@
   function byId(list, id) { for (var i = 0; i < (list || []).length; i++) if (list[i].id === id) return list[i]; return null; }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
 
+  /* ---------- disclaimers: one shared clause, not four separately-worded paragraphs ---------- */
+  var POLICE_FOLLOW = 'Follow on-ground police directions and posted signs.';
+  function applyDisclaimers() {
+    var home = $('#home-warn-text'); if (home) home.textContent = 'Traffic restrictions can change on the ground. ' + POLICE_FOLLOW;
+    var nav = $('#nav-warn-text'); if (nav) nav.textContent = 'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements. ' + POLICE_FOLLOW;
+    var tc = $('#traffic-caveat'); if (tc) tc.textContent = 'Traffic arrangements and timings may change at short notice. ' + POLICE_FOLLOW + ' Mapped locations — 2026 traffic arrangement pending verification.';
+  }
+
   /* ---------- branding / theme ---------- */
   function applyBranding() {
     var approved = BR.officialBrandingApproved === true;
@@ -652,7 +660,7 @@
     var planned = clear($('#traffic-planned'));
     var diversions = clear($('#traffic-diversions'));
     var controls = clear($('#traffic-controls'));
-    var active = clear($('#traffic-active')), upcoming = clear($('#traffic-upcoming'));
+    var active = clear($('#traffic-active')), realUpcoming = clear($('#traffic-real-upcoming')), demo = clear($('#traffic-demo')), upcoming = clear($('#traffic-upcoming'));
     var trList = S.data ? (S.data.trafficRestrictions || []) : [];
     var feed = S.data ? P.trafficFeed(S.data.traffic, S.checkAt, trList) : { active: [], upcoming: [], planned: [] };
     // Section A — planned restrictions (pendingVerification working basis)
@@ -666,15 +674,22 @@
     var ctrls = S.data ? (S.data.trafficControls || []) : [];
     ctrls.forEach(function (c) { controls.appendChild(controlCard(c)); });
     $('#traffic-controls-empty').hidden = ctrls.length > 0;
-    // DEMO sample feed only (approved would also appear here)
+    // Real (approved 2026) and DEMO sample records are never mixed in the same
+    // list — a visitor skimming under time pressure must not mistake a sample
+    // for a genuine restriction. The DEMO block has its own container (see
+    // .demo-block in styles.css) so the separation is visual, not just a badge.
     var demoActive = feed.active.filter(function (x) { return x.r.demo; });
     var demoUpcoming = feed.upcoming.filter(function (x) { return x.r.demo; });
     var approvedActive = feed.active.filter(function (x) { return !x.r.demo; });
     var approvedUpcoming = feed.upcoming.filter(function (x) { return !x.r.demo; });
-    approvedActive.concat(demoActive).forEach(function (x) { active.appendChild(trafficCard(x)); });
-    approvedUpcoming.concat(demoUpcoming).forEach(function (x) { upcoming.appendChild(trafficCard(x)); });
-    $('#traffic-active-empty').hidden = (approvedActive.length + demoActive.length) > 0;
-    $('#traffic-upcoming-wrap').hidden = (approvedUpcoming.length + demoUpcoming.length) === 0;
+    approvedActive.forEach(function (x) { active.appendChild(trafficCard(x)); });
+    approvedUpcoming.forEach(function (x) { realUpcoming.appendChild(trafficCard(x)); });
+    demoActive.forEach(function (x) { demo.appendChild(trafficCard(x)); });
+    demoUpcoming.forEach(function (x) { upcoming.appendChild(trafficCard(x)); });
+    $('#traffic-active-empty').hidden = approvedActive.length > 0;
+    $('#traffic-real-upcoming-wrap').hidden = approvedUpcoming.length === 0;
+    $('#traffic-demo-empty').hidden = demoActive.length > 0;
+    $('#traffic-upcoming-wrap').hidden = demoUpcoming.length === 0;
     $('#map-traffic').hidden = false;
     paintTrafficOverviewMap();
   }
@@ -721,7 +736,7 @@
       title: 'Safety notice',
       body: [
         'This guide helps visitors find pandals, parking and published traffic information for Durga Puja in Siliguri.',
-        'Traffic restrictions can change on the ground. Follow traffic police directions and posted signs.',
+        'Traffic restrictions can change on the ground. ' + POLICE_FOLLOW,
         'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements.',
         'Pandal locations in this build are confirmed and usable for directions. Parking and traffic arrangements for 2026 are still being finalised. DEMO records are samples only.',
         'Police Assistance Booths are mapped to landmarks; 2026 deployment and exact booth positions are pending verification.',
@@ -1043,7 +1058,7 @@
     _setDeferredInstall: function (ev) { deferredInstall = ev || null; showInstallChip(!!ev); }
   };
 
-  initTheme(); applyBranding(); bind(); registerSW();
+  initTheme(); applyBranding(); applyDisclaimers(); bind(); registerSW();
   S.load.lastRefresh = readLast();
   onRoute();
   renderBanners();
