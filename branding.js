@@ -17,7 +17,7 @@
     tagline: 'Find pandals. Plan your route. Travel safely.',
     descriptor: 'Official Durga Puja Traffic & Visitor Information',   // shown ONLY when officialBrandingApproved = true
     descriptorDefault: 'Durga Puja Visitor Information \u00B7 Siliguri', // neutral wording used until approval
-    festivalDates: '16 \u2013 21 October 2026',
+    festivalDates: '16 \u2013 24 October 2026',
     festivalName: 'Durga Puja 2026',
     officialBrandingApproved: false,                                   // true only after written approval
     footerDemo: 'Siliguri Puja Guide \u00B7 Durga Puja 2026 \u00B7 Demo version',
