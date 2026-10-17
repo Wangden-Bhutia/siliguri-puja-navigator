@@ -1,8 +1,8 @@
 {
   "meta": {
     "schemaVersion": 2,
-    "datasetVersion": "2026-ref-0.6.0",
-    "lastUpdated": "2026-10-17T09:30:00+05:30",
+    "datasetVersion": "2026-ref-0.6.1",
+    "lastUpdated": "2026-10-17T10:15:00+05:30",
     "isDemoDataset": true,
     "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
@@ -409,12 +409,12 @@
       "id": "SG26-027",
       "name": "Fulbari Battala Durga Puja Committee",
       "locality": "Fulbari",
-      "latitude": 26.6548,
-      "longitude": 88.4361,
+      "latitude": 26.65199,
+      "longitude": 88.41684,
       "verificationStatus": "pendingVerification",
-      "source": "Pujo Songi 2026",
+      "source": "Geocoded 2026: Battala Puja Committee place listing, Fulbari Bazar (local press: Battala faces Fulbari Bazar)",
       "sourceType": "independent geographic reference",
-      "sourceUrl": "https://pujosongi.site/siliguri-puja-map/",
+      "sourceUrl": "https://bartamanpatrika.com/news/battala-durga-puja-committee-to-show-consequences-of-keeping-children-away-from-playground",
       "locationStatus": "confirmed"
     },
     {
@@ -2220,13 +2220,13 @@
     },
     {
       "id": "babupura-more",
-      "name": "Babupura More",
-      "latitude": 26.69575,
-      "longitude": 88.436,
+      "name": "Babupara More",
+      "latitude": 26.70492,
+      "longitude": 88.42511,
       "locationStatus": "landmarkAnchor",
       "verificationStatus": "pendingVerification",
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "sourceYear": 2024
+      "source": "Geocoded 2026: SF Road listings at Babupara More, at the west end of the Station Feeder Road flyover",
+      "sourceYear": 2026
     },
     {
       "id": "court-more",
