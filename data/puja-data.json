@@ -1,20 +1,81 @@
 {
   "meta": {
     "schemaVersion": 2,
-    "datasetVersion": "2026-ref-0.4.0",
-    "lastUpdated": "2026-10-05T18:45:00+05:30",
+    "datasetVersion": "2026-ref-0.5.0",
+    "lastUpdated": "2026-10-17T09:00:00+05:30",
     "isDemoDataset": true,
     "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
     "festival": {
       "name": "Durga Puja 2026",
       "startDate": "2026-10-16",
-      "endDate": "2026-10-21"
+      "endDate": "2026-10-24"
     },
-    "notice": "Pandal locations are confirmed and usable for directions. 2026 parking and traffic arrangements are not finalised. Traffic restriction corridors and control points are mapped from Siliguri Police Commissionerate Puja traffic material as a working basis; 2026 orders, timings and exact geometry are pending verification. Police Assistance Booths are mapped to landmarks; 2026 deployment and exact booth positions are pending verification. DEMO parking/traffic/facility records are samples only. Official branding is disabled until written approval.",
+    "notice": "Pandal locations are confirmed and usable for directions. Traffic restrictions, goods-vehicle points, bus departure points, NJP routes and parking places follow the Siliguri Police Puja 2026 traffic arrangements; general parking rules are from local press reports. Maps show approximate junction-to-junction lines only. Police Assistance Booths are mapped to landmarks; 2026 deployment and exact booth positions are pending verification. DEMO facility records are samples only. Official branding is disabled until written approval.",
     "pandalDataStatus": "locationConfirmed",
     "pabDataStatus": "landmarkMapped",
-    "trafficDataStatus": "plannedBasis2024PendingVerification"
+    "trafficDataStatus": "puja2026Plan",
+    "trafficPlan": {
+      "period": "16 to 24 Oct 2026 (Durga Puja and immersion)",
+      "schedule": [
+        {
+          "date": "16 Oct",
+          "day": "Panchami",
+          "from": "4 PM",
+          "to": "2 AM"
+        },
+        {
+          "date": "17 Oct",
+          "day": "Shashthi",
+          "from": "4 PM",
+          "to": "2 AM"
+        },
+        {
+          "date": "18 Oct",
+          "day": "Saptami",
+          "from": "4 PM",
+          "to": "2 AM"
+        },
+        {
+          "date": "19 Oct",
+          "day": "Ashtami",
+          "from": "4 PM",
+          "to": "4 AM"
+        },
+        {
+          "date": "20 Oct",
+          "day": "Navami",
+          "from": "4 PM",
+          "to": "4 AM"
+        },
+        {
+          "date": "21 Oct",
+          "day": "Dashami",
+          "from": "4 PM",
+          "to": "4 AM"
+        },
+        {
+          "date": "22 Oct",
+          "day": "Ekadashi",
+          "from": "4 PM",
+          "to": "4 AM"
+        },
+        {
+          "date": "23 Oct",
+          "day": "Dwadashi",
+          "from": "4 PM",
+          "to": "4 AM"
+        },
+        {
+          "date": "24 Oct",
+          "day": "Last day of immersion",
+          "from": "4 PM",
+          "to": "4 AM"
+        }
+      ],
+      "note": "End times are on the next morning. Police may change timings at short notice depending on crowds.",
+      "immersion": "Idol immersion is scheduled for 21, 22, 23 and 24 Oct 2026. Immersion routes and ghat-wise traffic arrangements have not been published for visitors."
+    }
   },
   "pandals": [
     {
@@ -1332,112 +1393,206 @@
   ],
   "parking": [
     {
-      "id": "demo-park-deshbandhupara",
-      "name": "DEMO – Sample drop point near Deshbandhupara",
-      "type": "parking-drop",
-      "latitude": 26.7079,
-      "longitude": 88.4277,
-      "servedPandalIds": [
-        "SG26-001",
-        "SG26-004",
-        "SG26-035",
-        "SG26-036",
-        "SG26-057"
-      ],
-      "walkingDistance": 450,
-      "walkingTime": 8,
-      "walkingRoute": [
-        "Sample walk: leave the drop point and follow the marked side lane toward the pandal cluster.",
-        "Sample only — not a verified walking route."
-      ],
-      "limitations": "Sample scenario — not real parking. Capacity and access not verified.",
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing"
+      "id": "pk26-lbs-school",
+      "name": "Near Lal Bahadur Shastri Hindi High School",
+      "type": "parking",
+      "area": "NJP / Gate Bazar area",
+      "vehicles": "Two- and four-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
     },
     {
-      "id": "demo-park-hakimpara",
-      "name": "DEMO – Sample drop point near Hakimpara",
-      "type": "parking-drop",
-      "latitude": 26.71758,
-      "longitude": 88.42906,
-      "servedPandalIds": [
-        "SG26-006",
-        "SG26-009",
-        "SG26-030",
-        "SG26-039",
-        "SG26-053"
-      ],
-      "walkingDistance": 380,
-      "walkingTime": 7,
-      "walkingRoute": [
-        "Sample walk: use the footpath toward the pandal area.",
-        "Sample only — not a verified walking route."
-      ],
-      "limitations": "Sample scenario — not real parking. Capacity and access not verified.",
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing"
+      "id": "pk26-rly-institute",
+      "name": "Railway Institute Ground",
+      "type": "parking",
+      "area": "NJP area",
+      "vehicles": "Two- and four-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-stadium-bazar",
+      "name": "Stadium Bazar (back side)",
+      "type": "parking",
+      "area": "NJP area",
+      "vehicles": "Two-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-gref-more",
+      "name": "GREF More, near the school ground",
+      "type": "parking",
+      "area": "NJP area",
+      "vehicles": "Two- and four-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-pipe-line",
+      "name": "Pipe Line",
+      "type": "parking",
+      "area": "NJP area",
+      "vehicles": "Two- and four-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-sarada-hardware",
+      "name": "Near Sarada Hardware",
+      "type": "parking",
+      "area": "NJP area",
+      "vehicles": "Two-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-sp-sarani",
+      "name": "Near S. P. Sarani",
+      "type": "parking",
+      "area": "NJP area",
+      "vehicles": "Two-wheelers",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-dhaknikata-2",
+      "name": "Dhaknikata Parking Lot-II",
+      "type": "parking",
+      "area": "Anchal Road / Debidanga area",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-hdfc-anchal",
+      "name": "Parking Lot-I, near HDFC Bank",
+      "type": "parking",
+      "area": "Anchal Road",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-maya-devi",
+      "name": "Near Maya Devi Underpass",
+      "type": "parking",
+      "area": "Matigara / Balason area",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-khaprail-east",
+      "name": "Near Khaprail More (east side)",
+      "type": "parking",
+      "area": "Matigara / Balason area",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false
+    },
+    {
+      "id": "pk26-chittaranjan",
+      "name": "Chittaranjan High School Puja",
+      "type": "parking",
+      "area": "Bagdogra area",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false,
+      "note": "Police parking duty at this puja."
+    },
+    {
+      "id": "pk26-bihar-more-ground",
+      "name": "Bihar More Railway Ground Puja",
+      "type": "parking",
+      "area": "Bagdogra area",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false,
+      "note": "Police parking duty at this puja."
+    },
+    {
+      "id": "pk26-netaji-athletic",
+      "name": "Netaji Athletic Club, Saradapally (near Mukta Nursing Home)",
+      "type": "parking",
+      "area": "Bagdogra / Shivmandir area",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false,
+      "note": "Police parking duty at this puja."
+    },
+    {
+      "id": "pk26-fulbari-bazar",
+      "name": "Fulbari Bazar Durga Puja",
+      "type": "parking",
+      "area": "Fulbari",
+      "vehicles": "Not specified",
+      "textOnly": true,
+      "verificationStatus": "approved",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "sourceYear": 2026,
+      "demo": false,
+      "note": "Police parking duty at this puja."
     }
   ],
-  "walkingRoutes": [
-    {
-      "id": "demo-walk-SG26-001",
-      "parkingId": "demo-park-deshbandhupara",
-      "pandalId": "SG26-001",
-      "walkingDistance": 785,
-      "walkingTime": 13,
-      "walkingRoute": [
-        "Sample route toward Dada Bhai Sporting Club.",
-        "Sample scenario — not a verified walking route."
-      ],
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing"
-    },
-    {
-      "id": "demo-walk-SG26-004",
-      "parkingId": "demo-park-deshbandhupara",
-      "pandalId": "SG26-004",
-      "walkingDistance": 262,
-      "walkingTime": 5,
-      "walkingRoute": [
-        "Sample route toward Subrata Sangha Durgapuja Committee.",
-        "Sample scenario — not a verified walking route."
-      ],
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing"
-    },
-    {
-      "id": "demo-walk-SG26-006",
-      "parkingId": "demo-park-hakimpara",
-      "pandalId": "SG26-006",
-      "walkingDistance": 224,
-      "walkingTime": 5,
-      "walkingRoute": [
-        "Sample route toward Hakimpara Yuvak Sangha.",
-        "Sample scenario — not a verified walking route."
-      ],
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing"
-    },
-    {
-      "id": "demo-walk-SG26-009",
-      "parkingId": "demo-park-hakimpara",
-      "pandalId": "SG26-009",
-      "walkingDistance": 289,
-      "walkingTime": 5,
-      "walkingRoute": [
-        "Sample route toward Rabindra Sangha.",
-        "Sample scenario — not a verified walking route."
-      ],
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing"
-    }
-  ],
+  "walkingRoutes": [],
   "traffic": [
     {
       "id": "TP25-01",
@@ -1624,35 +1779,50 @@
       "place": "Naukaghat"
     },
     {
-      "id": "demo-traffic-sevoke",
-      "name": "DEMO – Sample vehicle restriction at Sevoke More",
-      "origin": "Hill Cart Road approaches",
-      "destination": "Sevoke More",
-      "affectedRoad": "Sevoke More / Hill Cart Road",
-      "affectedSegment": "Approaches to Sevoke More",
+      "id": "TO26-01",
+      "name": "Puja traffic restrictions in force (16-18 Oct)",
+      "origin": "Siliguri Police Commissionerate area",
+      "destination": "Listed roads",
+      "affectedRoad": "9 listed roads; goods vehicles stopped at entry points",
+      "affectedSegment": "See listed roads below",
       "vehicleTypes": [
-        "Four-wheelers"
+        "All vehicles"
       ],
-      "restrictionType": "vehicleClassRestriction",
+      "restrictionType": "noEntry",
       "plannedStart": "2026-10-16T00:00:00+05:30",
-      "plannedEnd": "2026-10-21T23:59:00+05:30",
-      "dailyStart": "18:00",
-      "dailyEnd": "01:00",
-      "diversionRoute": "Sample diversion — follow marked Police signs.",
-      "visitorAction": "Follow the marked Police diversion. Sample scenario — not an actual 2026 traffic order.",
+      "plannedEnd": "2026-10-18T23:59:00+05:30",
+      "dailyStart": "16:00",
+      "dailyEnd": "02:00",
+      "diversionRoute": "See Diversions below",
+      "visitorAction": "Avoid the listed roads by car, bike or toto. Goods vehicles stop at the entry points. Follow on-ground police directions.",
       "status": "scheduled",
-      "verificationStatus": "pendingVerification",
-      "demo": true,
-      "source": "DEMO sample for UI testing",
-      "place": "Sevoke More",
-      "mapGeometry": {
-        "type": "Point",
-        "coordinates": [
-          88.4227672,
-          26.7156251
-        ]
-      },
-      "approximateLocation": true
+      "verificationStatus": "approved",
+      "demo": false,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "TO26-02",
+      "name": "Puja traffic restrictions in force (19-24 Oct)",
+      "origin": "Siliguri Police Commissionerate area",
+      "destination": "Listed roads",
+      "affectedRoad": "9 listed roads; goods vehicles stopped at entry points",
+      "affectedSegment": "See listed roads below",
+      "vehicleTypes": [
+        "All vehicles"
+      ],
+      "restrictionType": "noEntry",
+      "plannedStart": "2026-10-19T00:00:00+05:30",
+      "plannedEnd": "2026-10-24T23:59:00+05:30",
+      "dailyStart": "16:00",
+      "dailyEnd": "04:00",
+      "diversionRoute": "See Diversions below",
+      "visitorAction": "Avoid the listed roads by car, bike or toto. Goods vehicles stop at the entry points. Follow on-ground police directions.",
+      "status": "scheduled",
+      "verificationStatus": "approved",
+      "demo": false,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     }
   ],
   "facilities": [
@@ -1903,7 +2073,10 @@
       {
         "id": "pcr",
         "name": "Police Control Room",
-        "verificationStatus": "pendingVerification"
+        "verificationStatus": "approved",
+        "phone": "0353-2662210",
+        "verifiedBy": "Siliguri Police Puja 2026 arrangements",
+        "source": "Puja 2026 Special Control Room, round the clock from 16 Oct until immersion ends"
       },
       {
         "id": "tcr",
@@ -2206,334 +2379,448 @@
   ],
   "trafficRestrictions": [
     {
-      "id": "TR-01",
+      "id": "TR26-01",
       "name": "Panitanki More → Hasmi Chowk (Venus More)",
       "restrictionType": "noEntry",
       "vehicleScope": [
         "allVehicles"
       ],
       "affectedRoad": "Bidhan Road",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
       "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
       "fromNode": "panitanki-more",
       "toNode": "hasmi-chowk",
-      "note": "Hasmi Chowk is at Venus More approaches on Bidhan Road."
+      "note": "All vehicles including e-rickshaws (totos).",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     },
     {
-      "id": "TR-02",
-      "name": "Amar Garage → Sevoke More",
+      "id": "TR26-02",
+      "name": "Payal More → Sevoke More",
       "restrictionType": "noEntry",
       "vehicleScope": [
         "allVehicles"
       ],
       "affectedRoad": "Sevoke Road",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
       "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "amar-garage",
-      "toNode": "sevoke-more"
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "note": "All vehicles including e-rickshaws (totos). Payal More is not yet mapped in this app, so no map line is shown.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     },
     {
-      "id": "TR-03",
-      "name": "Jalpai More → Babupura More",
+      "id": "TR26-03",
+      "name": "Pakurtala More → Swamiji More",
       "restrictionType": "noEntry",
       "vehicleScope": [
         "allVehicles"
       ],
-      "affectedRoad": "Approach corridor",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "affectedRoad": "Pakurtala More to Swamiji More",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
       "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "jalpai-more",
-      "toNode": "babupura-more",
-      "note": "Corridor wording aligned with published local-route lists; confirm against 2024 order item [C]3."
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "note": "All vehicles including e-rickshaws (totos). Swamiji More is not yet mapped in this app.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     },
     {
-      "id": "TR-04",
-      "name": "Venus More → Court More",
+      "id": "TR26-04",
+      "name": "Road in front of Ashim Sweets → Rathkhola More",
       "restrictionType": "noEntry",
       "vehicleScope": [
         "allVehicles"
       ],
-      "affectedRoad": "Kachhari Road",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "affectedRoad": "Ashim Sweets to Rathkhola More",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
       "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "venus-more",
-      "toNode": "court-more"
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "note": "All vehicles including e-rickshaws (totos). The Ashim Sweets end is not mapped in this app.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     },
     {
-      "id": "TR-05",
-      "name": "Airview More → Sevoke More",
+      "id": "TR26-05",
+      "name": "Gopal More → NTS More",
       "restrictionType": "noEntry",
       "vehicleScope": [
         "allVehicles"
       ],
-      "affectedRoad": "Church Road",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "affectedRoad": "NJP Station Main Road",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
       "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "airview-more",
-      "toNode": "sevoke-more"
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "fromNode": "gopal-more",
+      "toNode": "nts-more",
+      "note": "All vehicles including e-rickshaws (totos).",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     },
     {
-      "id": "TR-06",
-      "name": "Airview More → Venus More",
+      "id": "TR26-06",
+      "name": "No small vehicles to NJP via Dada Bhai More and Subrata Sangha",
       "restrictionType": "noEntry",
-      "vehicleScope": [
-        "allVehicles"
-      ],
-      "affectedRoad": "Hill Cart Road",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "airview-more",
-      "toNode": "venus-more"
-    },
-    {
-      "id": "TR-07",
-      "name": "Hasmi Chowk → Babupura More / Tikiapara More (flyover)",
-      "restrictionType": "noEntry",
-      "vehicleScope": [
-        "allVehicles"
-      ],
-      "affectedRoad": "Flyover",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "hasmi-chowk",
-      "toNode": "babupura-more",
-      "altToNodes": [
-        "tikiapara-more"
-      ],
-      "note": "Via flyover toward Babupura More and Tikiapara More."
-    },
-    {
-      "id": "TR-08",
-      "name": "Alu Chowdhury More → Babupura More",
-      "restrictionType": "noEntry",
-      "vehicleScope": [
-        "allVehicles"
-      ],
-      "affectedRoad": "Sree Ma Sarani",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "alu-chowdhury-more",
-      "toNode": "babupura-more"
-    },
-    {
-      "id": "TR-09",
-      "name": "Hospital More → Pakurtala More",
-      "restrictionType": "noEntry",
-      "vehicleScope": [
-        "allVehicles"
-      ],
-      "affectedRoad": "Haren Mukherjee Road",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "hospital-more",
-      "toNode": "pakurtala-more"
-    },
-    {
-      "id": "TR-10",
-      "name": "Connecting roads from Haren Mukherjee Road and Bidhan Road",
-      "restrictionType": "noEntry",
-      "vehicleScope": [
-        "allVehicles"
-      ],
-      "affectedRoad": "Connecting roads (Haren Mukherjee Road, Bidhan Road)",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "zone": true,
-      "zoneLabel": "Connecting roads from Haren Mukherjee Road and Bidhan Road",
-      "anchorNodes": [
-        "haren-mukherjee-road",
-        "panitanki-more",
-        "hasmi-chowk",
-        "hospital-more",
-        "pakurtala-more"
-      ],
-      "note": "Zone restriction — connecting roads; not a single corridor segment."
-    },
-    {
-      "id": "TR-11",
-      "name": "Hati More / Netaji More → Rath Khola More",
-      "restrictionType": "noEntry",
-      "vehicleScope": [
-        "allVehicles"
-      ],
-      "affectedRoad": "Approach corridor",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "hati-more-netaji-more",
-      "toNode": "rath-khola-more"
-    },
-    {
-      "id": "TR-12",
-      "name": "Toward NJP via Dada Bhai More approaches",
-      "restrictionType": "noEntry",
-      "vehicleScope": [
-        "smallVehicles"
-      ],
-      "affectedRoad": "NJP approach",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
-      "fromNode": "nts-more",
-      "toNode": "dada-bhai-more",
-      "note": "Small-vehicle approach toward NJP via Dada Bhai More area — confirm exact 2024 wording."
-    },
-    {
-      "id": "TR-13",
-      "name": "Toward NJP via Dada Bhai More / Subrata Sangha",
-      "restrictionType": "vehicleClassRestriction",
       "vehicleScope": [
         "smallVehicles",
-        "fourWheelers"
+        "twoWheelers"
       ],
       "affectedRoad": "NJP approach",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
       "approximateGeometry": true,
-      "visitorAction": "Follow on-ground police directions. Timing subject to 2026 order.",
-      "timingNote": "Timing subject to 2026 order / on-ground police.",
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
       "fromNode": "dada-bhai-more",
       "toNode": "subrata-sangha",
-      "note": "Small / four-wheeler traffic toward NJP should not use Dada Bhai More or Subrata Sangha; see diversion-njp-small."
+      "note": "Small vehicles, including two-wheelers, may not go towards NJP Railway Station via Dada Bhai More and Subrata Sangha. See the NJP route plan under Diversions.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "TR26-07",
+      "name": "Botoal Company More → Dhaknikata Ground (Debidanga Bazar)",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Debidanga Road",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "approximateGeometry": true,
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "note": "All vehicles including e-rickshaws (totos). Not mapped in this app.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "TR26-08",
+      "name": "Sreema Bhawan More → SBI More via Haiderpara Bazar",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Via Haiderpara Bazar",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "approximateGeometry": true,
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "note": "All vehicles including e-rickshaws (totos). Not mapped in this app.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "TR26-09",
+      "name": "Kashmir Colony More → road in front of NJP PS",
+      "restrictionType": "noEntry",
+      "vehicleScope": [
+        "allVehicles"
+      ],
+      "affectedRoad": "Kashmir Colony More to NJP Police Station",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "approximateGeometry": true,
+      "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "note": "All vehicles including e-rickshaws (totos). Not mapped in this app.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     }
   ],
   "trafficControls": [
     {
-      "id": "tc-paribahan-nagar",
-      "name": "Paribahan Nagar — goods vehicle control",
+      "id": "tc26-paribahan-nagar",
+      "name": "Parivahan Nagar",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
       "nodeId": "paribahan-nagar",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "tc26-bhaktinagar-check-post",
+      "name": "Bhaktinagar Check Post",
       "vehicleScope": [
         "goodsVehicles"
       ],
       "controlType": "noEntryBeyondControlPoint",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "timingNote": "Timing subject to 2026 order / on-ground police."
-    },
-    {
-      "id": "tc-bhaktinagar-check-post",
-      "name": "Bhaktinagar Check Post — goods vehicle control",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
       "nodeId": "bhaktinagar-check-post",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "tc26-naukaghat",
+      "name": "Naukaghat",
       "vehicleScope": [
         "goodsVehicles"
       ],
       "controlType": "noEntryBeyondControlPoint",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "timingNote": "Timing subject to 2026 order / on-ground police."
-    },
-    {
-      "id": "tc-baneswar-more",
-      "name": "Baneswar More — goods vehicle control",
-      "nodeId": "baneswar-more",
-      "vehicleScope": [
-        "goodsVehicles"
-      ],
-      "controlType": "noEntryBeyondControlPoint",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "timingNote": "Timing subject to 2026 order / on-ground police."
-    },
-    {
-      "id": "tc-ashighar-more",
-      "name": "Ashighar More — goods vehicle control",
-      "nodeId": "ashighar-more",
-      "vehicleScope": [
-        "goodsVehicles"
-      ],
-      "controlType": "noEntryBeyondControlPoint",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "timingNote": "Timing subject to 2026 order / on-ground police."
-    },
-    {
-      "id": "tc-naukaghat-more",
-      "name": "Naukaghat More — goods vehicle control",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
       "nodeId": "naukaghat-more",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "tc26-fulbari-bypass",
+      "name": "Fulbari Bypass More",
       "vehicleScope": [
         "goodsVehicles"
       ],
       "controlType": "noEntryBeyondControlPoint",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "timingNote": "Timing subject to 2026 order / on-ground police."
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "tc26-ioc-netaji",
+      "name": "IOC More / Netaji More (NJP)",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "tc26-sukna-tcp",
+      "name": "Sukna TCP More",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "controlType": "noEntryBeyondControlPoint",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
     }
   ],
   "trafficDiversions": [
     {
-      "id": "diversion-njp-small",
-      "name": "NJP approach — small / four-wheeler diversion",
-      "viaNodes": [
-        "darjeeling-more",
-        "medical-more",
-        "shiv-mandir",
-        "naukaghat-more"
-      ],
-      "avoidNodes": [
-        "dada-bhai-more",
-        "subrata-sangha"
-      ],
+      "id": "dv26-njp-from-tinbatti",
+      "name": "To NJP Railway Station from Tinbatti More",
       "vehicleScope": [
-        "smallVehicles",
-        "fourWheelers"
+        "smallVehicles"
       ],
-      "instruction": "For small / four-wheeler traffic toward NJP station, use Darjeeling More → Medical More → Shiv Mandir → Naukaghat. Do not use Dada Bhai More or Subrata Sangha.",
-      "verificationStatus": "pendingVerification",
-      "sourceYear": 2024,
-      "source": "Siliguri Police Commissionerate Puja traffic restriction material",
-      "timingNote": "Timing subject to 2026 order / on-ground police."
+      "instruction": "Tinbatti More → Gate Bazar → right turn at Lal Bahadur Shastri School → MOR Bazar → Railway Hospital More → NJP Railway Station.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-njp-to-city",
+      "name": "From NJP Railway Station to Siliguri town",
+      "vehicleScope": [
+        "smallVehicles"
+      ],
+      "instruction": "Netaji More → Railway Hospital More → MOR Bazar → Kashmir Colony More → Tinbatti More.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-njp-to-hills",
+      "name": "From NJP to Kalimpong / Gangtok / Dooars / Jalpaiguri side",
+      "vehicleScope": [
+        "smallVehicles"
+      ],
+      "instruction": "IOC More → BPCL More → VIP Road → Bhavesh Petrol Pump → Check Post.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-njp-to-jalpaiguri",
+      "name": "From NJP towards Jalpaiguri",
+      "vehicleScope": [
+        "smallVehicles"
+      ],
+      "instruction": "VIP Road → Thakur Nagar Railway Gate → Nawapara Canal Road.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-bus-assam",
+      "name": "Inter-state / Volvo buses to Assam",
+      "vehicleScope": [
+        "buses"
+      ],
+      "instruction": "Operate from Naukaghat More.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-bus-kolkata-bihar",
+      "name": "Inter-state / Volvo buses to Kolkata and Bihar",
+      "vehicleScope": [
+        "buses"
+      ],
+      "instruction": "Operate from Parivahan Nagar or Naukaghat More.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-bus-sikkim",
+      "name": "SNT buses to and from Sikkim",
+      "vehicleScope": [
+        "buses"
+      ],
+      "instruction": "Operate from P.C. Mittal Bus Stand or opposite P.C. Mittal Bus Stand.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-bus-district",
+      "name": "Buses to Jalpaiguri / Cooch Behar / Alipurduar / Assam",
+      "vehicleScope": [
+        "buses"
+      ],
+      "instruction": "Operate from Naukaghat.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-bus-city",
+      "name": "City buses and TATA Magic from Bagrakot / Court More",
+      "vehicleScope": [
+        "buses"
+      ],
+      "instruction": "Operate from the Super Bus Stand; those going towards Bagdogra / Khoribari / Naxalbari / Panitanki go via Naukaghat.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-truck-sikkim",
+      "name": "Trucks from Khalpara / Naya Bazar to Sikkim / Kalimpong / Malbazar",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "instruction": "Jalpaiguri More → Naukaghat → Ambari Canal Road → Eastern Bypass Road towards Sevoke.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-truck-darjeeling",
+      "name": "Trucks from Khalpara / Naya Bazar to Darjeeling",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "instruction": "Jalpaiguri More → Naukaghat → Medical More (Shivmandir) → Bihar More → Panighata More → Trihana → Dudhniya.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    },
+    {
+      "id": "dv26-truck-stops",
+      "name": "Truck stopping points",
+      "vehicleScope": [
+        "goodsVehicles"
+      ],
+      "instruction": "Ghosh Pukur towards Bagdogra: stopped at Khanna Hotel, Bagdogra. Parivahan Nagar towards Darjeeling More (all roads up to Bhaktinagar Check Post and Naukaghat): stopped at Parivahan Nagar. Naxalbari (Nepal border) towards Bihar More: stopped at Panighata More. Nawapara More towards Murder More: stopped at Gandar More. Ghora More towards Kashmir Colony via Ambika Nagar underpass: stopped at Ghora More.",
+      "verificationStatus": "approved",
+      "sourceYear": 2026,
+      "source": "Siliguri Police Puja 2026 traffic arrangements",
+      "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
+      "textOnly": true,
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+    }
+  ],
+  "parkingRules": [
+    {
+      "id": "pr-no-roadside",
+      "text": "No roadside parking on main roads during the Puja days. Vehicles parked there may be towed.",
+      "source": "Local press reports (Millennium Post, 8 Oct; SP News, 11 Oct)"
+    },
+    {
+      "id": "pr-pandal-roads",
+      "text": "Vehicles are not allowed into roads where pandals stand. Park at a listed place and walk.",
+      "source": "Local press reports (Khabar Samay, 14 Oct)"
+    },
+    {
+      "id": "pr-boards",
+      "text": "Electronic display boards at key junctions will show parking and traffic information.",
+      "source": "Local press reports (Siliguri Times, 23 Sep)"
+    },
+    {
+      "id": "pr-earmarked",
+      "text": "Park only in earmarked places, never in a No Parking area. Big pujas arrange parking with the police, so ask volunteers at the pandal.",
+      "source": "Siliguri Police Puja 2026 traffic arrangements"
     }
   ]
 }

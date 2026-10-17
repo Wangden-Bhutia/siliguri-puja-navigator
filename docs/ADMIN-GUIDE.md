@@ -7,7 +7,7 @@ All content lives in **`data/puja-data.json`**. The app reads it on every visit 
 ## 1. What the demo data is
 Every record in the bundled file is a placeholder: names start with `DEMO –`, `status` is `demo`, `demo` is `true`, locations are generic points near Siliguri's centre (~26.7271, 88.3953) with `approximateLocation: true`, and `meta.isDemoDataset` is `true`, which shows the "Demo data – locations and traffic orders are not verified. Not real pandals or orders." banner. The demo restrictions exist only to exercise the app: a midnight-crossing recurring window, a multi-day span, expired, cancelled, unconfirmed and scheduled-future.
 
-**Maintainer instructions (kept out of the visitor screens):** the app never tells visitors how to edit data. Branding words, the festival dates shown in the header (`branding.js`, currently 16 – 21 October 2026) and the optional logo strip are set in `branding.js` / `assets/logos/README.md`; the `meta.festival` fields in the JSON are not displayed. The demo restriction records keep their own sample dates and were not changed.
+**Maintainer instructions (kept out of the visitor screens):** the app never tells visitors how to edit data. Branding words, the festival dates shown in the header (`branding.js`, currently 16 – 24 October 2026) and the optional logo strip are set in `branding.js` / `assets/logos/README.md`; the `meta.festival` fields in the JSON are not displayed. The demo restriction records keep their own sample dates and were not changed.
 
 **To go live:** delete the demo records, add verified ones, set `"isDemoDataset": false`, update `datasetVersion` and `lastUpdated`, run the validator, commit.
 

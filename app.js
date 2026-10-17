@@ -36,7 +36,7 @@
   function applyDisclaimers() {
     var home = $('#home-warn-text'); if (home) home.textContent = 'Traffic restrictions can change on the ground. ' + POLICE_FOLLOW;
     var nav = $('#nav-warn-text'); if (nav) nav.textContent = 'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements. ' + POLICE_FOLLOW;
-    var tc = $('#traffic-caveat'); if (tc) tc.textContent = 'Traffic arrangements and timings may change at short notice. ' + POLICE_FOLLOW + ' Mapped locations — 2026 traffic arrangement pending verification.';
+    var tc = $('#traffic-caveat'); if (tc) tc.textContent = 'Traffic arrangements and timings may change at short notice. ' + POLICE_FOLLOW + ' Map lines are approximate junction-to-junction guides, not exact road closures.';
   }
 
   /* ---------- branding / theme ---------- */
@@ -247,9 +247,9 @@
       var u = document.createElementNS('http://www.w3.org/2000/svg', 'use'); u.setAttribute('href', '#i-info'); ic.appendChild(u);
       var text = el('div', 'banner-demo-text');
       var main = el('p', 'banner-demo-main');
-      add(main, el('strong', 'demo-badge', 'DEMO'), document.createTextNode(' Pandal locations are confirmed \u00B7 Parking and traffic being finalised'));
+      add(main, el('strong', 'demo-badge', '2026'), document.createTextNode(' Pandal locations are confirmed \u00B7 Traffic & parking plan loaded'));
       text.appendChild(main);
-      text.appendChild(el('p', 'banner-demo-sub', 'Demo items are samples, not actual 2026 orders.'));
+      text.appendChild(el('p', 'banner-demo-sub', 'May change on the ground. Follow police directions.'));
       add(row, ic, text);
       db.appendChild(row);
       box.appendChild(db);
@@ -357,7 +357,7 @@
     if (p) {
       st.appendChild(statusBadge(p));
       // Location confirmed ≠ parking/traffic finalised.
-      if (P.isLocationConfirmed(p)) st.appendChild(el('p', 'meta small', 'Parking and traffic arrangements for 2026 are being finalised.'));
+      if (P.isLocationConfirmed(p)) st.appendChild(el('p', 'meta small', 'See Parking & Traffic for 2026 parking places.'));
     }
     var back = $('#pandal-back');
     back.setAttribute('href', p && p.locality ? '#/n/' + encodeURIComponent(P.slug(p.locality)) : '#/pandals');
@@ -376,7 +376,7 @@
     if (p && S.data) {
       var parks = P.parkingForPandal(S.data.parking, p.id);
       var real = parks.filter(function (k) { return !k.demo && P.isCheckedLocation(k.verificationStatus); });
-      if (!real.length) parkBox.appendChild(el('p', 'empty', 'Parking information is being verified for 2026.'));
+      if (!real.length) parkBox.appendChild(add(el('p', 'empty', 'No parking place is linked to this pandal yet. '), attrs(el('a', '', 'See 2026 parking places'), { href: '#/parking' })));
       parks.forEach(function (k) {
         var card = el('div', 'info-card' + (k.demo ? ' is-demo' : '')), w = P.walkFor(k, p.id, S.data.walkingRoutes);
         add(card, statusBadge(k), el('h3', '', k.name));
@@ -452,6 +452,12 @@
   function pendingTrafficBadge() {
     return el('span', 'badge badge-pending', '2026 traffic arrangement pending verification');
   }
+  // Records from the Puja 2026 traffic plan get a plan badge; anything else stays pending.
+  function trafficBadge(r) {
+    if (r && r.verificationStatus === 'approved' && r.sourceYear === 2026) return el('span', 'badge badge-approved', 'Puja 2026 traffic plan');
+    return pendingTrafficBadge();
+  }
+  function notMappedNote() { return el('p', 'meta', 'Location not mapped in this app yet.'); }
   function mappedLocBadge(node) {
     var label = (node && node.locationStatus === 'landmarkAnchor') ? 'Landmark anchor' : 'Mapped location';
     return el('span', 'badge badge-mapped', label);
@@ -565,10 +571,28 @@
   function renderParkingPanel() {
     var list = clear($('#parking-list')), empty = $('#parking-empty'), parks = S.data ? S.data.parking : [];
     // Honest empty/notice state: shown whenever no parking point has been checked for 2026.
-    empty.hidden = parks.some(function (k) { return !k.demo && P.isCheckedLocation(k.verificationStatus); });
+    empty.hidden = parks.length > 0;
+    var rules = clear($('#parking-rules'));
+    ((S.data && S.data.parkingRules) || []).forEach(function (r) {
+      var li = el('li', 'rule'); add(li, el('p', '', r.text));
+      if (r.source && /press/i.test(r.source)) li.appendChild(el('p', 'meta small', 'Per local press reports'));
+      rules.appendChild(li);
+    });
+    rules.hidden = !rules.children.length;
     clearMap('map-parking');
-    $('#map-parking').hidden = !parks.length;
+    var mapped = parks.filter(function (k) { return k.hasCoords; });
+    $('#map-parking').hidden = !mapped.length;
     parks.forEach(function (k) {
+      if (k.textOnly) {
+        var tc = el('li', 'info-card info-card-compact'); tc.dataset.id = k.id;
+        add(tc, el('span', 'badge badge-approved', 'Puja 2026 traffic plan'), el('h3', '', k.name));
+        if (k.area) tc.appendChild(line('Area', k.area));
+        if (k.vehicles) tc.appendChild(line('Vehicles', k.vehicles));
+        if (k.note) tc.appendChild(el('p', 'meta', k.note));
+        tc.appendChild(notMappedNote());
+        list.appendChild(tc);
+        return;
+      }
       var card = el('li', 'info-card' + (k.demo ? ' is-demo' : ''));
       card.dataset.id = k.id;
       add(card, statusBadge(k), el('h3', '', k.name));
@@ -581,7 +605,7 @@
       card.appendChild(row);
       list.appendChild(card);
     });
-    if (parks.length) showParkingRoute(parks[0], true);
+    if (mapped.length) showParkingRoute(mapped[0], true);
   }
   // Parking map: the selected point + the pandals it serves (+ a route line only when a checked geometry exists).
   function showParkingRoute(k, quiet) {
@@ -613,24 +637,25 @@
   function restrictionCard(tr) {
     var card = el('li', 'info-card');
     card.dataset.id = tr.id;
-    card.appendChild(pendingTrafficBadge());
+    card.appendChild(trafficBadge(tr));
     var fromN = nodeById(tr.fromNode), toN = nodeById(tr.toNode);
-    var title = tr.zone ? (tr.zoneLabel || tr.name) : ((fromN ? fromN.name : tr.fromNode) + ' \u2192 ' + (toN ? toN.name : tr.toNode));
+    var title = tr.textOnly ? tr.name : tr.zone ? (tr.zoneLabel || tr.name) : ((fromN ? fromN.name : tr.fromNode) + ' \u2192 ' + (toN ? toN.name : tr.toNode));
     add(card, el('h3', '', title));
     if (tr.affectedRoad) card.appendChild(el('p', 'rtype', tr.affectedRoad));
     card.appendChild(el('p', 'meta', scopeLabel(tr.vehicleScope)));
     if (tr.note) card.appendChild(el('p', 'meta', tr.note));
-    if (tr.approximateGeometry && !tr.zone) card.appendChild(el('p', 'meta', 'Map shows approximate straight-line segment between junctions — not a surveyed road polyline.'));
+    if (tr.approximateGeometry && !tr.zone && !tr.textOnly) card.appendChild(el('p', 'meta', 'Map shows approximate straight-line segment between junctions — not a surveyed road polyline.'));
     card.appendChild(el('p', 'meta', tr.timingNote || 'Timing subject to 2026 order / on-ground police.'));
     if (fromN) card.appendChild(mappedLocBadge(fromN));
     else if (tr.zone) card.appendChild(el('span', 'badge badge-mapped', 'Mapped location'));
+    if (tr.textOnly) return card;
     card.appendChild(btn('View on Map', 'btn-primary', function () { showRestrictionOnMap(tr); }));
     return card;
   }
   function diversionCard(div) {
     var card = el('li', 'info-card');
     card.dataset.id = div.id;
-    card.appendChild(pendingTrafficBadge());
+    card.appendChild(trafficBadge(div));
     add(card, el('h3', '', div.name));
     card.appendChild(el('p', 'meta', scopeLabel(div.vehicleScope)));
     if (div.instruction) card.appendChild(el('p', '', div.instruction));
@@ -639,20 +664,39 @@
     if (via) card.appendChild(line('Via', via));
     if (avoid) card.appendChild(line('Avoid', avoid));
     card.appendChild(el('p', 'meta', div.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    if (div.textOnly || (div.viaNodes || []).length < 2) return card;
     card.appendChild(btn('View on Map', 'btn-primary', function () { showDiversionOnMap(div); }));
     return card;
   }
   function controlCard(ctrl) {
     var card = el('li', 'info-card info-card-compact');
     card.dataset.id = ctrl.id;
-    card.appendChild(pendingTrafficBadge());
+    card.appendChild(trafficBadge(ctrl));
     add(card, el('h3', '', ctrl.nodeName || ctrl.name));
     card.appendChild(el('p', 'meta', 'Goods vehicles \u2014 no entry beyond control point'));
+    if (ctrl.textOnly) { card.appendChild(notMappedNote()); return card; }
     card.appendChild(el('p', 'meta', ctrl.timingNote || 'Timing subject to 2026 order / on-ground police.'));
     var n = nodeById(ctrl.nodeId);
     if (n) card.appendChild(mappedLocBadge(n));
-    card.appendChild(btn('View on Map', '', function () { showControlOnMap(ctrl); }));
+    if (ctrl.hasCoords) card.appendChild(btn('View on Map', '', function () { showControlOnMap(ctrl); }));
     return card;
+  }
+  // Puja 2026 traffic plan summary: dates/hours and immersion note (from meta.trafficPlan).
+  function renderTrafficPlan() {
+    var box = clear($('#traffic-plan')), t = S.data && S.data.meta && S.data.meta.trafficPlan;
+    box.hidden = !t;
+    if (!t) return;
+    add(box, el('span', 'badge badge-approved', 'Puja 2026 traffic plan'), el('h3', '', 'When restrictions apply'));
+    if (t.period) box.appendChild(el('p', 'meta', t.period));
+    var tbl = el('table', 'plan-times');
+    (t.schedule || []).forEach(function (r) {
+      var tr = el('tr');
+      add(tr, el('td', '', r.date), el('td', '', r.day), el('td', '', r.from + ' \u2013 ' + r.to));
+      tbl.appendChild(tr);
+    });
+    box.appendChild(tbl);
+    if (t.note) box.appendChild(el('p', 'meta', t.note));
+    if (t.immersion) box.appendChild(add(el('p', 'meta'), el('strong', '', 'Immersion: '), document.createTextNode(t.immersion)));
   }
   function renderTrafficPanel() {
     syncTimeInputs();
@@ -663,7 +707,8 @@
     var active = clear($('#traffic-active')), realUpcoming = clear($('#traffic-real-upcoming')), demo = clear($('#traffic-demo')), upcoming = clear($('#traffic-upcoming'));
     var trList = S.data ? (S.data.trafficRestrictions || []) : [];
     var feed = S.data ? P.trafficFeed(S.data.traffic, S.checkAt, trList) : { active: [], upcoming: [], planned: [] };
-    // Section A — planned restrictions (pendingVerification working basis)
+    renderTrafficPlan();
+    // Section A — restricted roads
     trList.forEach(function (tr) { planned.appendChild(restrictionCard(tr)); });
     $('#traffic-planned-empty').hidden = trList.length > 0;
     // Section B — diversions
@@ -690,6 +735,9 @@
     $('#traffic-real-upcoming-wrap').hidden = approvedUpcoming.length === 0;
     $('#traffic-demo-empty').hidden = demoActive.length > 0;
     $('#traffic-upcoming-wrap').hidden = demoUpcoming.length === 0;
+    // No DEMO traffic samples left once the 2026 plan is loaded: hide the sample block entirely.
+    var hasDemo = (S.data ? S.data.traffic : []).some(function (r) { return r.demo; });
+    $('#demo-traffic-block').hidden = !hasDemo;
     $('#map-traffic').hidden = false;
     paintTrafficOverviewMap();
   }
@@ -738,7 +786,7 @@
         'This guide helps visitors find pandals, parking and published traffic information for Durga Puja in Siliguri.',
         'Traffic restrictions can change on the ground. ' + POLICE_FOLLOW,
         'Google Maps may not reflect temporary Puja traffic restrictions or pedestrian arrangements.',
-        'Pandal locations in this build are confirmed and usable for directions. Parking and traffic arrangements for 2026 are still being finalised. DEMO records are samples only.',
+        'Pandal locations in this build are confirmed and usable for directions. Traffic and parking follow the Puja 2026 traffic plan and can change on the ground. DEMO records are samples only.',
         'Police Assistance Booths are mapped to landmarks; 2026 deployment and exact booth positions are pending verification.',
         'In an emergency dial 112.'
       ]

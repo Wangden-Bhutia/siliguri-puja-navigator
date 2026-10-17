@@ -284,8 +284,17 @@
     var f = m.festival && typeof m.festival === 'object' ? m.festival : {};
     res.meta = { schemaVersion: m.schemaVersion, datasetVersion: str(m.datasetVersion, 60), lastUpdatedMs: lu, lastUpdated: m.lastUpdated,
       isDemoDataset: m.isDemoDataset === true, containsDemoRecords: m.containsDemoRecords === true, timezone: 'Asia/Kolkata',
-      festival: { name: str(f.name, 200), startDate: str(f.startDate, 20), endDate: str(f.endDate, 20) } };
+      festival: { name: str(f.name, 200), startDate: str(f.startDate, 20), endDate: str(f.endDate, 20) },
+      trafficPlan: trafficPlanMeta(m.trafficPlan) };
     var ids = {};
+    // Puja traffic plan summary (schedule rows + notes); text only, no identifiers.
+    function trafficPlanMeta(t) {
+      if (!t || typeof t !== 'object') return null;
+      return { period: str(t.period, 200), note: str(t.note, 400), immersion: str(t.immersion, 500),
+        schedule: (Array.isArray(t.schedule) ? t.schedule : []).slice(0, 20).map(function (r) {
+          return { date: str(r && r.date, 20), day: str(r && r.day, 60), from: str(r && r.from, 20), to: str(r && r.to, 20) };
+        }) };
+    }
     function err(kind, id, msg) { res.errors.push({ kind: kind, id: id || '', message: msg }); }
     function warn(kind, id, msg) { res.warnings.push({ kind: kind, id: id || '', message: msg }); }
     function skip(kind, id, why) { res.skipped.push({ kind: kind, id: id || '', reasons: why }); why.forEach(function (w) { err(kind, id, w + ' (record not shown)'); }); }
@@ -375,6 +384,14 @@
     (Array.isArray(raw.parking) ? raw.parking : []).forEach(function (rec) {
       var o = base(rec, 'parking'); if (!o) return;
       o.kind = 'parking';
+      // textOnly: a named 2026 parking place with no mapped coordinate / linked pandal yet (shown as text)
+      o.textOnly = rec.textOnly === true;
+      if (o.textOnly) {
+        o.type = 'parking'; o.servedPandalIds = []; o.hasCoords = false;
+        o.area = str(rec.area, 120); o.vehicles = str(rec.vehicles, 80); o.note = str(rec.note, 300);
+        o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+        res.parking.push(o); kById[o.id] = o; return;
+      }
       if (o.coordProblem) { skip('parking', o.id, [o.coordProblem]); return; }
       o.type = str(rec.type, 20) || 'parking';
       if (PARKING_TYPES.indexOf(o.type) < 0) { err('parking', o.id, 'invalid type "' + o.type + '" (use ' + PARKING_TYPES.join(', ') + ')'); o.type = 'parking'; }
@@ -486,11 +503,16 @@
       o.approximateGeometry = rec.approximateGeometry !== false;
       o.confirmed2026 = rec.confirmed2026 === true;
       if (o.confirmed2026) err('trafficRestriction', o.id, 'must not be confirmed2026 while pending verification');
-      if (o.verificationStatus === 'approved' || o.verificationStatus === 'fieldVerified') {
-        err('trafficRestriction', o.id, 'planned corridor records stay pendingVerification until 2026 order');
+      // approved = from the Siliguri Police Puja 2026 traffic arrangements (needs sourceYear 2026 + source)
+      o.plan2026 = o.verificationStatus === 'approved' && o.sourceYear === 2026 && !!o.source;
+      if ((o.verificationStatus === 'approved' && !o.plan2026) || o.verificationStatus === 'fieldVerified') {
+        err('trafficRestriction', o.id, 'approved restrictions need sourceYear 2026 and a source');
       }
       o.zone = rec.zone === true;
-      if (o.zone) {
+      // textOnly: published place whose junctions are not mapped in this app (no map line)
+      o.textOnly = rec.textOnly === true;
+      if (o.textOnly) { o.fromNode = ''; o.toNode = ''; o.altToNodes = []; }
+      else if (o.zone) {
         o.zoneLabel = str(rec.zoneLabel, 300) || o.name;
         o.anchorNodes = strList(rec.anchorNodes).filter(function (nid) {
           if (nodeById[nid]) return true;
@@ -518,6 +540,16 @@
       var o = base(rec, 'trafficControl'); if (!o) return;
       o.kind = 'trafficControl';
       o.nodeId = str(rec.nodeId, 80);
+      o.textOnly = rec.textOnly === true;
+      if (o.textOnly) {
+        o.controlType = str(rec.controlType, 60) || 'noEntryBeyondControlPoint';
+        o.vehicleScope = validScopes(scopeList(rec), 'trafficControl', o.id);
+        o.timingNote = str(rec.timingNote, 300);
+        o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+        o.nodeId = ''; o.hasCoords = false; o.nodeName = o.name;
+        res.trafficControls.push(o);
+        return;
+      }
       if (!nodeById[o.nodeId]) { skip('trafficControl', o.id, ['nodeId "' + o.nodeId + '" does not exist']); return; }
       o.controlType = str(rec.controlType, 60) || 'noEntryBeyondControlPoint';
       if (CONTROL_TYPES.indexOf(o.controlType) < 0) err('trafficControl', o.id, 'invalid controlType "' + o.controlType + '"');
@@ -547,7 +579,8 @@
         err('trafficDiversion', o.id, 'avoidNode "' + nid + '" does not exist');
         return false;
       });
-      if (o.viaNodes.length < 2) err('trafficDiversion', o.id, 'viaNodes needs at least 2 valid nodes');
+      o.textOnly = rec.textOnly === true;
+      if (o.viaNodes.length < 2 && !o.textOnly) err('trafficDiversion', o.id, 'viaNodes needs at least 2 valid nodes');
       o.vehicleScope = validScopes(scopeList(rec), 'trafficDiversion', o.id);
       o.instruction = str(rec.instruction, 800);
       o.timingNote = str(rec.timingNote, 300);
@@ -590,6 +623,10 @@
       }
       res.help.contacts.push({ id: id, name: name, phone: shown, verificationStatus: vs });
     });
+    // general parking rules (text + source label)
+    res.parkingRules = (Array.isArray(raw.parkingRules) ? raw.parkingRules : []).map(function (r) {
+      return { id: str(r && r.id, 80), text: str(r && r.text, 400), source: str(r && r.source, 200) };
+    }).filter(function (r) { return r.text; });
     res.ok = true;
     return res;
   }

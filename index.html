@@ -59,7 +59,7 @@
   </div>
   <div class="wrap mast-meta">
     <p class="descriptor" id="brand-descriptor">Durga Puja Visitor Information · Siliguri</p>
-    <p class="dates" id="brand-dates">16 – 21 October 2026</p>
+    <p class="dates" id="brand-dates">16 – 24 October 2026</p>
   </div>
   <div class="wrap idstrip" id="idstrip" hidden>
     <div class="idstrip-logos" id="idstrip-logos"></div>
@@ -172,25 +172,32 @@
     </header>
     <div id="panel-parking" role="tabpanel" aria-labelledby="sub-parking">
       <p class="lede">Where do I leave my vehicle?</p>
-      <p class="empty note" id="parking-empty" hidden>Parking information is being verified for 2026.</p>
+      <p class="empty note" id="parking-empty" hidden>No parking places published for 2026 yet.</p>
+      <ul class="rule-list" id="parking-rules" hidden></ul>
       <div class="mapbox" id="map-parking" role="img" aria-label="Map of parking and drop points"></div>
       <ul class="card-list" id="parking-list"></ul>
     </div>
     <div id="panel-traffic" role="tabpanel" aria-labelledby="sub-traffic" hidden>
       <p class="lede">Check before you travel.</p>
-      <p class="traffic-caveat" id="traffic-caveat">Traffic arrangements and timings may change at short notice. Follow on-ground police directions and posted signs. Mapped locations — 2026 traffic arrangement pending verification.</p>
+      <p class="traffic-caveat" id="traffic-caveat">Traffic arrangements and timings may change at short notice. Follow on-ground police directions and posted signs. Map lines are approximate junction-to-junction guides, not exact road closures.</p>
+      <div class="info-card" id="traffic-plan" hidden></div>
       <div class="mapbox" id="map-traffic" role="img" aria-label="Map of traffic restrictions and control points"></div>
-      <h2 class="sec">Planned restrictions</h2>
-      <p class="muted small" id="traffic-planned-note">Working basis from published corridor material. Not a confirmed 2026 order. No invented active times.</p>
+      <h2 class="sec">Roads closed to vehicles</h2>
+      <p class="muted small" id="traffic-planned-note">Puja 2026 traffic plan. Applies during restriction hours to all vehicles, including totos, unless stated.</p>
       <ul class="card-list" id="traffic-planned"></ul>
       <p class="empty" id="traffic-planned-empty" hidden>Planned restriction corridors will appear here when published.</p>
-      <h2 class="sec">Diversions</h2>
+      <h2 class="sec">Routes &amp; bus departure points</h2>
       <ul class="card-list" id="traffic-diversions"></ul>
       <p class="empty" id="traffic-diversions-empty" hidden>No diversion routes published yet.</p>
-      <h2 class="sec">Control points</h2>
+      <h2 class="sec">Goods vehicles stop at</h2>
       <ul class="card-list card-list-compact" id="traffic-controls"></ul>
       <p class="empty" id="traffic-controls-empty" hidden>No control points published yet.</p>
       <h2 class="sec">Active now</h2>
+      <div class="timecheck">
+        <label>Date <input type="date" id="t-date"></label>
+        <label>Time <input type="time" id="t-time"></label>
+        <button type="button" class="btn" id="t-now">Use now</button>
+      </div>
       <ul class="card-list" id="traffic-active"></ul>
       <p class="empty" id="traffic-active-empty" hidden>No published 2026 traffic restriction is active right now.</p>
       <div id="traffic-real-upcoming-wrap" hidden>
@@ -200,14 +207,9 @@
 
       <div class="demo-block" id="demo-traffic-block">
         <h2 class="sec">Sample scenario (DEMO)</h2>
-        <p class="demo-block-sub">For demonstration only — not real 2026 traffic data. Pick a date/time to preview how an active restriction will look once real ones are published.</p>
-        <div class="timecheck">
-          <label>Date <input type="date" id="t-date"></label>
-          <label>Time <input type="time" id="t-time"></label>
-          <button type="button" class="btn" id="t-now">Use now</button>
-        </div>
+        <p class="demo-block-sub">For demonstration only — not real 2026 traffic data. Use the date/time above to preview samples.</p>
         <ul class="card-list" id="traffic-demo"></ul>
-        <div class="clear-note" id="traffic-demo-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No DEMO sample active for the selected time</p><p class="muted small">DEMO items are samples only — not actual 2026 orders.</p></div>
+        <div class="clear-note" id="traffic-demo-empty" hidden><p class="clear-h"><span aria-hidden="true">✓</span> No DEMO sample active for the selected time</p><p class="muted small">DEMO items are samples only.</p></div>
         <div id="traffic-upcoming-wrap" hidden>
           <h2 class="sec">Upcoming (sample)</h2>
           <ul class="card-list" id="traffic-upcoming"></ul>

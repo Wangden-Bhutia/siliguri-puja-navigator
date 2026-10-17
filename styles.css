@@ -611,3 +611,12 @@ a.nhood-item:active{background:var(--surface-2)}
 .install-card-btn:focus-visible,.install-card-x:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 html[data-theme="dark"] .install-card{background:var(--card);border-color:var(--gold-l);box-shadow:0 6px 18px rgba(0,0,0,.5)}
 html[data-theme="dark"] .install-card-title{color:var(--gold-l)}
+/* Puja 2026 traffic plan: restriction hours table */
+#traffic-plan{margin:0 0 12px}
+.plan-times{width:100%;border-collapse:collapse;font-size:.88rem;margin:6px 0}
+.plan-times td{padding:4px 6px;border-top:1px solid var(--line,rgba(127,127,127,.25))}
+.plan-times td:last-child{text-align:right;white-space:nowrap;font-weight:700}
+/* parking rules list */
+.rule-list{list-style:none;margin:0 0 12px;padding:0}
+.rule-list .rule{border-left:3px solid var(--line);background:var(--surface-2);padding:6px 10px;margin:0 0 6px;border-radius:6px}
+.rule-list .rule p{margin:0}

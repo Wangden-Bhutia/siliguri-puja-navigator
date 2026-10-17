@@ -131,7 +131,7 @@ t('isLocationConfirmed requires coords + confirmed + not demo', L.isLocationConf
 v = L.validateDataset(ds({ pandals: [pandal('pc', { locationStatus: 'confirmed' }), pandal('pb', { locationStatus: 'confirmed', latitude: undefined, longitude: undefined }), pandal('pd', { locationStatus: 'confirmed', demo: true, verificationStatus: 'pendingVerification' })] }));
 t('confirmed without coords / DEMO confirmed rejected', v.pandals.find(p=>p.id==='pc').locationStatus==='confirmed' && v.pandals.find(p=>p.id==='pb').locationStatus==='unconfirmed' && v.pandals.find(p=>p.id==='pd').locationStatus==='unconfirmed');
 t('branding still disabled', require('../branding.js').officialBrandingApproved === false);
-t('demo file: parking still all DEMO; demo facilities remain DEMO', dv.parking.every(p => p.demo) && dv.facilities.filter(f => f.demo).length >= 2 && dv.facilities.filter(f => f.demo).every(f => f.demo));
+t('demo file: parking = 15 named 2026 places (no DEMO), text-only; demo facilities remain DEMO', dv.parking.length === 15 && dv.parking.every(p => !p.demo && p.textOnly && !p.hasCoords) && dv.parkingRules.length === 4 && dv.walkingRoutes.length === 0 && dv.facilities.filter(f => f.demo).length >= 2 && dv.facilities.filter(f => f.demo).every(f => f.demo));
 const mappedPabs = dv.facilities.filter(f => f.type === 'police-booth' && !f.demo);
 t('demo file: 18 mapped PABs', mappedPabs.length === 18, mappedPabs.length);
 t('mapped PABs: locationStatus mapped, pendingVerification, valid coords, not DEMO', mappedPabs.every(f => f.locationStatus === 'mapped' && f.verificationStatus === 'pendingVerification' && f.hasCoords && !f.demo && !L.isCheckedLocation(f.verificationStatus) && !L.isLocationConfirmed(f) && L.isLocationMapped(f) && L.statusLabel(f) === 'Location mapped'));
@@ -147,24 +147,24 @@ v = L.validateDataset(ds({ facilities: [
 ] }));
 t('facility confirmed rejected; DEMO mapped rejected', v.facilities.find(f=>f.id==='fm').locationStatus==='mapped' && v.facilities.find(f=>f.id==='fc').locationStatus==='unconfirmed' && v.facilities.find(f=>f.id==='fd').locationStatus==='unconfirmed');
 t('FACILITY_LSTATUSES is unconfirmed,mapped', L.FACILITY_LSTATUSES.join() === 'unconfirmed,mapped');
-t('demo file: only DEMO traffic is visitor-visible', dv.traffic.filter(L.isVisitorTraffic).every(r => r.demo) && dv.traffic.filter(L.isVisitorTraffic).length >= 1);
+t('demo file: visitor traffic is only 2026-plan (approved, sourced) or DEMO', dv.traffic.filter(L.isVisitorTraffic).every(r => r.demo || (r.verificationStatus === 'approved' && r.source && r.verifiedBy)) && dv.traffic.filter(L.isVisitorTraffic).length >= 1);
 t('demo file: 2025 baseline never visitor-visible', dv.traffic.filter(r => r.verificationStatus === 'reference' || r.verificationStatus === 'expired' || r.status === 'expired').every(r => !L.isVisitorTraffic(r)));
 t('traffic layer: 29 nodes with valid coords + locationStatus', dv.trafficNodes.length === 29 && dv.trafficNodes.every(n => n.hasCoords && (n.locationStatus === 'mapped' || n.locationStatus === 'landmarkAnchor') && n.verificationStatus === 'pendingVerification'), dv.trafficNodes.length);
-t('traffic layer: 13 restrictions pendingVerification, none confirmed2026', dv.trafficRestrictions.length === 13 && dv.trafficRestrictions.every(r => r.verificationStatus === 'pendingVerification' && !r.confirmed2026 && r.verificationStatus !== 'approved'));
-t('traffic layer: no orphan from/to/alt/anchor refs', dv.trafficRestrictions.every(r => r.zone ? r.anchorNodes.every(id => dv.trafficNodes.some(n => n.id === id)) : (dv.trafficNodes.some(n => n.id === r.fromNode) && dv.trafficNodes.some(n => n.id === r.toNode) && (r.altToNodes || []).every(id => dv.trafficNodes.some(n => n.id === id)))));
-t('traffic layer: 5 goods controls + 1 diversion', dv.trafficControls.length === 5 && dv.trafficDiversions.length === 1 && dv.trafficControls.every(c => c.vehicleScope.indexOf('goodsVehicles') >= 0 && c.controlType === 'noEntryBeyondControlPoint' && !c.confirmed2026));
-t('traffic layer: diversion via/avoid nodes valid', (()=>{const d=dv.trafficDiversions[0]; const ids=new Set(dv.trafficNodes.map(n=>n.id)); return d.id==='diversion-njp-small' && d.viaNodes.every(id=>ids.has(id)) && d.avoidNodes.every(id=>ids.has(id)) && d.viaNodes.length>=2;})());
-t('trafficFeed planned bucket for restrictions; DEMO still only visitor-active', (()=>{const f=L.trafficFeed(dv.traffic, L.parseIST('2026-10-17T19:30:00+05:30'), dv.trafficRestrictions); return f.planned.length===13 && f.active.every(x=>x.r.demo) && f.planned.every(x=>x.r.verificationStatus==='pendingVerification');})());
+t('traffic layer: 9 restrictions from the 2026 plan, approved + sourced, none confirmed2026', dv.trafficRestrictions.length === 9 && dv.trafficRestrictions.every(r => r.verificationStatus === 'approved' && r.sourceYear === 2026 && r.plan2026 && !r.confirmed2026) && dv.errors.filter(e => e.kind === 'trafficRestriction').length === 0);
+t('traffic layer: no orphan from/to/alt/anchor refs (text-only rows exempt)', dv.trafficRestrictions.every(r => r.textOnly ? (!r.fromNode && !r.toNode) : r.zone ? r.anchorNodes.every(id => dv.trafficNodes.some(n => n.id === id)) : (dv.trafficNodes.some(n => n.id === r.fromNode) && dv.trafficNodes.some(n => n.id === r.toNode) && (r.altToNodes || []).every(id => dv.trafficNodes.some(n => n.id === id)))));
+t('traffic layer: 6 goods entry points + 12 route/bus/truck items', dv.trafficControls.length === 6 && dv.trafficDiversions.length === 12 && dv.trafficControls.every(c => c.vehicleScope.indexOf('goodsVehicles') >= 0 && c.controlType === 'noEntryBeyondControlPoint' && !c.confirmed2026) && dv.trafficControls.filter(c => c.hasCoords).length === 3);
+t('traffic layer: diversion via/avoid nodes valid', (()=>{const ids=new Set(dv.trafficNodes.map(n=>n.id)); return dv.trafficDiversions.every(d => d.instruction && d.viaNodes.every(id=>ids.has(id)) && d.avoidNodes.every(id=>ids.has(id)) && (d.textOnly || d.viaNodes.length>=2));})());
+t('trafficFeed: 2026 plan active on a Puja night, nothing pending planned', (()=>{const f=L.trafficFeed(dv.traffic, L.parseIST('2026-10-17T19:30:00+05:30'), dv.trafficRestrictions); return f.planned.length===0 && f.active.length===1 && f.active.every(x=>x.r.verificationStatus==='approved');})());
 t('PAB count unchanged at 18 mapped', dv.facilities.filter(f => f.type === 'police-booth' && !f.demo).length === 18);
 t('83 pandals still location confirmed', dv.pandals.length === 83 && dv.pandals.every(p => p.locationStatus === 'confirmed'));
-t('demo file: no approved phones', dv.help.contacts.every(c => !c.phone));
+t('demo file: only the Puja 2026 control room number is published', dv.help.contacts.filter(c => c.phone).length === 1 && dv.help.contacts.find(c => c.id === 'pcr').phone === '0353-2662210' && !dv.help.contacts.find(c => c.id === 'tcr').phone);
 t('demo file: schema 2 + demo flags', dv.meta.schemaVersion === 2 && dv.meta.isDemoDataset === true && dv.meta.containsDemoRecords === true);
 
 // --- branding
 const BR = require('../branding.js');
 const html = rd('index.html'), manifest = JSON.parse(rd('manifest.webmanifest')), offline = rd('offline.html');
 const txtOf = (h) => h.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&ndash;/g, '\u2013').replace(/\s+/g, ' ');
-t('branding fields', BR.appName === 'Siliguri Puja Guide' && BR.tagline === 'Find pandals. Plan your route. Travel safely.' && BR.descriptor === 'Official Durga Puja Traffic & Visitor Information' && BR.descriptorDefault === 'Durga Puja Visitor Information \u00B7 Siliguri' && BR.festivalDates === '16 \u2013 21 October 2026');
+t('branding fields', BR.appName === 'Siliguri Puja Guide' && BR.tagline === 'Find pandals. Plan your route. Travel safely.' && BR.descriptor === 'Official Durga Puja Traffic & Visitor Information' && BR.descriptorDefault === 'Durga Puja Visitor Information \u00B7 Siliguri' && BR.festivalDates === '16 \u2013 24 October 2026');
 t('branding approval false', BR.officialBrandingApproved === false && /Demo version/.test(BR.footerDemo));
 t('index has brand + 3 tabs + SOS', /id="brand-name"/.test(html) && /data-tab="home"/.test(html) && /data-tab="pandals"/.test(html) && /data-tab="parking"/.test(html) && /id="sos-fab"/.test(html) && /id="sos-sheet"/.test(html) && /id="nav-sheet"/.test(html));
 t('index tagline/descriptor/dates/footer', txtOf(html).includes(BR.tagline) && txtOf(html).includes(BR.descriptorDefault) && txtOf(html).includes(BR.festivalDates) && html.includes(BR.footerDemo));
@@ -211,7 +211,7 @@ scan.forEach(f => {
 });
 // Visitor-facing strings in app.js / index must not label pending data as verified
 const visitorCopy = rd('app.js') + rd('index.html');
-t('no false "verified" claim for pending locations', !/Location verified/i.test(visitorCopy) && /Location confirmed/.test(visitorCopy) && /Parking and traffic arrangements for 2026 are being finalised/.test(visitorCopy));
+t('no false "verified" claim for pending locations', !/Location verified/i.test(visitorCopy) && /Location confirmed/.test(visitorCopy) && /See Parking & Traffic for 2026 parking places/.test(visitorCopy));
 t('DEMO label present in UI paths', /DEMO \\u2014 NOT VERIFIED/.test(rd('app.js')) && /Sample 2026 scenario/.test(rd('app.js')));
 // --- refinement pass guards
 t('facility types limited to booths + hospitals', L.FACILITY_TYPES.join() === 'police-booth,hospital');
@@ -230,7 +230,7 @@ t('no "P" text or emoji used as nav/home icons', !/<span class="(bi|ti)"[^>]*>[^
   t('Safety notice block present', !!m);
   const body = m ? m[1] : '';
   t('Safety notice: locations confirmed wording', /Pandal locations in this build are confirmed and usable for directions/.test(body));
-  t('Safety notice: parking/traffic still being finalised', /Parking and traffic arrangements for 2026 are still being finalised/.test(body));
+  t('Safety notice: traffic/parking follow the Puja 2026 plan', /Traffic and parking follow the Puja 2026 traffic plan/.test(body));
   t('Safety notice: no pending-field-verification claim for locations', !/pending field verification/i.test(body) && !/independent 2026 geographic reference/i.test(body));
 })();
 
