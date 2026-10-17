@@ -1,8 +1,8 @@
 {
   "meta": {
     "schemaVersion": 2,
-    "datasetVersion": "2026-ref-0.5.0",
-    "lastUpdated": "2026-10-17T09:00:00+05:30",
+    "datasetVersion": "2026-ref-0.6.0",
+    "lastUpdated": "2026-10-17T09:30:00+05:30",
     "isDemoDataset": true,
     "containsDemoRecords": true,
     "timezone": "Asia/Kolkata",
@@ -1403,7 +1403,9 @@
       "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
-      "demo": false
+      "demo": false,
+      "latitude": 26.688395,
+      "longitude": 88.424513
     },
     {
       "id": "pk26-rly-institute",
@@ -1416,7 +1418,9 @@
       "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
-      "demo": false
+      "demo": false,
+      "latitude": 26.68573,
+      "longitude": 88.4244
     },
     {
       "id": "pk26-stadium-bazar",
@@ -1494,7 +1498,10 @@
       "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
-      "demo": false
+      "demo": false,
+      "latitude": 26.7511,
+      "longitude": 88.4153,
+      "approximate": true
     },
     {
       "id": "pk26-hdfc-anchal",
@@ -1507,7 +1514,10 @@
       "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
-      "demo": false
+      "demo": false,
+      "latitude": 26.730698,
+      "longitude": 88.418775,
+      "approximate": true
     },
     {
       "id": "pk26-maya-devi",
@@ -1520,7 +1530,9 @@
       "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
-      "demo": false
+      "demo": false,
+      "latitude": 26.7212,
+      "longitude": 88.3802
     },
     {
       "id": "pk26-khaprail-east",
@@ -1533,7 +1545,9 @@
       "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
-      "demo": false
+      "demo": false,
+      "latitude": 26.72242,
+      "longitude": 88.3811
     },
     {
       "id": "pk26-chittaranjan",
@@ -1547,7 +1561,9 @@
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
       "demo": false,
-      "note": "Police parking duty at this puja."
+      "note": "Police parking duty at this puja.",
+      "latitude": 26.702052,
+      "longitude": 88.321911
     },
     {
       "id": "pk26-bihar-more-ground",
@@ -1561,7 +1577,9 @@
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
       "demo": false,
-      "note": "Police parking duty at this puja."
+      "note": "Police parking duty at this puja.",
+      "latitude": 26.700076,
+      "longitude": 88.320685
     },
     {
       "id": "pk26-netaji-athletic",
@@ -1575,7 +1593,9 @@
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
       "demo": false,
-      "note": "Police parking duty at this puja."
+      "note": "Police parking duty at this puja.",
+      "latitude": 26.710132,
+      "longitude": 88.367049
     },
     {
       "id": "pk26-fulbari-bazar",
@@ -1589,7 +1609,9 @@
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "sourceYear": 2026,
       "demo": false,
-      "note": "Police parking duty at this puja."
+      "note": "Police parking duty at this puja.",
+      "latitude": 26.651992,
+      "longitude": 88.41684
     }
   ],
   "walkingRoutes": [],
@@ -2375,6 +2397,128 @@
       "verificationStatus": "pendingVerification",
       "source": "Siliguri Police Commissionerate Puja traffic restriction material",
       "sourceYear": 2024
+    },
+    {
+      "id": "payal-more",
+      "name": "Payal More",
+      "latitude": 26.728098,
+      "longitude": 88.429369,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "swamiji-more",
+      "name": "Swamiji More",
+      "latitude": 26.71819,
+      "longitude": 88.435608,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "ashim-sweets",
+      "name": "Ashim Sweets",
+      "latitude": 26.70821,
+      "longitude": 88.43516,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "debidanga-bazar",
+      "name": "Debidanga Bazar (Dhaknikata Ground side)",
+      "latitude": 26.765215,
+      "longitude": 88.418921,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "sreema-bhawan-more",
+      "name": "Sreema Bhawan More",
+      "latitude": 26.719952,
+      "longitude": 88.436557,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "haiderpara-bazar",
+      "name": "Haiderpara Bazar",
+      "latitude": 26.721868,
+      "longitude": 88.437757,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "sbi-more-haiderpara",
+      "name": "SBI More (Haiderpara)",
+      "latitude": 26.715746,
+      "longitude": 88.443063,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "kashmir-colony-more",
+      "name": "Kashmir Colony More",
+      "latitude": 26.687826,
+      "longitude": 88.423086,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "njp-ps",
+      "name": "New Jalpaiguri Police Station",
+      "latitude": 26.68289,
+      "longitude": 88.42432,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "ioc-netaji-more-njp",
+      "name": "IOC More / Netaji More (NJP)",
+      "latitude": 26.687551,
+      "longitude": 88.441042,
+      "locationStatus": "mapped",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026
+    },
+    {
+      "id": "fulbari-bypass-more",
+      "name": "Fulbari Bypass More",
+      "latitude": 26.64611,
+      "longitude": 88.40432,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026,
+      "approximate": true
+    },
+    {
+      "id": "sukna-tcp-more",
+      "name": "Sukna TCP More",
+      "latitude": 26.7905,
+      "longitude": 88.3645,
+      "locationStatus": "landmarkAnchor",
+      "verificationStatus": "pendingVerification",
+      "source": "Location geocoded from public map/place listings (2026)",
+      "sourceYear": 2026,
+      "approximate": true
     }
   ],
   "trafficRestrictions": [
@@ -2411,9 +2555,10 @@
       "approximateGeometry": true,
       "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "note": "All vehicles including e-rickshaws (totos). Payal More is not yet mapped in this app, so no map line is shown.",
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "note": "All vehicles including e-rickshaws (totos).",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "fromNode": "payal-more",
+      "toNode": "sevoke-more"
     },
     {
       "id": "TR26-03",
@@ -2429,9 +2574,10 @@
       "approximateGeometry": true,
       "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "note": "All vehicles including e-rickshaws (totos). Swamiji More is not yet mapped in this app.",
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "note": "All vehicles including e-rickshaws (totos).",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "fromNode": "pakurtala-more",
+      "toNode": "swamiji-more"
     },
     {
       "id": "TR26-04",
@@ -2447,9 +2593,10 @@
       "approximateGeometry": true,
       "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "note": "All vehicles including e-rickshaws (totos). The Ashim Sweets end is not mapped in this app.",
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "note": "All vehicles including e-rickshaws (totos).",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "fromNode": "ashim-sweets",
+      "toNode": "rath-khola-more"
     },
     {
       "id": "TR26-05",
@@ -2504,9 +2651,13 @@
       "approximateGeometry": true,
       "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "note": "All vehicles including e-rickshaws (totos). Not mapped in this app.",
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "note": "All vehicles including e-rickshaws (totos). Only the Dhaknikata / Debidanga Bazar end is located on the map; Botoal Company More is not mapped yet.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "zone": true,
+      "zoneLabel": "Botoal Company More → Dhaknikata Ground (Debidanga Bazar)",
+      "anchorNodes": [
+        "debidanga-bazar"
+      ]
     },
     {
       "id": "TR26-08",
@@ -2522,9 +2673,13 @@
       "approximateGeometry": true,
       "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "note": "All vehicles including e-rickshaws (totos). Not mapped in this app.",
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "note": "All vehicles including e-rickshaws (totos). Via Haiderpara Bazar.",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "fromNode": "sreema-bhawan-more",
+      "toNode": "sbi-more-haiderpara",
+      "viaNodes": [
+        "haiderpara-bazar"
+      ]
     },
     {
       "id": "TR26-09",
@@ -2540,9 +2695,10 @@
       "approximateGeometry": true,
       "visitorAction": "Do not drive on this stretch during restriction hours. Follow on-ground police directions.",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "note": "All vehicles including e-rickshaws (totos). Not mapped in this app.",
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "note": "All vehicles including e-rickshaws (totos).",
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "fromNode": "kashmir-colony-more",
+      "toNode": "njp-ps"
     }
   ],
   "trafficControls": [
@@ -2599,8 +2755,8 @@
       "sourceYear": 2026,
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "nodeId": "fulbari-bypass-more"
     },
     {
       "id": "tc26-ioc-netaji",
@@ -2613,8 +2769,8 @@
       "sourceYear": 2026,
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "nodeId": "ioc-netaji-more-njp"
     },
     {
       "id": "tc26-sukna-tcp",
@@ -2627,8 +2783,8 @@
       "sourceYear": 2026,
       "source": "Siliguri Police Puja 2026 traffic arrangements",
       "timingNote": "Restriction hours: 4 PM to 2 AM (16-18 Oct) and 4 PM to 4 AM (19-24 Oct). Police may change timings at short notice depending on crowds.",
-      "textOnly": true,
-      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements"
+      "verifiedBy": "Siliguri Police Puja 2026 traffic arrangements",
+      "nodeId": "sukna-tcp-more"
     }
   ],
   "trafficDiversions": [

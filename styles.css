@@ -620,3 +620,4 @@ html[data-theme="dark"] .install-card-title{color:var(--gold-l)}
 .rule-list{list-style:none;margin:0 0 12px;padding:0}
 .rule-list .rule{border-left:3px solid var(--line);background:var(--surface-2);padding:6px 10px;margin:0 0 6px;border-radius:6px}
 .rule-list .rule p{margin:0}
+.mk.mk-approx{border-style:dashed;border-color:#222;opacity:.85}

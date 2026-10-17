@@ -384,10 +384,11 @@
     (Array.isArray(raw.parking) ? raw.parking : []).forEach(function (rec) {
       var o = base(rec, 'parking'); if (!o) return;
       o.kind = 'parking';
-      // textOnly: a named 2026 parking place with no mapped coordinate / linked pandal yet (shown as text)
+      // textOnly: a named 2026 parking place not linked to a pandal (may carry a map pin; approximate pins flagged)
       o.textOnly = rec.textOnly === true;
       if (o.textOnly) {
-        o.type = 'parking'; o.servedPandalIds = []; o.hasCoords = false;
+        o.type = 'parking'; o.servedPandalIds = []; o.hasCoords = o.lat !== undefined;
+        o.approximate = o.hasCoords && rec.approximate === true;
         o.area = str(rec.area, 120); o.vehicles = str(rec.vehicles, 80); o.note = str(rec.note, 300);
         o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
         res.parking.push(o); kById[o.id] = o; return;
@@ -470,6 +471,7 @@
       if (ls === 'confirmed' || rec.confirmed2026 === true) { err('trafficNode', o.id, 'traffic nodes must not be confirmed2026; treated as mapped/landmarkAnchor'); }
       o.locationStatus = ls;
       o.sourceYear = isNum(rec.sourceYear) ? rec.sourceYear : null;
+      o.approximate = rec.approximate === true;
       nodeById[o.id] = o;
       res.trafficNodes.push(o);
     });
@@ -523,6 +525,11 @@
       } else {
         o.fromNode = str(rec.fromNode, 80); o.toNode = str(rec.toNode, 80);
         o.altToNodes = strList(rec.altToNodes);
+        o.viaNodes = strList(rec.viaNodes).filter(function (nid) {
+          if (nodeById[nid]) return true;
+          err('trafficRestriction', o.id, 'viaNode "' + nid + '" does not exist');
+          return false;
+        });
         if (!nodeById[o.fromNode]) err('trafficRestriction', o.id, 'fromNode "' + o.fromNode + '" does not exist');
         if (!nodeById[o.toNode]) err('trafficRestriction', o.id, 'toNode "' + o.toNode + '" does not exist');
         o.altToNodes = o.altToNodes.filter(function (nid) {
@@ -560,7 +567,7 @@
       if (o.confirmed2026) err('trafficControl', o.id, 'must not be confirmed2026');
       // attach coords from node for map convenience
       var n = nodeById[o.nodeId];
-      o.lat = n.lat; o.lon = n.lon; o.hasCoords = true; o.nodeName = n.name;
+      o.lat = n.lat; o.lon = n.lon; o.hasCoords = true; o.nodeName = n.name; o.approximate = n.approximate === true;
       res.trafficControls.push(o);
     });
 

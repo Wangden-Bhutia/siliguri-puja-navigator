@@ -457,8 +457,11 @@
     if (r && r.verificationStatus === 'approved' && r.sourceYear === 2026) return el('span', 'badge badge-approved', 'Puja 2026 traffic plan');
     return pendingTrafficBadge();
   }
+  function approxBadge() { return el('span', 'badge badge-pending', 'Approximate location'); }
+  function mkCls(base, rec) { return base + (rec && rec.approximate ? ' mk-approx' : ''); }
   function notMappedNote() { return el('p', 'meta', 'Location not mapped in this app yet.'); }
   function mappedLocBadge(node) {
+    if (node && node.approximate) return approxBadge();
     var label = (node && node.locationStatus === 'landmarkAnchor') ? 'Landmark anchor' : 'Mapped location';
     return el('span', 'badge badge-mapped', label);
   }
@@ -480,6 +483,12 @@
     fitLayer('map-traffic');
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+  // Junction-to-junction polyline for a restriction (from -> via... -> to); null when any point is unmapped.
+  function restrictionPts(tr) {
+    var ids = [tr.fromNode].concat(tr.viaNodes || [], [tr.toNode]), pts = [];
+    for (var i = 0; i < ids.length; i++) { var n = nodeById(ids[i]); if (!n || !n.hasCoords) return null; pts.push(n); }
+    return pts;
+  }
   function showRestrictionOnMap(tr) {
     var box = $('#map-traffic');
     box.hidden = false;
@@ -489,14 +498,13 @@
     if (tr.zone) {
       (tr.anchorNodes || []).forEach(function (nid) {
         var n = nodeById(nid);
-        if (n && n.hasCoords) addMarker('map-traffic', n.lat, n.lon, 'mk-traf', '', n.name);
+        if (n && n.hasCoords) addMarker('map-traffic', n.lat, n.lon, mkCls('mk-traf', n), '', n.name);
       });
     } else {
-      var a = nodeById(tr.fromNode), b = nodeById(tr.toNode);
-      if (a && a.hasCoords && b && b.hasCoords) {
-        m.layer.addLayer(L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#8c1c2c', weight: 4, dashArray: '6 6' }));
-        addMarker('map-traffic', a.lat, a.lon, 'mk-traf', '', a.name);
-        addMarker('map-traffic', b.lat, b.lon, 'mk-traf', '', b.name);
+      var pts = restrictionPts(tr), a = pts && pts[0];
+      if (pts) {
+        m.layer.addLayer(L.polyline(pts.map(function (n) { return [n.lat, n.lon]; }), { color: '#8c1c2c', weight: 4, dashArray: '6 6' }));
+        pts.forEach(function (n) { addMarker('map-traffic', n.lat, n.lon, mkCls('mk-traf', n), '', n.name); });
         (tr.altToNodes || []).forEach(function (nid) {
           var n = nodeById(nid);
           if (n && n.hasCoords) {
@@ -532,7 +540,7 @@
     box.hidden = false;
     clearMap('map-traffic');
     ensureMap('map-traffic');
-    if (ctrl.hasCoords) addMarker('map-traffic', ctrl.lat, ctrl.lon, 'mk-ctrl', '', ctrl.nodeName || ctrl.name);
+    if (ctrl.hasCoords) addMarker('map-traffic', ctrl.lat, ctrl.lon, mkCls('mk-ctrl', ctrl), '', ctrl.nodeName || ctrl.name);
     // also draw other controls faintly? only selected for clarity
     fitLayer('map-traffic');
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -545,14 +553,16 @@
     var m = maps['map-traffic'];
     if (!S.data) return;
     (S.data.trafficRestrictions || []).forEach(function (tr) {
-      if (tr.zone) return;
-      var a = nodeById(tr.fromNode), b = nodeById(tr.toNode);
-      if (a && a.hasCoords && b && b.hasCoords) {
-        m.layer.addLayer(L.polyline([[a.lat, a.lon], [b.lat, b.lon]], { color: '#8c1c2c', weight: 3, dashArray: '6 6', opacity: 0.85 }));
+      if (tr.zone) {
+        // single located end: show it as a point
+        if ((tr.anchorNodes || []).length === 1) { var z = nodeById(tr.anchorNodes[0]); if (z && z.hasCoords) addMarker('map-traffic', z.lat, z.lon, mkCls('mk-traf', z), '', z.name); }
+        return;
       }
+      var pts = tr.textOnly ? null : restrictionPts(tr);
+      if (pts) m.layer.addLayer(L.polyline(pts.map(function (n) { return [n.lat, n.lon]; }), { color: '#8c1c2c', weight: 3, dashArray: '6 6', opacity: 0.85 }));
     });
     (S.data.trafficControls || []).forEach(function (c) {
-      if (c.hasCoords) addMarker('map-traffic', c.lat, c.lon, 'mk-ctrl', '', c.nodeName || c.name);
+      if (c.hasCoords) addMarker('map-traffic', c.lat, c.lon, mkCls('mk-ctrl', c), '', c.nodeName || c.name);
     });
     fitLayer('map-traffic');
   }
@@ -585,11 +595,19 @@
     parks.forEach(function (k) {
       if (k.textOnly) {
         var tc = el('li', 'info-card info-card-compact'); tc.dataset.id = k.id;
-        add(tc, el('span', 'badge badge-approved', 'Puja 2026 traffic plan'), el('h3', '', k.name));
+        add(tc, el('span', 'badge badge-approved', 'Puja 2026 traffic plan'));
+        if (k.approximate) tc.appendChild(approxBadge());
+        tc.appendChild(el('h3', '', k.name));
         if (k.area) tc.appendChild(line('Area', k.area));
         if (k.vehicles) tc.appendChild(line('Vehicles', k.vehicles));
         if (k.note) tc.appendChild(el('p', 'meta', k.note));
-        tc.appendChild(notMappedNote());
+        if (k.approximate) tc.appendChild(el('p', 'meta', 'Pin shows the general area, not the exact lot.'));
+        if (k.hasCoords) {
+          var prow = el('div', 'pc-actions');
+          prow.appendChild(btn('Directions', 'btn-primary', function () { openNav(k, k.name); }));
+          prow.appendChild(btn('View on map', '', function () { showParkingPoint(k); }));
+          tc.appendChild(prow);
+        } else tc.appendChild(notMappedNote());
         list.appendChild(tc);
         return;
       }
@@ -605,7 +623,20 @@
       card.appendChild(row);
       list.appendChild(card);
     });
-    if (mapped.length) showParkingRoute(mapped[0], true);
+    if (mapped.length) showAllParking(mapped);
+  }
+  // Overview of every pinned parking place (approximate pins drawn with a dashed ring).
+  function showAllParking(mapped) {
+    clearMap('map-parking');
+    mapped.forEach(function (k) { addMarker('map-parking', k.lat, k.lon, mkCls('mk-park', k), '', k.name + (k.approximate ? ' (approximate)' : '')); });
+    fitLayer('map-parking');
+  }
+  function showParkingPoint(k) {
+    clearMap('map-parking');
+    addMarker('map-parking', k.lat, k.lon, mkCls('mk-park', k), '', k.name);
+    fitLayer('map-parking');
+    $$('#parking-list .info-card').forEach(function (c) { c.classList.toggle('is-sel', c.dataset.id === k.id); });
+    $('#map-parking').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   // Parking map: the selected point + the pandals it serves (+ a route line only when a checked geometry exists).
   function showParkingRoute(k, quiet) {
@@ -645,9 +676,9 @@
     card.appendChild(el('p', 'meta', scopeLabel(tr.vehicleScope)));
     if (tr.note) card.appendChild(el('p', 'meta', tr.note));
     if (tr.approximateGeometry && !tr.zone && !tr.textOnly) card.appendChild(el('p', 'meta', 'Map shows approximate straight-line segment between junctions — not a surveyed road polyline.'));
-    card.appendChild(el('p', 'meta', tr.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    card.appendChild(el('p', 'meta', tr.timingNote || 'Timing as directed by on-ground police.'));
     if (fromN) card.appendChild(mappedLocBadge(fromN));
-    else if (tr.zone) card.appendChild(el('span', 'badge badge-mapped', 'Mapped location'));
+    else if (tr.zone) card.appendChild((tr.anchorNodes || []).length === 1 ? mappedLocBadge(nodeById(tr.anchorNodes[0])) : el('span', 'badge badge-mapped', 'Mapped location'));
     if (tr.textOnly) return card;
     card.appendChild(btn('View on Map', 'btn-primary', function () { showRestrictionOnMap(tr); }));
     return card;
@@ -663,7 +694,7 @@
     var avoid = (div.avoidNodes || []).map(function (id) { var n = nodeById(id); return n ? n.name : id; }).join(', ');
     if (via) card.appendChild(line('Via', via));
     if (avoid) card.appendChild(line('Avoid', avoid));
-    card.appendChild(el('p', 'meta', div.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    card.appendChild(el('p', 'meta', div.timingNote || 'Timing as directed by on-ground police.'));
     if (div.textOnly || (div.viaNodes || []).length < 2) return card;
     card.appendChild(btn('View on Map', 'btn-primary', function () { showDiversionOnMap(div); }));
     return card;
@@ -675,7 +706,7 @@
     add(card, el('h3', '', ctrl.nodeName || ctrl.name));
     card.appendChild(el('p', 'meta', 'Goods vehicles \u2014 no entry beyond control point'));
     if (ctrl.textOnly) { card.appendChild(notMappedNote()); return card; }
-    card.appendChild(el('p', 'meta', ctrl.timingNote || 'Timing subject to 2026 order / on-ground police.'));
+    card.appendChild(el('p', 'meta', ctrl.timingNote || 'Timing as directed by on-ground police.'));
     var n = nodeById(ctrl.nodeId);
     if (n) card.appendChild(mappedLocBadge(n));
     if (ctrl.hasCoords) card.appendChild(btn('View on Map', '', function () { showControlOnMap(ctrl); }));
